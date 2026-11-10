@@ -306,6 +306,28 @@ nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stro
 .logo{width:34px;height:34px;filter:drop-shadow(0 3px 8px rgba(30,79,216,.45))}
 .bname{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:-.01em;color:var(--ink)}
 .bname b{color:var(--accent)}
+
+.mi{width:13px;height:13px;vertical-align:-2px}
+.greet{margin-left:auto;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.greet .mi{color:var(--hi)}
+.todaybadge .mi{width:18px;height:18px;color:var(--hi);vertical-align:4px;animation:twinkle 2.4s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.todaybar{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;border:1px dashed var(--accent);background:transparent;color:var(--ink);border-radius:12px;padding:9px 12px;font:inherit;font-size:14px;text-align:left}
+.todaybar .mi{color:var(--hi)}
+.day{position:relative;gap:1px}
+.day .dn{font-size:11px;font-weight:700;color:var(--muted)}
+.day .di{height:14px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.day.cookday .di{color:var(--hi)}
+.day.past{opacity:.45}
+.day.today{box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-soft)}
+.day.today .dn{color:var(--accent)}
+.day.tomorrow{box-shadow:inset 0 0 0 1.5px var(--line)}
+.day.tomorrow .dn{color:var(--ink)}
+.day.sel{background:var(--accent);box-shadow:0 6px 16px rgba(59,130,246,.35)}
+.day.sel .dn,.day.sel .di,.day.sel b{color:#fff}
+.legend{display:flex;gap:12px;justify-content:center;font-size:12px;color:var(--muted);margin-top:-6px}
+.legend .mi{color:var(--hi);margin-right:-6px}
+@media (prefers-reduced-motion: reduce){.todaybadge .mi{animation:none}}
 </style>
 </head>
 <body>
@@ -715,6 +737,14 @@ function mealCard(label, meal, extraCls, pill){
   return '<div class="card acc '+(extraCls||"")+'"><button class="acchead" data-tog="'+esc(key)+'" aria-expanded="'+open+'">'+head+'</button>'+(open?recipeBody(meal[1]):'')+'</div>';
 }
 
+var MINI={
+ cart:'<svg viewBox="0 0 16 16" class="mi"><path d="M1.5 2.5h2l1.6 7.2h6.6l1.6-5.2H4.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.2" cy="13" r="1.2" fill="currentColor"/><circle cx="11" cy="13" r="1.2" fill="currentColor"/></svg>',
+ pot:'<svg viewBox="0 0 16 16" class="mi"><path d="M2.5 7h11v3.5a3 3 0 0 1-3 3h-5a3 3 0 0 1-3-3z" fill="currentColor"/><path d="M1 7h14M6 3.5c-.6-.8.6-1.2 0-2M10 3.5c-.6-.8.6-1.2 0-2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+ star:'<svg viewBox="0 0 16 16" class="mi"><path d="M8 1.5l1.9 4 4.3.5-3.2 3 .9 4.3L8 11.2l-3.9 2.1.9-4.3-3.2-3 4.3-.5z" fill="currentColor"/></svg>',
+ spark:'<svg viewBox="0 0 16 16" class="mi"><path d="M8 0l1.6 6.4L16 8l-6.4 1.6L8 16l-1.6-6.4L0 8l6.4-1.6z" fill="currentColor"/></svg>',
+ sun:'<svg viewBox="0 0 16 16" class="mi"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M13 3l-1.1 1.1M4.1 11.9L3 13"/></g></svg>',
+ moon:'<svg viewBox="0 0 16 16" class="mi"><path d="M12.5 10.5A5.5 5.5 0 0 1 5.5 3.5a5.5 5.5 0 1 0 7 7z" fill="currentColor"/></svg>'
+};
 var LOGO='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="logo" aria-hidden="true"><defs><linearGradient id="lgbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e4fd8"/><stop offset="1" stop-color="#0a1a3f"/></linearGradient><radialGradient id="lgglow" cx=".28" cy=".2" r=".7"><stop offset="0" stop-color="#7fb2ff" stop-opacity=".55"/><stop offset="1" stop-color="#7fb2ff" stop-opacity="0"/></radialGradient><linearGradient id="lgbowl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c9d8f2"/></linearGradient><linearGradient id="lgfood" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffc35c"/><stop offset="1" stop-color="#f08a24"/></linearGradient></defs><rect width="512" height="512" rx="116" fill="url(#lgbg)"/><rect width="512" height="512" rx="116" fill="url(#lgglow)"/><g fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" opacity=".9"><path d="M200 168c-20-26 20-40 0-66"/><path d="M256 156c-20-26 20-40 0-66"/><path d="M312 168c-20-26 20-40 0-66"/></g><ellipse cx="256" cy="402" rx="150" ry="22" fill="#000" opacity=".28"/><ellipse cx="256" cy="250" rx="152" ry="40" fill="url(#lgfood)" stroke="#0a1430" stroke-width="10"/><circle cx="210" cy="240" r="16" fill="#c9622a"/><circle cx="268" cy="232" r="14" fill="#c9622a"/><circle cx="310" cy="250" r="12" fill="#7bbf5a"/><circle cx="236" cy="258" r="9" fill="#fff4dc"/><path d="M104 250h304c0 86-68 146-152 146S104 336 104 250z" fill="url(#lgbowl)" stroke="#0a1430" stroke-width="10" stroke-linejoin="round"/><path d="M132 276c10 50 52 88 104 96" stroke="#ffffff" stroke-width="14" stroke-linecap="round" fill="none" opacity=".9"/><path d="M104 250h304" stroke="#0a1430" stroke-width="10" stroke-linecap="round"/><rect x="196" y="300" width="120" height="14" rx="7" fill="#3b82f6"/></svg>';
 function mealRow(label, meal, pill){
   var key=label+"|"+meal[1], open=!!openCards[key], n=NUT[meal[1]];
@@ -729,16 +759,21 @@ function renderHeute(){
   var abs = absWeek(d), r = planRot(d), dow = d.getDay();
   var weekStart = weekMon(d), isToday=daysBetween(t,d)===0;
   var p = dayPlan(r, dow);
-  var html = '<div class="brand">'+LOGO+'<span class="bname">Essens<b>plan</b></span></div><header class="hhead"><div><span class="hsub">'+DOW_LONG[dow]+', '+fmtShort(d)+'</span><h1>'+(isToday?"Heute":(daysBetween(t,d)===1?"Morgen":DOW_LONG[dow]))+'</h1></div><span class="wkpill">'+(r===0?'Startwoche':'Woche '+r+'/'+NW)+'</span></header>';
+  var hr=new Date().getHours(), greet=hr<11?"Guten Morgen":(hr<18?"Hallo":"Guten Abend"), diff=daysBetween(t,d);
+  var title = diff===0?"Heute":(diff===1?"Morgen":(diff===-1?"Gestern":DOW_LONG[dow]));
+  var html = '<div class="brand">'+LOGO+'<span class="bname">Essens<b>plan</b></span><span class="greet">'+(hr<18&&hr>=6?MINI.sun:MINI.moon)+greet+', Yunus</span></div>';
+  html += '<header class="hhead"><div><span class="hsub">'+DOW_LONG[dow]+', '+fmtShort(d)+'</span><h1>'+title+(diff===0?' <span class="todaybadge">'+MINI.spark+'</span>':'')+'</h1></div><span class="wkpill">'+(r===0?'Startwoche':'Woche '+r+'/'+NW)+'</span></header>';
+  if(diff!==0) html += '<button class="todaybar" data-shift="0"><span>'+MINI.spark+' Heute ist <b>'+DOW_LONG[t.getDay()]+', '+fmtShort(t)+'</b></span><span class="hintgo">Zu heute ›</span></button>';
   // Wochenleiste kompakt mit Pfeilen
   html += '<div class="strip"><button class="sarr" data-shift="-7" aria-label="Vorherige Woche">‹</button><div class="days" role="group" aria-label="Tag wählen">';
   for(var i=0;i<7;i++){
-    var dd=addDays(weekStart,i), wd=dd.getDay(), ck=(wd===1||wd===3), cls="day";
-    if(ck) cls+=" cookday"; if(daysBetween(t,dd)===0) cls+=" today"; if(daysBetween(d,dd)===0) cls+=" sel";
-    html += '<button class="'+cls+'" data-day="'+fmtISO(dd)+'" aria-label="'+DOW_LONG[wd]+' '+fmtShort(dd)+'"><span>'+DOW[wd]+'</span><b>'+dd.getDate()+'</b><span class="dot'+(ck?'':' none')+'" aria-hidden="true"></span></button>';
+    var dd=addDays(weekStart,i), wd=dd.getDay(), rel=daysBetween(t,dd), cls="day";
+    var ic = wd===1?MINI.cart:(wd===3?MINI.pot:(wd===6?MINI.star:''));
+    if(wd===1||wd===3) cls+=" cookday"; if(rel===0) cls+=" today"; if(rel===1) cls+=" tomorrow"; if(daysBetween(d,dd)===0) cls+=" sel"; if(rel<0) cls+=" past";
+    html += '<button class="'+cls+'" data-day="'+fmtISO(dd)+'" aria-label="'+DOW_LONG[wd]+' '+fmtShort(dd)+(rel===0?', heute':(rel===1?', morgen':''))+'"><span class="dn">'+(rel===0?'Heute':(rel===1?'Morgen':DOW[wd]))+'</span><b>'+dd.getDate()+'</b><span class="di" aria-hidden="true">'+ic+'</span></button>';
   }
   html += '</div><button class="sarr" data-shift="7" aria-label="Nächste Woche">›</button></div>';
-  if(selDay && !isToday) html += '<button class="link backtoday" data-shift="0">← Zurück zu heute</button>';
+  html += '<div class="legend">'+MINI.cart+' Einkauf '+MINI.pot+' Kochtag '+MINI.star+' Fakeaway</div>';
   // Ein Hinweis oben – nur wenn wichtig
   var note=null;
   if(p.shop) note=['<strong>'+(p.shopFoot?'Einkauf zu Fuß':'Großeinkauf mit dem Auto')+'</strong> · '+(p.shopFoot?'Aldi oder Lidl um die Ecke':'nach der Uni'),'Liste öffnen'];

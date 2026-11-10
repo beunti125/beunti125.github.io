@@ -82,7 +82,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(-
 .day.sel b{color:#fff}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--hi)}
 /* Segmente */
-.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin-bottom:12px}
+.seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin-bottom:12px}
 .seg button{border:0;background:transparent;border-radius:9px;min-height:38px;font-weight:700;font-size:14px;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 /* Einkauf */
@@ -469,6 +469,9 @@ var W = {
   6:{sun:["Milchreis mit Zimt-Zucker","milchreis"], bowl:["Egg Fried Rice mit Hähnchen","friedrice"], wrap:["Chicken-Caesar-Wrap","caesar"], pasta:["Käsespätzle mit Speck","spaetzle"], fake:["Knusprige Gnocchi in Spinat-Rahm","gnocchi"]}
 };
 
+/* ---------- Startwoche (Mi–So vor Woche 1, Einkauf zu Fuß) ---------- */
+W[0]={sun:["Kaiserschmarrn","kaiserschmarrn"], wrap:["Chicken-Caesar-Wrap","caesar"], pasta:["Hähnchen-Sahne-Pasta","sahne"], fake:["Crispy-Chicken-Burger + Ofenpommes","crispy"]};
+function rw(r){ return r; }
 /* Einkauf: [Produkt, Menge, Preis €, Bereich, wofür] – Preise ungefähre Discounter-Preise */
 var BASE = [
   ["Müsli","750 g",1.80,"Trocken & Konserven","Frühstück"],
@@ -489,6 +492,18 @@ var BASE = [
   ["Zwiebeln","1 kg Netz",1.00,"Obst & Gemüse","Bolognese, Frikadellen, Rahmgerichte – reicht mehrere Wochen, nur kaufen wenn leer"],
 ];
 var WEEK_ITEMS = {
+  0:[["Hähnchenbrust","2 kg",16.00,"Fleisch","Caesar-Wrap 0,6 kg · Sahne-Pasta 0,8 kg · Crispy-Burger 0,6 kg (einfrieren)"],
+     ["Penne","500 g",1.00,"Trocken & Konserven","Sahne-Pasta"],
+     ["Wraps","2 Packungen",2.00,"Brot","Caesar-Wrap"],
+     ["Burgerbrötchen","1 Packung",1.50,"Brot","Crispy-Chicken-Burger"],
+     ["Sahne","2 Becher",1.40,"Kühlregal","Sahne-Pasta"],
+     ["Parmesan","1 Stück",2.50,"Kühlregal","Caesar-Wrap (hält Wochen)"],
+     ["Reibekäse","200 g",1.50,"Kühlregal","Sahne-Pasta"],
+     ["Champignons","250 g",1.50,"Obst & Gemüse","Sahne-Pasta"],
+     ["Salat","1 Kopf",0.99,"Obst & Gemüse","Caesar-Wrap"],
+     ["Zitronen","2 Stück",0.80,"Obst & Gemüse","Caesar-Dressing"],
+     ["TK-Spinat","450 g",1.30,"Tiefkühl","Sahne-Pasta"],
+     ["TK-Pommes","1 kg",1.50,"Tiefkühl","Crispy-Chicken-Burger"]],
   1:[["Hackfleisch","2,5 kg",17.50,"Fleisch","Bolognese 1,5 kg · Burrito 0,5 kg · Burger 0,5 kg"],
      ["Hähnchenbrust","1 kg",8.00,"Fleisch","Teriyaki-Bowl"],
      ["Rundkornreis (Milch- oder Sushireis)","1 kg",1.50,"Trocken & Konserven","Teriyaki-Bowl – klebt"],
@@ -596,6 +611,7 @@ function eur(n){ return n.toFixed(2).replace(".",",")+" €"; }
 
 /* ---------- Tagesplan ---------- */
 function dayPlan(r, dow){
+  if(r===0) return startPlan(dow);
   // Woche startet Montag: Mo nach der Uni mit Auto einkaufen + kochen, Mi (frei) kochen, Do/Fr lange Uni-Tage, So Bratkartoffeln.
   var w=W[r], p={breakfast:dow===0?["Brötchen mit Aufschnitt","broetchen"]:(dow===6?["Nougat Bits mit Milch","nougat"]:["Müsli mit Joghurt","oats"]), snack:"Skyr mit Honig oder 1–2 Bananen", tasks:[], cook:false, lunchLabel:"Mittags"};
   var bk = w.mi||["Bratkartoffeln + Speck, Spiegeleier & Bohnen","bratkartoffeln"];
@@ -615,6 +631,19 @@ function dayPlan(r, dow){
   p.act = w.act && w.act[dow] ? w.act[dow] : null;
   return p;
 }
+
+function startPlan(dow){
+  var w=W[0], p={breakfast:dow===0?["Brötchen mit Aufschnitt","broetchen"]:(dow===6?["Nougat Bits mit Milch","nougat"]:["Müsli mit Joghurt","oats"]), snack:"Skyr mit Honig oder 1–2 Bananen", tasks:[], cook:false, lunchLabel:"Mittags"};
+  if(dow===1||dow===2){ p.lunch=["Noch frei – Startwoche beginnt Mittwoch",null]; p.dinner=["Noch frei – heute ruhig noch was Einfaches",null]; p.tasks=["Morgen geht's los: Einkaufsliste „Start“ einmal durchgehen."]; }
+  if(dow===3){ p.lunch=["Brötchen mit Aufschnitt","broetchen"]; p.dinner=w.pasta; p.cook=true; p.shop=true; p.shopFoot=true;
+    p.tasks=["Einkaufen zu Fuß (Aldi Mecklenburgische Str. oder Lidl Berliner Str.) – Liste „Start“. Rucksack + 2 Taschen mitnehmen.","Grundvorrat einmal mitkaufen (Gewürze, Öl, Mehl, Soßen, Zwiebeln).","600 g Hähnchen für Samstag direkt einfrieren.","Kochen: "+w.wrap[0]+" – 4 Portionen (Do + Fr Uni-Box, Fr Snack, 1 Reserve).","Kochen: "+w.pasta[0]+" – 4 Portionen (heute, Do + Fr abends, Sa mittags)."]; }
+  if(dow===4){ p.lunch=w.wrap; p.lunchLabel="Mittags · Uni-Box"; p.dinner=w.pasta; p.snack="Langer Uni-Tag? Skyr oder Brötchen einpacken"; p.tasks=["Uni-Box einpacken. Abends nur aufwärmen."]; }
+  if(dow===5){ p.lunch=w.wrap; p.lunchLabel="Mittags · Uni-Box"; p.dinner=w.pasta; p.snack="Reserve-Wrap einpacken – du bist bis 17 Uhr in der Uni"; p.tasks=["Uni-Box + Snack einpacken.","Abends: Hähnchen für morgen aus dem Gefrierfach in den Kühlschrank legen."]; }
+  if(dow===6){ p.lunch=w.pasta; p.dinner=w.fake; p.fake=true; p.tasks=["Fakeaway-Abend: Crispy-Chicken-Burger frisch machen (30 Min. vorher in Milch einlegen)."]; }
+  if(dow===0){ p.lunch=w.sun; p.dinner=["Bratkartoffeln + Speck, Spiegeleier & Bohnen","bratkartoffeln"]; p.tasks=["Vormittags Kartoffeln kochen und auskühlen lassen, abends Bratkartoffeln braten.","Einkaufsliste Woche 1 für morgen checken – ab Montag Einkauf mit dem Auto."]; }
+  return p;
+}
+function planRot(d){ var s=startDate(); if(d<s && daysBetween(d,s)<=7) return 0; return rot(absWeek(d)); }
 
 /* ---------- Ansichten ---------- */
 var selDay = null; // Datum, das in "Heute" angezeigt wird
@@ -637,14 +666,14 @@ function mealCard(label, meal, extraCls, pill){
 
 function renderHeute(){
   var t=today(), s=startDate(), el=document.getElementById("v-heute");
-  var pre = t < s;
-  var d = selDay || (pre ? s : t);
-  var abs = absWeek(d), r = rot(abs), dow = d.getDay();
+  var pre = t < s, preStart=addDays(s,-5);
+  var d = selDay || (t < preStart ? preStart : t);
+  var abs = absWeek(d), r = planRot(d), dow = d.getDay();
   var weekStart = weekMon(d);
-  var html = '<div class="head"><h3>Woche '+r+' von '+NW+' · '+fmtShort(weekStart)+'–'+fmtShort(addDays(weekStart,6))+'</h3><h1>'+(daysBetween(t,d)===0?"Heute":DOW_LONG[dow]+", "+fmtShort(d))+'</h1></div>';
+  var html = '<div class="head"><h3>'+(r===0?'Startwoche':'Woche '+r+' von '+NW)+' · '+fmtShort(weekStart)+'–'+fmtShort(addDays(weekStart,6))+'</h3><h1>'+(daysBetween(t,d)===0?"Heute":DOW_LONG[dow]+", "+fmtShort(d))+'</h1></div>';
   if(pre){
     var n=daysBetween(t,s);
-    html += '<div class="banner"><strong>Dein Plan startet am Montag, '+fmtShort(s)+' – in '+n+' '+(n===1?"Tag":"Tagen")+'.</strong><span>Vorher einmal den Grundvorrat (Gewürze, Öl, Mehl, Soßen) und den Einkauf für Woche 1 erledigen.</span><button class="btn small" data-go="einkauf">Einkaufsliste Woche 1</button></div><div style="height:12px"></div>';
+    html += '<div class="banner"><strong>'+(t<preStart?'Morgen startet dein Kochplan – mit der Startwoche (Mi–So).':'Startwoche läuft. Ab Montag, '+fmtShort(s)+' beginnt Woche 1.')+'</strong><span>Die Startwoche kaufst du zu Fuß ein. Ab Montag dann Großeinkauf mit dem Auto.</span><button class="btn small" data-go="einkauf">Einkaufsliste Startwoche</button></div><div style="height:12px"></div>';
   }
   html += '<div class="row" style="margin-bottom:6px"><button class="btn ghost small" data-shift="-7" aria-label="Vorherige Woche">‹ Woche</button>'+(selDay?'<button class="link" data-shift="0">Zu heute</button>':'')+'<button class="btn ghost small" data-shift="7" aria-label="Nächste Woche">Woche ›</button></div>';
   html += '<div class="days" role="group" aria-label="Tag wählen">';
@@ -658,7 +687,7 @@ function renderHeute(){
   html += '</div>';
   var p = dayPlan(r, dow);
   html += '<div class="stack">';
-  if(p.shop) html += '<button class="banner" data-go="einkauf" style="border:0;text-align:left;width:100%"><strong>Heute: Großeinkauf mit dem Auto</strong><span>Nach der Uni – tippe hier für die Einkaufsliste Woche '+r+'.</span></button>';
+  if(p.shop) html += '<button class="banner" data-go="einkauf" style="border:0;text-align:left;width:100%"><strong>'+(p.shopFoot?'Heute: Einkauf zu Fuß (Startwoche)':'Heute: Großeinkauf mit dem Auto')+'</strong><span>'+(p.shopFoot?'Aldi oder Lidl um die Ecke – tippe hier für die Liste.':'Nach der Uni – tippe hier für die Einkaufsliste Woche '+r+'.')+'</span></button>';
   html += mealCard("Frühstück", p.breakfast);
   html += mealCard(p.lunchLabel, p.lunch);
   html += '<div class="card"><span class="label">Snack</span><span>'+esc(p.snack)+'</span></div>';
@@ -672,7 +701,7 @@ function renderHeute(){
                  : '<button class="btn ghost small" data-act="'+doneKey+'" data-k="'+p.act.key+'" data-d="'+p.act.delta+'" style="align-self:flex-start;margin-top:6px">'+esc(p.act.label)+' – im Vorrat eintragen</button>';
   }
   html += '</div>';
-  var tm = addDays(d,1), tp = dayPlan(rot(absWeek(tm)), tm.getDay());
+  var tm = addDays(d,1), tp = dayPlan(planRot(tm), tm.getDay());
   html += '<button class="card tap" data-day="'+fmtISO(tm)+'" aria-label="Morgen ansehen"><div class="row"><span class="label">Morgen · '+DOW_LONG[tm.getDay()]+'</span><span class="chev" aria-hidden="true"></span></div><span><strong>Abends:</strong> '+esc(tp.dinner[0])+(tp.cook?' <span class="pill">Kochtag</span>':'')+'</span><span><strong>Mittags:</strong> '+esc(tp.lunch[0])+'</span></button>';
   html += '<button class="btn ghost" data-r="carbonara">Keine Lust zu kochen? Notfall-Carbonara (15 Min.)</button>';
   html += '</div>';
@@ -681,22 +710,24 @@ function renderHeute(){
 
 var listRot = null;
 function shopAbs(r){
+  if(r===0) return -1;
   var t=today(), s=startDate(), cur = t<s ? 0 : absWeek(t);
   if(t>=s && t.getDay()===0) cur += 1; // sonntags: Liste für den Montags-Einkauf
   for(var k=0;k<NW;k++){ if(rot(cur+k)===r) return cur+k; }
   return cur;
 }
-function defaultRot(){ var t=today(), s=startDate(); if(t<s) return 1; return rot(absWeek(t) + (t.getDay()===0?1:0)); }
+function defaultRot(){ var t=today(), s=startDate(); if(t<s) return daysBetween(t,s)<=1?1:0; return rot(absWeek(t) + (t.getDay()===0?1:0)); }
 
 function renderEinkauf(){
-  var r = listRot || defaultRot(), abs = shopAbs(r), key="chk:"+abs, chk=load(key,{});
+  var r = (listRot!==null ? listRot : defaultRot()), abs = shopAbs(r), key="chk:"+abs, chk=load(key,{});
   var items = BASE.concat(WEEK_ITEMS[r]);
   var total=0, open=0, doneN=0;
   items.forEach(function(it,i){ total+=it[2]; if(chk[i]) doneN++; else open+=it[2]; });
   var wkStart = addDays(startDate(), abs*7);
   var el=document.getElementById("v-einkauf");
-  var html='<div class="head"><h3>Einkauf am Mo, '+fmtShort(wkStart)+'</h3><h1>Einkaufsliste</h1></div>';
+  var html='<div class="head"><h3>'+(r===0?'Startwoche · Mi zu Fuß einkaufen':'Einkauf am Mo, '+fmtShort(wkStart)+' mit dem Auto')+'</h3><h1>Einkaufsliste</h1></div>';
   html+='<div class="seg" role="group" aria-label="Woche wählen">';
+  if(today()<startDate()) html+='<button data-wk="0" aria-pressed="'+(r===0)+'">Start</button>';
   for(var w=1;w<=NW;w++) html+='<button data-wk="'+w+'" aria-pressed="'+(w===r)+'">Woche '+w+'</button>';
   html+='</div>';
   html+='<div class="sum"><div class="card"><span class="label">Noch offen</span><span class="big">'+eur(open)+'</span></div><div class="card"><span class="label">Gesamt ca.</span><span class="big">'+eur(total)+'</span></div></div>';
@@ -908,7 +939,7 @@ document.addEventListener("click", function(e){
   if(t.dataset.shift!==undefined){ var base=selDay||(today()<startDate()?startDate():today()); var sh=+t.dataset.shift; selDay= sh===0?null:addDays(base,sh); if(selDay&&daysBetween(today(),selDay)===0) selDay=null; renderHeute(); return; }
   if(t.dataset.day){ selDay=parseD(t.dataset.day); if(daysBetween(today(),selDay)===0) selDay=null; renderHeute(); return; }
   if(t.dataset.wk){ listRot=+t.dataset.wk; renderEinkauf(); return; }
-  if(t.dataset.chk!==undefined){ var r=listRot||defaultRot(), key="chk:"+shopAbs(r), c=load(key,{}); c[t.dataset.chk]=!c[t.dataset.chk]; save(key,c); renderEinkauf(); return; }
+  if(t.dataset.chk!==undefined){ var r=(listRot!==null?listRot:defaultRot()), key="chk:"+shopAbs(r), c=load(key,{}); c[t.dataset.chk]=!c[t.dataset.chk]; save(key,c); renderEinkauf(); return; }
   if(t.dataset.reset){ save(t.dataset.reset,{}); renderEinkauf(); return; }
   if(t.dataset.st){ var k="stock:"+t.dataset.st; save(k, Math.max(0, load(k,0)+(+t.dataset.d))); renderVorrat(); return; }
   if(t.dataset.act){ var sk="stock:"+t.dataset.k; save(sk, Math.max(0, load(sk,0)+(+t.dataset.d))); save(t.dataset.act,true); renderHeute(); return; }

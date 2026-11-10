@@ -140,6 +140,12 @@ nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stro
 .mealrow{display:flex;align-items:center;gap:12px}
 .sech{display:flex;align-items:center;gap:6px}
 
+
+.nut{display:grid;grid-template-columns:repeat(auto-fit,minmax(58px,1fr));gap:6px;margin:4px 0 10px}
+.nut div{background:var(--tile);border-radius:10px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:1px}
+.nut b{font-family:var(--display);font-size:15px;font-variant-numeric:tabular-nums}
+.nut span{font-size:11px;color:var(--muted)}
+.nut .price{background:var(--accent-soft);outline:1px solid var(--accent)}
 /* Technik */
 .tprog{height:4px;background:#1b2433}
 .tprog i{display:block;height:100%;width:0;background:var(--accent);animation:tp 3.4s linear forwards}
@@ -415,6 +421,14 @@ function itemIcon(n){
   return "can";
 }
 
+/* ---------- Preis & Nährwerte pro Portion (Schätzwerte) ---------- */
+var NUT = {"oats": {"eur": 0.69, "kcal": 454, "p": 35, "c": 60, "f": 7}, "nougat": {"eur": 1.0, "kcal": 592, "p": 17, "c": 89, "f": 18}, "broetchen": {"eur": 1.9, "kcal": 1035, "p": 48, "c": 122, "f": 38}, "drumsticks": {"eur": 3.55, "kcal": 1495, "p": 97, "c": 93, "f": 79}, "teriyaki": {"eur": 2.76, "kcal": 818, "p": 70, "c": 108, "f": 10}, "sesam": {"eur": 2.57, "kcal": 967, "p": 56, "c": 101, "f": 38}, "butterchicken": {"eur": 2.22, "kcal": 943, "p": 48, "c": 90, "f": 43}, "burrito": {"eur": 2.22, "kcal": 898, "p": 49, "c": 65, "f": 48}, "caesar": {"eur": 2.32, "kcal": 570, "p": 51, "c": 48, "f": 18}, "bolognese": {"eur": 1.35, "kcal": 836, "p": 40, "c": 99, "f": 29}, "sahne": {"eur": 2.91, "kcal": 1110, "p": 73, "c": 95, "f": 46}, "cajun": {"eur": 2.77, "kcal": 1106, "p": 71, "c": 103, "f": 43}, "geschnetzeltes": {"eur": 2.76, "kcal": 1039, "p": 59, "c": 87, "f": 49}, "gebratenenudeln": {"eur": 2.09, "kcal": 906, "p": 54, "c": 98, "f": 32}, "friedrice": {"eur": 1.91, "kcal": 821, "p": 48, "c": 87, "f": 31}, "spaetzle": {"eur": 2.04, "kcal": 1148, "p": 52, "c": 113, "f": 54}, "gnocchi": {"eur": 2.0, "kcal": 1022, "p": 31, "c": 110, "f": 50}, "lasagne": {"eur": 2.68, "kcal": 1172, "p": 63, "c": 69, "f": 70}, "carbonara": {"eur": 2.42, "kcal": 1274, "p": 65, "c": 143, "f": 47}, "kaiserschmarrn": {"eur": 0.94, "kcal": 704, "p": 27, "c": 83, "f": 29}, "pfannkuchen": {"eur": 1.08, "kcal": 971, "p": 34, "c": 126, "f": 36}, "milchreis": {"eur": 0.55, "kcal": 595, "p": 17, "c": 94, "f": 16}, "bratkartoffeln": {"eur": 2.82, "kcal": 1225, "p": 55, "c": 87, "f": 70}, "smash": {"eur": 2.84, "kcal": 1441, "p": 66, "c": 90, "f": 91}, "schnitzel": {"eur": 3.73, "kcal": 1516, "p": 97, "c": 131, "f": 65}, "crispy": {"eur": 2.29, "kcal": 928, "p": 55, "c": 95, "f": 36}, "steak": {"eur": 11.56, "kcal": 1924, "p": 102, "c": 82, "f": 132}, "frikadellen": {"eur": 3.61, "kcal": 1708, "p": 79, "c": 101, "f": 108}, "_snack": {"eur": 0.59, "kcal": 203, "p": 28, "c": 22, "f": 0}};
+function eur2(n){ return n.toFixed(2).replace(".",",")+" €"; }
+function nutRow(id){
+  var n=NUT[id]; if(!n) return "";
+  return '<div class="nut"><div><b>'+n.kcal+'</b><span>kcal</span></div><div><b>'+n.p+' g</b><span>Eiweiß</span></div><div><b>'+n.c+' g</b><span>Kohlenh.</span></div><div><b>'+n.f+' g</b><span>Fett</span></div><div class="price"><b>'+eur2(n.eur)+'</b><span>pro Portion</span></div></div>';
+}
+
 /* ---------- Rotation ---------- */
 var W = {
   1:{sun:["Kaiserschmarrn","kaiserschmarrn"], bowl:["Teriyaki-Chicken-Bowl","teriyaki"], wrap:["Burrito-Wrap mit Hack","burrito"], pasta:["Bolognese (12 Portionen)","bolognese"], fake:["Smash-Burger + Ofenpommes","smash"],
@@ -580,7 +594,7 @@ function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&
 
 function recipeBody(id){
   var x=R[id]; if(!x) return "";
-  return '<div class="rbody"><div class="meta" style="margin:4px 0 8px"><span class="pill green">'+esc(x.time)+'</span><span class="pill green">'+esc(x.por)+'</span></div>'+
+  return '<div class="rbody"><div class="meta" style="margin:4px 0 8px"><span class="pill green">'+esc(x.time)+'</span><span class="pill green">'+esc(x.por)+'</span></div>'+nutRow(id)+
     '<span class="label">Zutaten</span><ul class="ing">'+x.ing.map(function(i){return "<li>"+esc(i)+"</li>";}).join("")+'</ul>'+
     '<span class="label" style="margin-top:10px">So geht\'s</span><ol class="steps">'+x.steps.map(function(i){return "<li><span>"+esc(i)+"</span></li>";}).join("")+'</ol>'+
     '<div class="tip" style="margin-top:12px">'+esc(x.tip)+'</div>'+techButtons(id)+'</div>';
@@ -620,6 +634,8 @@ function renderHeute(){
   html += mealCard(p.lunchLabel, p.lunch);
   html += '<div class="card"><span class="label">Snack</span><span>'+esc(p.snack)+'</span></div>';
   html += mealCard("Abends", p.dinner, p.cook?"cook":"", p.cook?'<span class="pill">Kochtag</span>':(p.fake?'<span class="pill green">Fakeaway</span>':""));
+  var tot={eur:0,kcal:0,p:0}; [p.breakfast[1],p.lunch[1],"_snack",p.dinner[1]].forEach(function(k){ var n=NUT[k]; if(n){ tot.eur+=n.eur; tot.kcal+=n.kcal; tot.p+=n.p; } });
+  html += '<div class="card daytot"><span class="label">Tag gesamt (geschätzt)</span><div class="nut"><div><b>'+tot.kcal+'</b><span>kcal</span></div><div><b>'+tot.p+' g</b><span>Eiweiß</span></div><div class="price"><b>'+eur2(tot.eur)+'</b><span>Kosten</span></div></div><span class="note">'+(tot.kcal<2700?'Unter deinem Bedarf von ca. 3.000 kcal – nimm eine größere Portion oder einen zweiten Snack.':(tot.kcal>3600?'Deutlich über ca. 3.000 kcal – an so einem Tag den Snack weglassen.':'Passt zu deinem Bedarf von ca. 3.000 kcal.'))+'</span></div>';
   html += '<div class="card"><span class="label">To-do</span><ul class="tasks">'+p.tasks.map(function(x){return "<li>"+esc(x)+"</li>";}).join("")+'</ul>';
   if(p.act){
     var doneKey="act:"+abs+":"+dow, done=load(doneKey,false);
@@ -665,7 +681,7 @@ function renderEinkauf(){
     });
     html+='</div>';
   });
-  html+='<p class="note">Preise sind ungefähre Aldi-/Lidl-Preise. Die Haken gelten nur für diese Woche und werden auf diesem Gerät gespeichert.</p>';
+  html+='<p class="note">Preise sind ungefähre Aldi-/Lidl-Preise. Preise und Nährwerte pro Portion in den Rezepten sind Schätzwerte. Die Haken gelten nur für diese Woche und werden auf diesem Gerät gespeichert.</p>';
   html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn ghost small" data-reset="'+key+'">Alle Haken entfernen</button></div>';
   el.innerHTML=html;
 }
@@ -674,7 +690,7 @@ function renderRezepte(){
   var el=document.getElementById("v-rezepte");
   var html='<div class="head"><h3>'+ORDER.length+' Rezepte</h3><h1>Rezepte</h1></div><div class="rlist">';
   ORDER.forEach(function(id){ var x=R[id];
-    html+='<button class="ritem" data-r="'+id+'">'+ico(R_ICON[id])+'<span style="display:flex;flex-direction:column;gap:2px;flex:1"><span class="n">'+esc(x.name)+'</span><span class="t">'+esc(x.time)+' · '+esc(x.por)+'</span></span><span class="chev" aria-hidden="true"></span></button>';
+    html+='<button class="ritem" data-r="'+id+'">'+ico(R_ICON[id])+'<span style="display:flex;flex-direction:column;gap:2px;flex:1"><span class="n">'+esc(x.name)+'</span><span class="t">'+(NUT[id]?'ca. '+eur2(NUT[id].eur)+' · '+NUT[id].kcal+' kcal · '+NUT[id].p+' g Eiweiß':esc(x.time))+'</span></span><span class="chev" aria-hidden="true"></span></button>';
   });
   el.innerHTML=html+'</div>';
 }
@@ -694,7 +710,7 @@ function renderVorrat(){
 function openRecipe(id){
   var x=R[id]; if(!x) return;
   var b=document.getElementById("sheet-body");
-  b.innerHTML='<button class="back" id="close">Zurück</button>'+ico(R_ICON[id],"xl")+'<h1 id="r-title">'+esc(x.name)+'</h1><div class="meta"><span class="pill green">'+esc(x.time)+'</span><span class="pill green">'+esc(x.por)+'</span></div>'+
+  b.innerHTML='<button class="back" id="close">Zurück</button>'+ico(R_ICON[id],"xl")+'<h1 id="r-title">'+esc(x.name)+'</h1><div class="meta"><span class="pill green">'+esc(x.time)+'</span><span class="pill green">'+esc(x.por)+'</span></div>'+nutRow(id)+
     '<div class="stack"><div class="card"><span class="label">Zutaten</span><ul class="ing">'+x.ing.map(function(i){return "<li>"+esc(i)+"</li>";}).join("")+'</ul></div>'+
     '<div class="card"><span class="label">So geht\'s</span><ol class="steps">'+x.steps.map(function(i){return "<li><span>"+esc(i)+"</span></li>";}).join("")+'</ol></div>'+
     '<div class="tip">'+esc(x.tip)+'</div>'+techButtons(id)+'</div>';

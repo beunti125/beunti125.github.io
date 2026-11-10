@@ -464,7 +464,7 @@ var W = {
   3:{sun:["Milchreis mit Zimt-Zucker","milchreis"], bowl:["Teriyaki-Chicken-Bowl","teriyaki"], wrap:["Chicken-Caesar-Wrap","caesar"], pasta:["Lasagne","lasagne"], fake:["Hähnchen-Rahmgeschnetzeltes + Sticky-Reis","geschnetzeltes"],
      act:{3:{key:"bolo",delta:-6,label:"6 Portionen Bolognese verbraucht"}}, extra:{3:"Heute 6 Portionen Bolognese aus dem Gefrierfach in den Kühlschrank legen."}},
   4:{sun:["Kaiserschmarrn","kaiserschmarrn"], bowl:["Honig-Sesam-Chicken mit Sticky-Reis","sesam"], wrap:["Crispy-Chicken-Wrap","crispy"], pasta:["Cajun-Chicken-Pasta","cajun"], fake:["Monats-Steak mit Pfeffer-Rahmsoße + Pommes","steak"], mi:["Rahmschnitzel aus dem Gefrierfach + Bratkartoffeln","schnitzel"],
-     act:{3:{key:"schnitzel",delta:-4,label:"4 Schnitzel verbraucht"}}},
+     act:{0:{key:"schnitzel",delta:-4,label:"4 Schnitzel verbraucht"}}},
   5:{sun:["Pfannkuchen","pfannkuchen"], bowl:["Gebratene Nudeln mit Hähnchen & Ei","gebratenenudeln"], wrap:["Burrito-Wrap mit Hack","burrito"], pasta:["Butter Chicken mit Sticky-Reis","butterchicken"], fake:["Frikadellen + Püree + Rahmsoße","frikadellen"]},
   6:{sun:["Milchreis mit Zimt-Zucker","milchreis"], bowl:["Egg Fried Rice mit Hähnchen","friedrice"], wrap:["Chicken-Caesar-Wrap","caesar"], pasta:["Käsespätzle mit Speck","spaetzle"], fake:["Knusprige Gnocchi in Spinat-Rahm","gnocchi"]}
 };
@@ -584,7 +584,9 @@ function fmtISO(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2
 function fmtShort(d){ return d.getDate()+"."+(d.getMonth()+1)+"."; }
 function addDays(d,n){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()+n); }
 function nextSunday(d){ return addDays(d, (7-d.getDay())%7); }
-function startDate(){ var s=load("start", null); if(!s){ s=fmtISO(nextSunday(today())); save("start", s); } return parseD(s); }
+function nextMonday(d){ return addDays(d, (8-d.getDay())%7); }
+function weekMon(d){ return addDays(d, -((d.getDay()+6)%7)); }
+function startDate(){ var s=load("start2", null); if(!s){ var o=load("start", null); s=fmtISO(o?nextMonday(parseD(o)):nextMonday(today())); save("start2", s); } return parseD(s); }
 function daysBetween(a,b){ return Math.round((b-a)/DAY); }
 var NW=6;
 function mod4(n){ return ((n%NW)+NW)%NW; }
@@ -594,22 +596,22 @@ function eur(n){ return n.toFixed(2).replace(".",",")+" €"; }
 
 /* ---------- Tagesplan ---------- */
 function dayPlan(r, dow){
-  // Stundenplan berücksichtigt: Mi meist frei (Kochtag), Do/Fr lange Uni-Tage bis 17 Uhr (Box + Snack), Mo/Di meist mittags zu Hause.
+  // Woche startet Montag: Mo nach der Uni mit Auto einkaufen + kochen, Mi (frei) kochen, Do/Fr lange Uni-Tage, So Bratkartoffeln.
   var w=W[r], p={breakfast:dow===0?["Brötchen mit Aufschnitt","broetchen"]:(dow===6?["Nougat Bits mit Milch","nougat"]:["Müsli mit Joghurt","oats"]), snack:"Skyr mit Honig oder 1–2 Bananen", tasks:[], cook:false, lunchLabel:"Mittags"};
   var bk = w.mi||["Bratkartoffeln + Speck, Spiegeleier & Bohnen","bratkartoffeln"];
-  if(dow===0){ p.lunch=w.sun||["Kaiserschmarrn","kaiserschmarrn"]; p.dinner=w.bowl; p.cook=true;
-    p.tasks=["Kochen: "+w.bowl[0]+" – 4 Portionen (heute Abend, Mo mittags + abends, Di mittags).","1,5 kg Kartoffeln mit Schale 20 Min. vorkochen, kalt stellen (für Mittwoch)."]; }
-  if(dow===1){ p.lunch=w.bowl; p.dinner=w.bowl; p.tasks=["Kein Kochen heute – nur aufwärmen. Falls du mittags noch in der Uni bist: Box mitnehmen."]; }
-  if(dow===2){ p.lunch=w.bowl; p.dinner=w.wrap; p.cook=true;
-    p.tasks=["Kochen: "+w.wrap[0]+" – 4 Portionen (heute Abend, Do + Fr Uni-Box, 1 Reserve für einen langen Uni-Tag)."]; if(w.extra&&w.extra[3]) p.tasks.push(w.extra[3]); }
-  if(dow===3){ p.lunch=bk; p.dinner=w.pasta; p.cook=true;
-    p.tasks=[w.mi?"Mittags: Schnitzel gefroren in den Ofen (200 °C, 15 Min.), Bratkartoffeln dazu, Rahmsoße frisch.":"Mittags: Bratkartoffeln frisch braten – 12 Min.","Kochen: "+w.pasta[0]+(r===1?" – 4 Portionen essen, 8 einfrieren.":" – 4 Portionen (heute, Do + Fr abends, Sa mittags).")]; }
+  if(dow===1){ p.lunch=["Brötchen mit Aufschnitt","broetchen"]; p.dinner=w.bowl; p.cook=true; p.shop=true;
+    p.tasks=["Nach der Uni mit dem Auto einkaufen – Einkaufsliste Woche "+r+" ist offen.","Fleisch für Samstag (Fakeaway) direkt einfrieren.","Kochen: "+w.bowl[0]+" – 4 Portionen (heute Abend, Di mittags + abends, Mi mittags)."]; }
+  if(dow===2){ p.lunch=w.bowl; p.dinner=w.bowl; p.tasks=["Kein Kochen heute – nur aufwärmen. Falls du mittags länger in der Uni bist: Box mitnehmen."]; if(w.extra&&w.extra[3]) p.tasks.push(w.extra[3]); }
+  if(dow===3){ p.lunch=w.bowl; p.dinner=w.pasta; p.cook=true;
+    p.tasks=["Freier Tag = großer Kochtag.","Kochen: "+w.wrap[0]+" – 4 Portionen (Do + Fr Uni-Box, Fr Snack, 1 Reserve).","Kochen: "+w.pasta[0]+(r===1?" – 4 Portionen essen, 8 einfrieren.":" – 4 Portionen (heute, Do + Fr abends, Sa mittags).")]; }
   if(dow===4){ p.lunch=w.wrap; p.lunchLabel="Mittags · Uni-Box"; p.dinner=w.pasta; p.snack="Langer Uni-Tag? Brötchen mit Aufschnitt oder Skyr einpacken";
     p.tasks=["Uni-Box einpacken. Abends nur aufwärmen – kein Kochen nach einem langen Tag."]; }
-  if(dow===5){ p.lunch=w.wrap; p.lunchLabel="Mittags · Uni-Box"; p.dinner=w.pasta; p.snack="Langer Uni-Tag? Reserve-Portion oder Brötchen einpacken";
-    p.tasks=["Uni-Box + Snack einpacken. Abends nur aufwärmen."]; }
+  if(dow===5){ p.lunch=w.wrap; p.lunchLabel="Mittags · Uni-Box"; p.dinner=w.pasta; p.snack="Reserve-Wrap oder Brötchen einpacken – du bist bis 17 Uhr in der Uni";
+    p.tasks=["Uni-Box + Snack einpacken. Abends nur aufwärmen.","Abends: Fleisch für morgen aus dem Gefrierfach in den Kühlschrank legen."]; }
   if(dow===6){ p.lunch=w.pasta; p.dinner=w.fake; p.fake=true;
-    p.tasks=["Fakeaway-Abend: frisch machen.","Einkaufen für morgen – Liste der nächsten Woche ist schon offen."]; if(r===5) p.tasks.push("Reis für morgen (Fried Rice) heute schon kochen und kalt stellen."); }
+    p.tasks=["Fakeaway-Abend: frisch machen."]; }
+  if(dow===0){ p.lunch=w.sun||["Kaiserschmarrn","kaiserschmarrn"]; p.dinner=bk;
+    p.tasks=[w.mi?"Abends: Schnitzel gefroren in den Ofen (200 °C, 15 Min.), Bratkartoffeln dazu, Rahmsoße frisch.":"Vormittags Kartoffeln mit Schale kochen und auskühlen lassen, abends Bratkartoffeln braten (12 Min.).","Einkaufsliste für morgen checken – was fehlt noch?"]; if(r===5) p.tasks.push("Reis für morgen (Fried Rice) heute schon kochen und kalt stellen."); }
   p.act = w.act && w.act[dow] ? w.act[dow] : null;
   return p;
 }
@@ -638,24 +640,25 @@ function renderHeute(){
   var pre = t < s;
   var d = selDay || (pre ? s : t);
   var abs = absWeek(d), r = rot(abs), dow = d.getDay();
-  var weekStart = addDays(d, -dow);
+  var weekStart = weekMon(d);
   var html = '<div class="head"><h3>Woche '+r+' von '+NW+' · '+fmtShort(weekStart)+'–'+fmtShort(addDays(weekStart,6))+'</h3><h1>'+(daysBetween(t,d)===0?"Heute":DOW_LONG[dow]+", "+fmtShort(d))+'</h1></div>';
   if(pre){
     var n=daysBetween(t,s);
-    html += '<div class="banner"><strong>Dein Plan startet am Sonntag, '+fmtShort(s)+' – in '+n+' '+(n===1?"Tag":"Tagen")+'.</strong><span>Vorher einmal den Grundvorrat (Gewürze, Öl, Mehl, Soßen) und den Einkauf für Woche 1 erledigen.</span><button class="btn small" data-go="einkauf">Einkaufsliste Woche 1</button></div><div style="height:12px"></div>';
+    html += '<div class="banner"><strong>Dein Plan startet am Montag, '+fmtShort(s)+' – in '+n+' '+(n===1?"Tag":"Tagen")+'.</strong><span>Vorher einmal den Grundvorrat (Gewürze, Öl, Mehl, Soßen) und den Einkauf für Woche 1 erledigen.</span><button class="btn small" data-go="einkauf">Einkaufsliste Woche 1</button></div><div style="height:12px"></div>';
   }
   html += '<div class="row" style="margin-bottom:6px"><button class="btn ghost small" data-shift="-7" aria-label="Vorherige Woche">‹ Woche</button>'+(selDay?'<button class="link" data-shift="0">Zu heute</button>':'')+'<button class="btn ghost small" data-shift="7" aria-label="Nächste Woche">Woche ›</button></div>';
   html += '<div class="days" role="group" aria-label="Tag wählen">';
   for(var i=0;i<7;i++){
-    var dd=addDays(weekStart,i), cls="day";
-    if(i===0||i===2||i===3) cls+=" cookday";
+    var dd=addDays(weekStart,i), wd=dd.getDay(), ck=(wd===1||wd===3), cls="day";
+    if(ck) cls+=" cookday";
     if(daysBetween(t,dd)===0) cls+=" today";
     if(daysBetween(d,dd)===0) cls+=" sel";
-    html += '<button class="'+cls+'" data-day="'+fmtISO(dd)+'" aria-label="'+DOW_LONG[i]+' '+fmtShort(dd)+'"><span>'+DOW[i]+'</span><b>'+dd.getDate()+'</b>'+((i===0||i===2||i===3)?'<span class="dot" aria-hidden="true"></span>':'<span style="height:6px"></span>')+'</button>';
+    html += '<button class="'+cls+'" data-day="'+fmtISO(dd)+'" aria-label="'+DOW_LONG[wd]+' '+fmtShort(dd)+'"><span>'+DOW[wd]+'</span><b>'+dd.getDate()+'</b>'+(ck?'<span class="dot" aria-hidden="true"></span>':'<span style="height:6px"></span>')+'</button>';
   }
   html += '</div>';
   var p = dayPlan(r, dow);
   html += '<div class="stack">';
+  if(p.shop) html += '<button class="banner" data-go="einkauf" style="border:0;text-align:left;width:100%"><strong>Heute: Großeinkauf mit dem Auto</strong><span>Nach der Uni – tippe hier für die Einkaufsliste Woche '+r+'.</span></button>';
   html += mealCard("Frühstück", p.breakfast);
   html += mealCard(p.lunchLabel, p.lunch);
   html += '<div class="card"><span class="label">Snack</span><span>'+esc(p.snack)+'</span></div>';
@@ -679,11 +682,11 @@ function renderHeute(){
 var listRot = null;
 function shopAbs(r){
   var t=today(), s=startDate(), cur = t<s ? 0 : absWeek(t);
-  if(t>=s && t.getDay()===6) cur += 1; // samstags: Einkauf für die nächste Woche
+  if(t>=s && t.getDay()===0) cur += 1; // sonntags: Liste für den Montags-Einkauf
   for(var k=0;k<NW;k++){ if(rot(cur+k)===r) return cur+k; }
   return cur;
 }
-function defaultRot(){ var t=today(), s=startDate(); if(t<s) return 1; return rot(absWeek(t) + (t.getDay()===6?1:0)); }
+function defaultRot(){ var t=today(), s=startDate(); if(t<s) return 1; return rot(absWeek(t) + (t.getDay()===0?1:0)); }
 
 function renderEinkauf(){
   var r = listRot || defaultRot(), abs = shopAbs(r), key="chk:"+abs, chk=load(key,{});
@@ -692,7 +695,7 @@ function renderEinkauf(){
   items.forEach(function(it,i){ total+=it[2]; if(chk[i]) doneN++; else open+=it[2]; });
   var wkStart = addDays(startDate(), abs*7);
   var el=document.getElementById("v-einkauf");
-  var html='<div class="head"><h3>Einkauf für die Woche ab So, '+fmtShort(wkStart)+'</h3><h1>Einkaufsliste</h1></div>';
+  var html='<div class="head"><h3>Einkauf am Mo, '+fmtShort(wkStart)+'</h3><h1>Einkaufsliste</h1></div>';
   html+='<div class="seg" role="group" aria-label="Woche wählen">';
   for(var w=1;w<=NW;w++) html+='<button data-wk="'+w+'" aria-pressed="'+(w===r)+'">Woche '+w+'</button>';
   html+='</div>';
@@ -728,7 +731,7 @@ function renderVorrat(){
   html+='<div class="card"><div class="stock"><span style="display:flex;flex-direction:column"><span class="dish">Bolognese</span><span class="note">Portionen</span></span><span class="ctr"><button data-st="bolo" data-d="-1" aria-label="Bolognese minus 1">−</button><output>'+bolo+'</output><button data-st="bolo" data-d="1" aria-label="Bolognese plus 1">+</button></span></div></div>';
   html+='<div class="card"><div class="stock"><span style="display:flex;flex-direction:column"><span class="dish">Hähnchenschnitzel</span><span class="note">Stück</span></span><span class="ctr"><button data-st="schnitzel" data-d="-1" aria-label="Schnitzel minus 1">−</button><output>'+sch+'</output><button data-st="schnitzel" data-d="1" aria-label="Schnitzel plus 1">+</button></span></div></div>';
   html+='<p class="note">Regel: Mindestens 1 Portion Bolognese sollte immer im Gefrierfach liegen. Das ist dein Ersatz fürs Bestellen.</p>';
-  html+='<div class="card"><span class="label">Plan-Start (ein Sonntag)</span><label for="startin" class="note">Woche 1 beginnt an diesem Sonntag. Danach läuft die Rotation automatisch weiter.</label><input type="date" id="startin" value="'+fmtISO(s)+'"></div>';
+  html+='<div class="card"><span class="label">Plan-Start (ein Montag)</span><label for="startin" class="note">Woche 1 beginnt an diesem Montag. Danach läuft die Rotation automatisch weiter.</label><input type="date" id="startin" value="'+fmtISO(s)+'"></div>';
   html+='<div class="card"><span class="label">Auf dem Handy wie eine App</span><span class="note">iPhone (Safari): Teilen-Symbol → „Zum Home-Bildschirm“. Android (Chrome): Menü (⋮) → „App installieren“. Danach funktioniert alles auch offline.</span></div>';
   el.innerHTML=html+'</div>';
 }
@@ -912,7 +915,7 @@ document.addEventListener("click", function(e){
 });
 document.addEventListener("change", function(e){
   if(e.target.id==="startin" && e.target.value){
-    var d=parseD(e.target.value); d=addDays(d,-d.getDay()); save("start", fmtISO(d)); selDay=null; listRot=null; renderVorrat();
+    var d=weekMon(parseD(e.target.value)); save("start2", fmtISO(d)); selDay=null; listRot=null; renderVorrat();
   }
 });
 document.addEventListener("keydown", function(e){ if(e.key==="Escape" && document.getElementById("sheet").classList.contains("open")){ closeRecipe(); location.hash=lastView||"heute"; } });

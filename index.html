@@ -255,6 +255,57 @@ nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stro
 [data-s="0"] .stk,[data-s="3"] .stk{transform:translate(150px,112px)}[data-s="1"] .stk,[data-s="2"] .stk{transform:translate(150px,104px)}
 .lid{transition:transform 1.4s,opacity 1.4s}
 .kn{transform:none}
+
+/* Startseite clean */
+#v-heute{display:none}
+#v-heute.on{display:flex;flex-direction:column;gap:14px}
+.hhead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-top:4px}
+.hsub{font-size:14px;color:var(--muted);font-weight:600}
+.hhead h1{font-size:34px}
+.wkpill{font-size:12px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 10px;white-space:nowrap}
+.strip{display:flex;align-items:center;gap:4px}
+.strip .days{flex:1;margin:0;gap:4px}
+.sarr{border:0;background:transparent;color:var(--muted);font-size:22px;width:24px;height:52px;padding:0}
+.day{border:0;background:transparent;min-height:54px;border-radius:12px}
+.day.sel{background:var(--accent);color:#fff}
+.day .dot{width:5px;height:5px;border-radius:50%;background:var(--hi)}
+.day .dot.none{background:transparent}
+.day.today:not(.sel) b{color:var(--accent)}
+.backtoday{font-size:14px;align-self:flex-start;margin-top:-6px}
+.hint{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;border:0;border-radius:14px;padding:12px 14px;background:var(--accent-soft);color:var(--ink);text-align:left;font-size:15px}
+.hint strong{color:var(--ink)}
+.hintgo{color:var(--accent);font-weight:700;white-space:nowrap}
+.meals{padding:4px 0 0;gap:0}
+.mitem + .mitem,.mitem + .mrow,.mrow + .mitem{border-top:1px solid var(--line)}
+.mrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;background:none;border:0;color:inherit;text-align:left;font:inherit}
+.acchead2{cursor:pointer}
+.acchead2:focus-visible{outline:3px solid var(--hi);outline-offset:-3px;border-radius:12px}
+.mico{flex:0 0 auto}
+.mtxt{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.mlabel{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.mname{font-weight:700;font-size:16px;line-height:1.3}
+.mmeta{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.mrow .chev{transform:rotate(135deg);transition:transform .2s}
+.mrow .chev.up{transform:rotate(-45deg)}
+.tag{display:inline-block;margin-left:6px;font-size:10px;letter-spacing:.04em;padding:2px 7px;border-radius:999px;background:var(--hi-soft);color:var(--hi);border:1px solid var(--hi);vertical-align:1px}
+.mbody{padding:0 16px 12px}
+.mbody .rbody{border-top:0;margin-top:0;padding-top:0}
+.snackline{border-top:1px solid var(--line);padding:10px 16px;font-size:14px;color:var(--muted)}
+.totals{display:flex;justify-content:space-between;gap:8px;padding:12px 16px;border-top:1px solid var(--line);background:var(--tile);border-radius:0 0 17px 17px;font-size:13px;color:var(--muted)}
+.totals b{color:var(--ink);font-family:var(--display);font-size:16px}
+.todo{gap:2px}
+.tdo{display:flex;align-items:flex-start;gap:10px;width:100%;background:none;border:0;color:inherit;text-align:left;font:inherit;font-size:15px;padding:8px 0}
+.tdo .box{flex:0 0 22px;height:22px;border-radius:7px;border:2px solid var(--muted);display:grid;place-items:center;margin-top:1px}
+.tdo[aria-pressed="true"] .box{background:var(--accent);border-color:var(--accent)}
+.tdo[aria-pressed="true"] .box::after{content:"";width:9px;height:5px;border-left:2.5px solid #fff;border-bottom:2.5px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+.tdo[aria-pressed="true"] span:last-child{color:var(--muted);text-decoration:line-through}
+.nextline{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;background:none;border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:var(--muted);font:inherit;font-size:14px;text-align:left}
+.nextline strong{color:var(--ink)}
+.quiet{align-self:center;font-size:14px;color:var(--muted);font-weight:600}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:-4px}
+.logo{width:34px;height:34px;filter:drop-shadow(0 3px 8px rgba(30,79,216,.45))}
+.bname{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:-.01em;color:var(--ink)}
+.bname b{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -664,47 +715,56 @@ function mealCard(label, meal, extraCls, pill){
   return '<div class="card acc '+(extraCls||"")+'"><button class="acchead" data-tog="'+esc(key)+'" aria-expanded="'+open+'">'+head+'</button>'+(open?recipeBody(meal[1]):'')+'</div>';
 }
 
+var LOGO='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="logo" aria-hidden="true"><defs><linearGradient id="lgbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1e4fd8"/><stop offset="1" stop-color="#0a1a3f"/></linearGradient><radialGradient id="lgglow" cx=".28" cy=".2" r=".7"><stop offset="0" stop-color="#7fb2ff" stop-opacity=".55"/><stop offset="1" stop-color="#7fb2ff" stop-opacity="0"/></radialGradient><linearGradient id="lgbowl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c9d8f2"/></linearGradient><linearGradient id="lgfood" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffc35c"/><stop offset="1" stop-color="#f08a24"/></linearGradient></defs><rect width="512" height="512" rx="116" fill="url(#lgbg)"/><rect width="512" height="512" rx="116" fill="url(#lgglow)"/><g fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" opacity=".9"><path d="M200 168c-20-26 20-40 0-66"/><path d="M256 156c-20-26 20-40 0-66"/><path d="M312 168c-20-26 20-40 0-66"/></g><ellipse cx="256" cy="402" rx="150" ry="22" fill="#000" opacity=".28"/><ellipse cx="256" cy="250" rx="152" ry="40" fill="url(#lgfood)" stroke="#0a1430" stroke-width="10"/><circle cx="210" cy="240" r="16" fill="#c9622a"/><circle cx="268" cy="232" r="14" fill="#c9622a"/><circle cx="310" cy="250" r="12" fill="#7bbf5a"/><circle cx="236" cy="258" r="9" fill="#fff4dc"/><path d="M104 250h304c0 86-68 146-152 146S104 336 104 250z" fill="url(#lgbowl)" stroke="#0a1430" stroke-width="10" stroke-linejoin="round"/><path d="M132 276c10 50 52 88 104 96" stroke="#ffffff" stroke-width="14" stroke-linecap="round" fill="none" opacity=".9"/><path d="M104 250h304" stroke="#0a1430" stroke-width="10" stroke-linecap="round"/><rect x="196" y="300" width="120" height="14" rx="7" fill="#3b82f6"/></svg>';
+function mealRow(label, meal, pill){
+  var key=label+"|"+meal[1], open=!!openCards[key], n=NUT[meal[1]];
+  var head='<span class="mico">'+ico(R_ICON[meal[1]]||"bowl","s")+'</span><span class="mtxt"><span class="mlabel">'+label+(pill||"")+'</span><span class="mname">'+esc(meal[0])+'</span></span>'+(n?'<span class="mmeta">'+n.kcal+' kcal</span>':'')+(meal[1]?'<span class="chev'+(open?' up':'')+'" aria-hidden="true"></span>':'');
+  if(!meal[1]) return '<div class="mrow">'+head+'</div>';
+  return '<div class="mitem"><button class="mrow acchead2" data-tog="'+esc(key)+'" aria-expanded="'+open+'">'+head+'</button>'+(open?'<div class="mbody">'+recipeBody(meal[1])+'</div>':'')+'</div>';
+}
 function renderHeute(){
   var t=today(), s=startDate(), el=document.getElementById("v-heute");
   var pre = t < s, preStart=addDays(s,-5);
   var d = selDay || (t < preStart ? preStart : t);
   var abs = absWeek(d), r = planRot(d), dow = d.getDay();
-  var weekStart = weekMon(d);
-  var html = '<div class="head"><h3>'+(r===0?'Startwoche':'Woche '+r+' von '+NW)+' · '+fmtShort(weekStart)+'–'+fmtShort(addDays(weekStart,6))+'</h3><h1>'+(daysBetween(t,d)===0?"Heute":DOW_LONG[dow]+", "+fmtShort(d))+'</h1></div>';
-  if(pre){
-    var n=daysBetween(t,s);
-    html += '<div class="banner"><strong>'+(t<preStart?'Morgen startet dein Kochplan – mit der Startwoche (Mi–So).':'Startwoche läuft. Ab Montag, '+fmtShort(s)+' beginnt Woche 1.')+'</strong><span>Die Startwoche kaufst du zu Fuß ein. Ab Montag dann Großeinkauf mit dem Auto.</span><button class="btn small" data-go="einkauf">Einkaufsliste Startwoche</button></div><div style="height:12px"></div>';
-  }
-  html += '<div class="row" style="margin-bottom:6px"><button class="btn ghost small" data-shift="-7" aria-label="Vorherige Woche">‹ Woche</button>'+(selDay?'<button class="link" data-shift="0">Zu heute</button>':'')+'<button class="btn ghost small" data-shift="7" aria-label="Nächste Woche">Woche ›</button></div>';
-  html += '<div class="days" role="group" aria-label="Tag wählen">';
+  var weekStart = weekMon(d), isToday=daysBetween(t,d)===0;
+  var p = dayPlan(r, dow);
+  var html = '<div class="brand">'+LOGO+'<span class="bname">Essens<b>plan</b></span></div><header class="hhead"><div><span class="hsub">'+DOW_LONG[dow]+', '+fmtShort(d)+'</span><h1>'+(isToday?"Heute":(daysBetween(t,d)===1?"Morgen":DOW_LONG[dow]))+'</h1></div><span class="wkpill">'+(r===0?'Startwoche':'Woche '+r+'/'+NW)+'</span></header>';
+  // Wochenleiste kompakt mit Pfeilen
+  html += '<div class="strip"><button class="sarr" data-shift="-7" aria-label="Vorherige Woche">‹</button><div class="days" role="group" aria-label="Tag wählen">';
   for(var i=0;i<7;i++){
     var dd=addDays(weekStart,i), wd=dd.getDay(), ck=(wd===1||wd===3), cls="day";
-    if(ck) cls+=" cookday";
-    if(daysBetween(t,dd)===0) cls+=" today";
-    if(daysBetween(d,dd)===0) cls+=" sel";
-    html += '<button class="'+cls+'" data-day="'+fmtISO(dd)+'" aria-label="'+DOW_LONG[wd]+' '+fmtShort(dd)+'"><span>'+DOW[wd]+'</span><b>'+dd.getDate()+'</b>'+(ck?'<span class="dot" aria-hidden="true"></span>':'<span style="height:6px"></span>')+'</button>';
+    if(ck) cls+=" cookday"; if(daysBetween(t,dd)===0) cls+=" today"; if(daysBetween(d,dd)===0) cls+=" sel";
+    html += '<button class="'+cls+'" data-day="'+fmtISO(dd)+'" aria-label="'+DOW_LONG[wd]+' '+fmtShort(dd)+'"><span>'+DOW[wd]+'</span><b>'+dd.getDate()+'</b><span class="dot'+(ck?'':' none')+'" aria-hidden="true"></span></button>';
   }
-  html += '</div>';
-  var p = dayPlan(r, dow);
-  html += '<div class="stack">';
-  if(p.shop) html += '<button class="banner" data-go="einkauf" style="border:0;text-align:left;width:100%"><strong>'+(p.shopFoot?'Heute: Einkauf zu Fuß (Startwoche)':'Heute: Großeinkauf mit dem Auto')+'</strong><span>'+(p.shopFoot?'Aldi oder Lidl um die Ecke – tippe hier für die Liste.':'Nach der Uni – tippe hier für die Einkaufsliste Woche '+r+'.')+'</span></button>';
-  html += mealCard("Frühstück", p.breakfast);
-  html += mealCard(p.lunchLabel, p.lunch);
-  html += '<div class="card"><span class="label">Snack</span><span>'+esc(p.snack)+'</span></div>';
-  html += mealCard("Abends", p.dinner, p.cook?"cook":"", p.cook?'<span class="pill">Kochtag</span>':(p.fake?'<span class="pill green">Fakeaway</span>':""));
+  html += '</div><button class="sarr" data-shift="7" aria-label="Nächste Woche">›</button></div>';
+  if(selDay && !isToday) html += '<button class="link backtoday" data-shift="0">← Zurück zu heute</button>';
+  // Ein Hinweis oben – nur wenn wichtig
+  var note=null;
+  if(p.shop) note=['<strong>'+(p.shopFoot?'Einkauf zu Fuß':'Großeinkauf mit dem Auto')+'</strong> · '+(p.shopFoot?'Aldi oder Lidl um die Ecke':'nach der Uni'),'Liste öffnen'];
+  else if(pre && t<preStart) note=['<strong>Morgen geht\'s los</strong> · Startwoche Mi–So','Einkaufsliste'];
+  if(note) html += '<button class="hint" data-go="einkauf"><span>'+note[0]+'</span><span class="hintgo">'+note[1]+' ›</span></button>';
+  // Mahlzeiten in einer Karte
   var tot={eur:0,kcal:0,p:0}; [p.breakfast[1],p.lunch[1],"_snack",p.dinner[1]].forEach(function(k){ var n=NUT[k]; if(n){ tot.eur+=n.eur; tot.kcal+=n.kcal; tot.p+=n.p; } });
-  html += '<div class="card daytot"><span class="label">Tag gesamt (geschätzt)</span><div class="nut"><div><b>'+tot.kcal+'</b><span>kcal</span></div><div><b>'+tot.p+' g</b><span>Eiweiß</span></div><div class="price"><b>'+eur2(tot.eur)+'</b><span>Kosten</span></div></div><span class="note">'+(tot.kcal<2700?'Unter deinem Bedarf von ca. 3.000 kcal – nimm eine größere Portion oder einen zweiten Snack.':(tot.kcal>3600?'Deutlich über ca. 3.000 kcal – an so einem Tag den Snack weglassen.':'Passt zu deinem Bedarf von ca. 3.000 kcal.'))+'</span></div>';
-  html += '<div class="card"><span class="label">To-do</span><ul class="tasks">'+p.tasks.map(function(x){return "<li>"+esc(x)+"</li>";}).join("")+'</ul>';
+  html += '<section class="card meals">';
+  html += mealRow("Frühstück", p.breakfast);
+  html += mealRow(p.lunchLabel, p.lunch);
+  html += mealRow("Abends", p.dinner, p.cook?' <span class="tag">Kochtag</span>':(p.fake?' <span class="tag">Fakeaway</span>':''));
+  html += '<div class="snackline">+ Snack: '+esc(p.snack)+'</div>';
+  html += '<div class="totals"><span><b>'+tot.kcal+'</b> kcal</span><span><b>'+tot.p+' g</b> Eiweiß</span><span><b>'+eur2(tot.eur)+'</b></span></div>';
+  html += '</section>';
+  // To-do als abhakbare Liste
+  var tk="todo:"+fmtISO(d), done=load(tk,{});
+  html += '<section class="card todo"><span class="label">To-do</span>'+p.tasks.map(function(x,i){ var on=!!done[i]; return '<button class="tdo" data-todo="'+tk+'|'+i+'" aria-pressed="'+on+'"><span class="box" aria-hidden="true"></span><span>'+esc(x)+'</span></button>'; }).join("");
   if(p.act){
-    var doneKey="act:"+abs+":"+dow, done=load(doneKey,false);
-    html += done ? '<p class="note">Erledigt: '+esc(p.act.label)+' – im Vorrat eingetragen.</p>'
-                 : '<button class="btn ghost small" data-act="'+doneKey+'" data-k="'+p.act.key+'" data-d="'+p.act.delta+'" style="align-self:flex-start;margin-top:6px">'+esc(p.act.label)+' – im Vorrat eintragen</button>';
+    var doneKey="act:"+abs+":"+dow, dn=load(doneKey,false);
+    html += dn ? '<p class="note">✓ '+esc(p.act.label)+' – im Vorrat eingetragen.</p>' : '<button class="btn ghost small" data-act="'+doneKey+'" data-k="'+p.act.key+'" data-d="'+p.act.delta+'">'+esc(p.act.label)+' – eintragen</button>';
   }
-  html += '</div>';
+  html += '</section>';
+  // Morgen als dezente Zeile
   var tm = addDays(d,1), tp = dayPlan(planRot(tm), tm.getDay());
-  html += '<button class="card tap" data-day="'+fmtISO(tm)+'" aria-label="Morgen ansehen"><div class="row"><span class="label">Morgen · '+DOW_LONG[tm.getDay()]+'</span><span class="chev" aria-hidden="true"></span></div><span><strong>Abends:</strong> '+esc(tp.dinner[0])+(tp.cook?' <span class="pill">Kochtag</span>':'')+'</span><span><strong>Mittags:</strong> '+esc(tp.lunch[0])+'</span></button>';
-  html += '<button class="btn ghost" data-r="carbonara">Keine Lust zu kochen? Notfall-Carbonara (15 Min.)</button>';
-  html += '</div>';
+  html += '<button class="nextline" data-day="'+fmtISO(tm)+'"><span>Morgen: <strong>'+esc(tp.dinner[0])+'</strong>'+(tp.cook?' · Kochtag':'')+'</span><span class="chev" aria-hidden="true"></span></button>';
+  html += '<button class="link quiet" data-r="carbonara">Keine Lust zu kochen? → Notfall-Carbonara</button>';
   el.innerHTML = html;
 }
 
@@ -933,6 +993,7 @@ document.addEventListener("click", function(e){
   if(t.dataset.tnext){ setTechStep(t.dataset.tnext,(techState[t.dataset.tnext]||0)+1); return; }
   if(t.dataset.tprev){ setTechStep(t.dataset.tprev,(techState[t.dataset.tprev]||0)-1); return; }
   if(t.dataset.tplay){ var u=t.dataset.tplay; techPaused[u]=!techPaused[u]; t.textContent=techPaused[u]?"▶":"❚❚"; setTechStep(u, techState[u]||0); return; }
+  if(t.dataset.todo){ var tp2=t.dataset.todo.split('|'), dd=load(tp2[0],{}); dd[tp2[1]]=!dd[tp2[1]]; save(tp2[0],dd); renderHeute(); return; }
   if(t.dataset.tog){ openCards[t.dataset.tog]=!openCards[t.dataset.tog]; renderHeute(); return; }
   if(t.dataset.r){ location.hash="r-"+t.dataset.r; return; }
   if(t.dataset.go){ location.hash=t.dataset.go; return; }

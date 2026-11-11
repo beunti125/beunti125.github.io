@@ -501,6 +501,47 @@ body.ob-open{overflow:hidden}
 .stleg{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);margin:2px 0 10px}
 .stleg .stp-i{color:#ffd166}
 .sttext .sti{float:left;margin-right:8px}
+#ktdock{position:fixed;left:12px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:150;display:none;flex-direction:column;gap:8px;max-width:calc(100% - 100px)}
+#ktdock.on{display:flex}
+.ktpill{display:flex;align-items:center;gap:9px;padding:5px 14px 5px 6px;border-radius:999px;border:1px solid rgba(124,196,255,.35);background:linear-gradient(135deg,rgba(18,38,84,.92),rgba(10,20,44,.92));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--ink);box-shadow:0 8px 24px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.03) inset;text-align:left;animation:ktin .35s cubic-bezier(.2,1.4,.4,1)}
+.ktpill b{font-family:var(--display);font-size:17px;font-variant-numeric:tabular-nums;letter-spacing:.02em;display:block;line-height:1.1}
+.ktpill small{display:block;font-size:11px;color:var(--muted);max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ktpill.paused b{color:var(--muted)}
+.ktpill.done{border-color:rgba(255,160,80,.7);background:linear-gradient(135deg,rgba(90,40,10,.95),rgba(40,18,6,.95));animation:ktpulse 1s ease-in-out infinite}
+.ktpill.done b{color:#ffd166}
+@keyframes ktin{from{opacity:0;transform:translateY(12px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes ktpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,140,60,.55),0 8px 24px rgba(0,0,0,.45)}50%{box-shadow:0 0 0 10px rgba(255,140,60,0),0 8px 24px rgba(0,0,0,.45)}}
+.ktring{display:block;flex:none}
+.kttrack{fill:none;stroke:rgba(255,255,255,.09)}
+.ktprog{fill:none;stroke-linecap:round;transition:stroke-dashoffset .25s linear;filter:drop-shadow(0 0 6px rgba(90,170,255,.55))}
+.ktring.done .ktprog{filter:drop-shadow(0 0 8px rgba(255,150,70,.7))}
+.kttick{stroke:rgba(255,255,255,.12);stroke-width:1.5;stroke-linecap:round}.kttick.big{stroke:rgba(255,255,255,.28);stroke-width:2}
+#ktview{position:fixed;inset:0;z-index:400;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(3,8,20,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#ktview.open{display:flex}
+.ktcard{position:relative;width:100%;max-width:360px;border-radius:28px;padding:22px 20px 18px;background:radial-gradient(120% 80% at 50% 0%,#17346f 0%,#0c1730 55%,#080f20 100%);border:1px solid rgba(124,196,255,.25);box-shadow:0 30px 80px rgba(0,0,0,.6);text-align:center;animation:ktin .35s cubic-bezier(.2,1.3,.4,1)}
+.ktcard.done{background:radial-gradient(120% 80% at 50% 0%,#6b2e0c 0%,#2a1206 60%,#140904 100%);border-color:rgba(255,160,80,.45)}
+.ktx{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:var(--ink);font-size:15px}
+.ktlab{margin:2px 40px 10px;font-weight:700;color:var(--muted);font-size:14px;letter-spacing:.02em}
+.ktbig{position:relative;width:260px;height:260px;margin:0 auto}
+.ktmid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ktmid b{font-family:var(--display);font-size:58px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1;text-shadow:0 0 24px rgba(90,170,255,.35)}
+.ktcard.done .ktmid b{font-size:46px;color:#ffd166;text-shadow:0 0 24px rgba(255,170,80,.5);animation:ktbeat 1s ease-in-out infinite}
+@keyframes ktbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.ktmid small{margin-top:6px;color:var(--muted);font-size:13px;font-weight:600}
+.ktbtns{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:16px}
+.ktb{min-width:74px;height:46px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:var(--ink);font-weight:700;font-size:14px}
+.ktb:active,.ktplay:active{transform:scale(.94)}
+.ktplay{width:74px;height:74px;border-radius:50%;border:0;display:grid;place-items:center;background:linear-gradient(180deg,#5aa2ff,#2563eb);box-shadow:0 10px 26px rgba(37,99,235,.5);color:#fff}
+.ktplay svg{width:30px;height:30px;fill:#fff}
+.ktplay.ok{width:auto;padding:0 22px;border-radius:999px;height:56px;font-weight:800;font-size:16px;background:linear-gradient(180deg,#ffb35c,#ff7a2f);box-shadow:0 10px 26px rgba(255,122,47,.45)}
+.ktcancel{margin-top:14px;border:0;background:none;color:#ff8a8a;font-weight:700;font-size:15px;padding:10px}
+.fc.ktc{display:flex;align-items:center;gap:12px;padding:10px 12px}
+.ktct{display:flex;flex-direction:column;flex:1;min-width:0}.ktct b{font-family:var(--display);font-size:24px;font-variant-numeric:tabular-nums}.ktct small{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ktcb{display:flex;flex-direction:column;gap:6px}
+.ktmini{border:1px solid rgba(124,196,255,.4);background:rgba(90,176,255,.1);color:var(--hi);border-radius:10px;padding:6px 10px;font-weight:700;font-size:12.5px}
+.ktmini.red{border-color:rgba(255,120,120,.4);background:rgba(255,90,90,.08);color:#ff8a8a}
+.ktcgone{color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion:reduce){.ktpill,.ktcard{animation:none}.ktpill.done,.ktcard.done .ktmid b{animation:none}}
 </style>
 </head>
 <body>
@@ -1030,16 +1071,16 @@ var CLOCK='<svg class="stp-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx=
 function stParse(s){ var m=/^([a-z]+)\|([^|]*)\|([^|]*)\|([\s\S]*)$/.exec(s); return m?{ic:m[1],h:m[2],m:m[3],t:m[4]}:{ic:"",h:"",m:"",t:s}; }
 function stHeat(h){ if(!h) return ""; if(h.charAt(0)==="o") return {txt:"Ofen "+h.slice(1)+" °C Umluft",cls:"oven"};
   var n=+h, w=n>=9?"volle Power":(n>=7?"hoch":(n>=5?"mittel":(n>=3?"niedrig":"ganz klein"))); return {txt:"Stufe "+n+" von 9 · "+w,cls:"h"+(n>=7?"hi":(n>=4?"mid":"lo"))}; }
-function stPills(p){
+function stPills(p,lab){
   var h=stHeat(p.h), out="";
   if(h) out+='<span class="stp '+h.cls+'">'+(h.cls==="oven"?stIcon("oven","stp-i"):FLAME)+esc(h.txt)+'</span>';
-  if(p.m) out+='<button class="stp tm" data-sttm="'+p.m+'" aria-label="Timer '+p.m+' Minuten starten">'+CLOCK+p.m+' Min. · Timer</button>';
+  if(p.m) out+='<button class="stp tm" data-sttm="'+p.m+'" data-stlab="'+esc(lab||"Timer")+'" aria-label="Timer '+p.m+' Minuten starten">'+CLOCK+p.m+' Min. · Timer</button>';
   return out?'<span class="stps">'+out+'</span>':"";
 }
-function stLi(s){ var p=stParse(s); return '<li><span class="stx">'+(p.ic?stIcon(p.ic):"")+'<span>'+esc(p.t)+stPills(p)+'</span></span></li>'; }
+function stLi(s,i,name){ var p=stParse(s); return '<li><span class="stx">'+(p.ic?stIcon(p.ic):"")+'<span>'+esc(p.t)+stPills(p,name?name+" · Schritt "+(i+1):"")+'</span></span></li>'; }
 function stText(s){ return stParse(s).t; }
 var ST_LEGEND='<p class="stleg">'+FLAME+'Herdstufen von 1 bis 9 (9 = volle Power). Hat dein Herd 1–12, nimm etwas mehr. Ofen immer vorheizen.</p>';
-document.addEventListener("click",function(e){ var b=e.target.closest&&e.target.closest("[data-sttm]"); if(!b) return; e.stopPropagation(); if(typeof fsOpen==="function"){ fsOpen(); fsAsk("Timer "+b.dataset.sttm+" Minuten"); } },true);
+document.addEventListener("click",function(e){ var b=e.target.closest&&e.target.closest("[data-sttm]"); if(!b) return; e.stopPropagation(); var id=ktStart(+b.dataset.sttm*60,b.dataset.stlab||"Timer"); ktOpen(id); },true);
 /* ---------- Profil (Fragebogen) & Plan-Generator ---------- */
 REC_TAGS.bratkartoffeln=["deftig","ei","bohnen","schwein"]; REC_TAGS.carbonara=["pasta","ei","kaese","schwein"]; REC_TAGS.steak.push("schwein");
 var PROF=load("profile",null);
@@ -1393,7 +1434,7 @@ function recipeBody(id){
   var x=R[id]; if(!x) return "";
   return '<div class="rbody"><div class="meta" style="margin:4px 0 8px"><span class="pill green">'+esc(x.time)+'</span><span class="pill green">'+esc(x.por)+'</span></div>'+nutRow(id)+
     '<span class="label">Zutaten</span><ul class="ing">'+x.ing.map(function(i){return "<li>"+esc(i)+"</li>";}).join("")+'</ul>'+
-    '<span class="label" style="margin-top:10px">So geht\'s</span>'+ST_LEGEND+'<ol class="steps">'+x.steps.map(stLi).join("")+'</ol>'+
+    '<span class="label" style="margin-top:10px">So geht\'s</span>'+ST_LEGEND+'<ol class="steps">'+x.steps.map(function(z,i){return stLi(z,i,x.name);}).join("")+'</ol>'+
     '<div class="tip" style="margin-top:12px">'+esc(x.tip)+'</div>'+techButtons(id)+'</div>';
 }
 var openCards={};
@@ -1583,7 +1624,7 @@ function openRecipe(id){
   var b=document.getElementById("sheet-body");
   b.innerHTML='<button class="back" id="close">Zurück</button>'+ico(R_ICON[id],"xl")+'<h1 id="r-title">'+esc(x.name)+'</h1><div class="meta"><span class="pill green">'+esc(x.time)+'</span><span class="pill green">'+esc(x.por)+'</span></div>'+nutRow(id)+
     '<div class="stack"><div class="card"><span class="label">Zutaten</span><ul class="ing">'+x.ing.map(function(i){return "<li>"+esc(i)+"</li>";}).join("")+'</ul></div>'+
-    '<div class="card"><span class="label">So geht\'s</span>'+ST_LEGEND+'<ol class="steps">'+x.steps.map(stLi).join("")+'</ol></div>'+
+    '<div class="card"><span class="label">So geht\'s</span>'+ST_LEGEND+'<ol class="steps">'+x.steps.map(function(z,i){return stLi(z,i,x.name);}).join("")+'</ol></div>'+
     '<div class="tip">'+esc(x.tip)+'</div>'+techButtons(id)+'</div>';
   var sh=document.getElementById("sheet"); sh.classList.add("open"); sh.scrollTop=0;
   document.getElementById("close").focus();
@@ -1811,6 +1852,8 @@ function fsShop(){ var r=(listRot!==null?listRot:defaultRot()), items=BASE.conca
   items.forEach(function(it,i){ if(chk[i]) done++; else { open.push(it); sum+=it[2]; } }); return {r:r,items:items,open:open,sum:sum,done:done}; }
 function fsAnswer(raw){
   var t=fsNorm(raw), d, p, r;
+  if(fsHas(t,[" timer"," wecker "])&&fsHas(t,[" aus "," stopp"," stop "," abbrechen "," beenden "," löschen "," weg "])){ var lt=KT.list[KT.list.length-1]; if(!lt) return {text:"Es läuft gerade kein Timer."}; if(fsHas(t,[" alle "])) KT.list.slice().forEach(function(x){ktCancel(x.id);}); else ktCancel(lt.id); return {text:"Erledigt – Timer abgebrochen.", quick:fs.cook?["Weiter","Zutaten"]:["Was koche ich heute?"]}; }
+  if(fsHas(t,[" timer pause "," pausier"])&&KT.list.length){ ktToggle(KT.list[KT.list.length-1].id); return {text:"Timer pausiert – sag „weiter“ oder tipp unten links drauf."}; }
   if(fs.cook){
     var rc=R[fs.cook.id];
     if(fsHas(t,[" stopp "," stop "," fertig "," beenden "," abbrechen "])){ fs.cook=null; return {text:"Kochmodus beendet. Guten Appetit! 😋".replace(" 😋",""), quick:["Was gibt's morgen?","Einkaufsliste"]}; }
@@ -1821,7 +1864,7 @@ function fsAnswer(raw){
   var m=t.match(/(\d+|[a-zäöüß]+)\s*(min|minute|minuten|sekunde|sekunden)\b/);
   if(fsHas(t,[" timer "," wecker "," stell "," erinner"]) && m){
     var n=parseInt(m[1],10); if(isNaN(n)) n=FS_NUM[m[1]]||0;
-    if(n>0){ var sec=/sek/.test(m[2])?n:n*60; var id=fsTimer(sec); return {text:"Timer läuft – ich melde mich hier. Lass die App dafür offen.", card:{type:"timer",id:id}, quick:fs.cook?["Weiter","Stopp"]:["Was koche ich heute?"]}; }
+    if(n>0){ var sec=/sek/.test(m[2])?n:n*60; var id=fsTimer(sec); return {text:"Timer läuft – du siehst ihn unten links. Antippen zum Pausieren, Verlängern oder Abbrechen.", card:{type:"timer",id:id}, quick:fs.cook?["Weiter","Stopp"]:["Was koche ich heute?"]}; }
   }
   if(fsHas(t,[" hallo "," hi "," hey "," servus "," moin "," guten tag "," guten abend "]) && t.split(" ").length<6) return {text:"Moin "+pName()+"! Was darf's sein?", quick:["Was koche ich heute?","Was muss ich einkaufen?","Erzähl einen Witz"]};
   if(fsHas(t,[" wer bist du "," wie heißt du "," was kannst du "," hilfe "])) return {text:"Ich bin Friedrich Scherz – halb Koch, halb Comedian. Ich kenne deinen Plan, deine Einkaufsliste und dein Gefrierfach, führe dich Schritt für Schritt durch Rezepte und stelle Timer.", quick:["Was koche ich heute?",(ISY||recOk("bratkartoffeln")?"Bratkartoffeln kochen":"Zeig mir die Woche"),"Timer 10 Minuten"]};
@@ -1870,11 +1913,7 @@ function fsAnswer(raw){
   }
   return {text:"Das hab ich nicht ganz verstanden. Probier's mal hiermit:", quick:["Was koche ich heute?","Ich hab Bock auf was anderes","Was muss ich einkaufen?",(ISY||recOk("bratkartoffeln")?"Bratkartoffeln kochen":"Zeig mir die Woche"),"Timer 10 Minuten","Was ist im Gefrierfach?"]};
 }
-function fsTimer(sec){
-  var id="t"+(++fs.tid); fs.timers[id]={end:Date.now()+sec*1000,sec:sec,done:false};
-  setTimeout(function(){ var tm=fs.timers[id]; if(!tm||tm.done) return; tm.done=true; fsPush({who:"fs",text:"⏰ Dein Timer ("+fmtDur(sec)+") ist abgelaufen!"}); try{ navigator.vibrate&&navigator.vibrate([300,150,300,150,600]); }catch(e){} }, sec*1000);
-  return id;
-}
+function fsTimer(sec){ return ktStart(sec, fs.cook&&R[fs.cook.id]?R[fs.cook.id].name+" · Schritt "+(fs.cook.step+1):"Timer"); }
 function fmtDur(s){ s=Math.max(0,Math.round(s)); var m=Math.floor(s/60), r=s%60; return m+":"+(r<10?"0":"")+r; }
 setInterval(function(){ document.querySelectorAll("[data-timer]").forEach(function(el){ var tm=fs.timers[el.getAttribute("data-timer")]; if(!tm) return; var left=(tm.end-Date.now())/1000; el.querySelector(".tmnum").textContent=tm.done?"Fertig!":fmtDur(left); var bar=el.querySelector(".tmbar i"); if(bar) bar.style.width=Math.min(100,100*(1-left/tm.sec))+"%"; el.classList.toggle("over",tm.done); }); }, 500);
 function fsCard(c){
@@ -1886,10 +1925,10 @@ function fsCard(c){
     var rows2=(c.top||[]).map(function(y){ var x=(bc2[y[0]]||[]).filter(function(z){return z.key===y[1];})[0]; if(!x) return ""; var ln=bockLine(x,y[0]); return '<button class="fcrow" data-bockpick="'+[c.day,c.sl,y[0],y[1],y[2],y[3]].join("|")+'">'+ico(R_ICON[y[1]]||"bowl","s")+'<span class="fct"><b>'+esc(x.m[0])+' · '+ln[1]+'</b><small>'+esc(ln[0])+'</small></span></button>'; }).join("");
     return '<div class="fc"><div class="fchead">'+DOW_LONG[bd2.getDay()]+', '+(c.sl==="l"?"mittags":"abends")+'</div>'+rows2+'<button class="fcrow" data-bockopen="'+c.day+'|'+c.sl+'"><span class="fct"><b>Alle Optionen ansehen ›</b></span></button></div>'; }
   if(c.type==="recipe"){ var x=R[c.id], n=NUT[c.id]; return '<div class="fc"><div class="fcrec">'+ico(R_ICON[c.id]||"bowl")+'<span class="fct"><b>'+esc(x.name)+'</b><small>'+esc(x.time)+' · '+esc(x.por)+'</small></span></div>'+(n?'<div class="fcstats"><span><b>'+n.kcal+'</b>kcal</span><span><b>'+n.p+' g</b>Eiweiß</span><span><b>'+eur2(n.eur)+'</b>Portion</span></div>':'')+'<div class="fcbtns"><button class="fcb pri" data-fsq="'+esc(x.name.split(" ")[0])+' kochen">Kochmodus starten</button><button class="fcb" data-r="'+c.id+'">Rezept ansehen</button></div></div>'; }
-  if(c.type==="step"){ if(!fs.cook) return ""; var rc=R[fs.cook.id], st=fs.cook.step, tot=rc.steps.length; return '<div class="fc step"><div class="fchead">'+esc(rc.name)+'<span class="fcsn">Schritt '+(st+1)+' / '+tot+'</span></div><div class="stbar"><i style="width:'+((st+1)/tot*100)+'%"></i></div><p class="sttext">'+(function(p){return (p.ic?stIcon(p.ic):"")+esc(p.t)+stPills(p);})(stParse(rc.steps[st]))+'</p><div class="fcbtns"><button class="fcb" data-fsq="Zurück"'+(st===0?' disabled':'')+'>‹ Zurück</button><button class="fcb pri" data-fsq="Weiter">'+(st===tot-1?'Fertig ✓':'Weiter ›')+'</button></div></div>'; }
+  if(c.type==="step"){ if(!fs.cook) return ""; var rc=R[fs.cook.id], st=fs.cook.step, tot=rc.steps.length; return '<div class="fc step"><div class="fchead">'+esc(rc.name)+'<span class="fcsn">Schritt '+(st+1)+' / '+tot+'</span></div><div class="stbar"><i style="width:'+((st+1)/tot*100)+'%"></i></div><p class="sttext">'+(function(p){return (p.ic?stIcon(p.ic):"")+esc(p.t)+stPills(p,rc.name+" · Schritt "+(st+1));})(stParse(rc.steps[st]))+'</p><div class="fcbtns"><button class="fcb" data-fsq="Zurück"'+(st===0?' disabled':'')+'>‹ Zurück</button><button class="fcb pri" data-fsq="Weiter">'+(st===tot-1?'Fertig ✓':'Weiter ›')+'</button></div></div>'; }
   if(c.type==="ing"){ var y=R[c.id]; return '<div class="fc"><ul class="fcing">'+y.ing.map(function(i){return '<li>'+esc(i)+'</li>';}).join("")+'</ul></div>'; }
   if(c.type==="done") return '<div class="fc done"><span class="big">✓</span><b>'+esc(c.name)+'</b><small>Fertig gekocht – guten Appetit!</small></div>';
-  if(c.type==="timer"){ var tm=fs.timers[c.id]; return '<div class="fc timer" data-timer="'+c.id+'"><span class="tmnum">'+fmtDur(tm?tm.sec:0)+'</span><div class="tmbar"><i></i></div></div>'; }
+  if(c.type==="timer"){ return '<div class="fc ktc" data-ktcard="'+c.id+'">'+ktCardInner(ktGet(c.id))+'</div>'; }
   if(c.type==="freezer"){ var b=load("stock:bolo",0), s2=load("stock:schnitzel",0); return '<div class="fc"><div class="fcstats"><span>'+ico("pasta","s")+'<b>'+b+'</b>Bolognese</span><span>'+ico("schnitzel","s")+'<b>'+s2+'</b>Schnitzel</span></div>'+(b===0?'<div class="fcnote">Keine Bolognese mehr – die nächste Ladung kommt in Woche 1.</div>':'')+'</div>'; }
   if(c.type==="daytot"){ var dd=parseD(c.day), pp=planFor(dd), tt={k:0,p:0,e:0}; [pp.breakfast[1],pp.lunch[1],"_snack",pp.dinner[1]].forEach(function(k){var z=NUT[k]; if(z){tt.k+=z.kcal; tt.p+=z.p; tt.e+=z.eur;}}); return '<div class="fc"><div class="fcstats"><span><b>'+tt.k+'</b>kcal</span><span><b>'+tt.p+' g</b>Eiweiß</span><span><b>'+eur2(tt.e)+'</b>Kosten</span></div><div class="fcnote">'+(tt.k<kcalTarget()*0.9?'Etwas knapp – nimm eine größere Portion oder einen zweiten Snack.':'Passt zu deinen rund '+kcalTarget().toLocaleString("de-DE")+' kcal.')+'</div></div>'; }
   if(c.type==="shop"){ var sh=fsShop(); var pct=Math.round(sh.done/sh.items.length*100); return '<div class="fc"><div class="fchead">'+(sh.r===0?'Startwoche':'Woche '+sh.r)+'<span class="fcsn">'+sh.done+'/'+sh.items.length+' erledigt</span></div><div class="stbar"><i style="width:'+pct+'%"></i></div>'+(sh.open.length?'<div class="fcchips">'+sh.open.slice(0,10).map(function(it){return '<span>'+ico(itemIcon(it[0]),"xs")+esc(it[0])+'</span>';}).join("")+(sh.open.length>10?'<span>+'+(sh.open.length-10)+' weitere</span>':'')+'</div><div class="fcnote">Noch offen: ca. '+eur2(sh.sum)+'</div>':'')+'<div class="fcbtns"><button class="fcb pri" data-go="einkauf">Liste öffnen</button></div></div>'; }
@@ -1955,6 +1994,89 @@ function fsMount(){
   document.getElementById("fsform").addEventListener("submit", function(e){ e.preventDefault(); var i=document.getElementById("fsinput"); var v=i.value; i.value=""; fsAsk(v); });
 }
 fsMount();
+/* ---------- Küchentimer: Ring, Pause, ±1 Min, Abbrechen, Alarm ---------- */
+var KT={list:load("ktimers",[]), view:null, ac:null, ring:{}};
+function ktSave(){ save("ktimers", KT.list.filter(function(t){ return !t.gone; })); }
+function ktLeft(t){ return t.paused?t.left:Math.max(0,(t.end-Date.now())/1000); }
+function ktGet(id){ return KT.list.filter(function(t){return t.id===id;})[0]; }
+function ktAudio(){ try{ if(!KT.ac) KT.ac=new (window.AudioContext||window.webkitAudioContext)(); if(KT.ac.state==="suspended") KT.ac.resume(); }catch(e){} }
+function ktBeep(){ try{ ktAudio(); var ac=KT.ac, t0=ac.currentTime;
+  [0,0.18,0.36,0.75,0.93,1.11].forEach(function(o,i){ var g=ac.createGain(), os=ac.createOscillator(); os.type="sine"; os.frequency.value=i%3===2?1320:988;
+    g.gain.setValueAtTime(0.0001,t0+o); g.gain.exponentialRampToValueAtTime(0.35,t0+o+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t0+o+0.15);
+    os.connect(g); g.connect(ac.destination); os.start(t0+o); os.stop(t0+o+0.17); }); }catch(e){} }
+function ktStart(sec,label){
+  ktAudio();
+  var t={id:"k"+Date.now().toString(36)+Math.floor(Math.random()*1e4),label:label||"Timer",sec:sec,end:Date.now()+sec*1000,paused:false,left:sec,done:false,ack:false};
+  KT.list.push(t); ktSave(); ktRender(); return t.id;
+}
+function ktCancel(id){ KT.list=KT.list.filter(function(t){return t.id!==id;}); ktSave(); if(KT.view===id) ktClose(); ktRender(); }
+function ktToggle(id){ var t=ktGet(id); if(!t||t.done) return; if(t.paused){ t.end=Date.now()+t.left*1000; t.paused=false; } else { t.left=ktLeft(t); t.paused=true; } ktSave(); ktRender(); }
+function ktAdd(id,s){ var t=ktGet(id); if(!t) return; if(t.done){ t.done=false; t.ack=false; t.end=Date.now()+s*1000; t.sec=s; t.paused=false; }
+  else if(t.paused){ t.left=Math.max(5,t.left+s); t.sec=Math.max(t.sec,t.left); } else { t.end=Math.max(Date.now()+5000,t.end+s*1000); t.sec=Math.max(t.sec,ktLeft(t)); } ktSave(); ktRender(); }
+function ktAck(id){ var t=ktGet(id); if(t){ t.ack=true; } ktCancel(id); }
+function ktRing(size,stroke,pct,cls){
+  var r=(size-stroke)/2, c=2*Math.PI*r, off=c*(1-pct), ticks="";
+  if(size>100) for(var i=0;i<60;i++){ var a=i/60*2*Math.PI, r1=r-stroke/2-6, r2=r1-(i%5===0?9:4), cx=size/2, cy=size/2;
+    ticks+='<line x1="'+(cx+r1*Math.sin(a)).toFixed(1)+'" y1="'+(cy-r1*Math.cos(a)).toFixed(1)+'" x2="'+(cx+r2*Math.sin(a)).toFixed(1)+'" y2="'+(cy-r2*Math.cos(a)).toFixed(1)+'" class="kttick'+(i%5===0?' big':'')+'"/>'; }
+  return '<svg class="ktring '+(cls||"")+'" viewBox="0 0 '+size+' '+size+'" width="'+size+'" height="'+size+'" aria-hidden="true"><defs><linearGradient id="ktg'+size+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cc4ff"/><stop offset="1" stop-color="#2563eb"/></linearGradient><linearGradient id="ktd'+size+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#ff7a45"/></linearGradient></defs>'+ticks+
+    '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" class="kttrack" stroke-width="'+stroke+'"/>'+
+    '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" class="ktprog" stroke-width="'+stroke+'" stroke="url(#'+(cls==="done"?"ktd":"ktg")+size+')" stroke-dasharray="'+c.toFixed(2)+'" stroke-dashoffset="'+off.toFixed(2)+'" transform="rotate(-90 '+size/2+' '+size/2+')"/></svg>';
+}
+function ktFmt(s){ s=Math.ceil(s); var h=Math.floor(s/3600), m=Math.floor(s%3600/60), r=s%60; return (h?h+":"+(m<10?"0":""):"")+m+":"+(r<10?"0":"")+r; }
+function ktRender(){
+  var dock=document.getElementById("ktdock"); if(!dock){ dock=document.createElement("div"); dock.id="ktdock"; document.body.appendChild(dock); }
+  var live=KT.list;
+  dock.innerHTML=live.map(function(t){ var l=ktLeft(t), pct=t.done?1:1-l/t.sec;
+    return '<button class="ktpill'+(t.done?' done':'')+(t.paused?' paused':'')+'" data-ktopen="'+t.id+'" aria-label="Timer '+esc(t.label)+'">'+ktRing(34,4,pct,t.done?"done":"")+'<span class="ktpt"><b data-ktnum="'+t.id+'">'+(t.done?"Fertig!":ktFmt(l))+'</b><small>'+esc(t.label)+'</small></span></button>'; }).join("");
+  dock.classList.toggle("on",live.length>0);
+  if(KT.view) ktViewRender();
+  document.querySelectorAll("[data-ktcard]").forEach(function(el){ var t=ktGet(el.getAttribute("data-ktcard")); el.innerHTML=ktCardInner(t); });
+}
+function ktCardInner(t){
+  if(!t) return '<span class="ktcgone">Timer beendet</span>';
+  var l=ktLeft(t);
+  return ktRing(54,5,t.done?1:1-l/t.sec,t.done?"done":"")+'<span class="ktct"><b data-ktnum="'+t.id+'">'+(t.done?"Fertig!":ktFmt(l))+'</b><small>'+esc(t.label)+(t.paused?' · pausiert':'')+'</small></span><span class="ktcb"><button class="ktmini" data-ktopen="'+t.id+'">Öffnen</button><button class="ktmini red" data-ktcancel="'+t.id+'">Abbrechen</button></span>';
+}
+function ktOpen(id){ KT.view=id; var v=document.getElementById("ktview"); if(!v){ v=document.createElement("div"); v.id="ktview"; v.setAttribute("role","dialog"); v.setAttribute("aria-modal","true"); v.setAttribute("aria-label","Küchentimer"); document.body.appendChild(v); }
+  v.classList.add("open"); ktViewRender(); }
+function ktClose(){ KT.view=null; var v=document.getElementById("ktview"); if(v) v.classList.remove("open"); }
+function ktViewRender(){
+  var v=document.getElementById("ktview"), t=ktGet(KT.view); if(!v) return; if(!t){ ktClose(); return; }
+  var l=ktLeft(t), pct=t.done?1:1-l/t.sec;
+  v.innerHTML='<div class="ktcard'+(t.done?' done':'')+'"><button class="ktx" data-ktclose="1" aria-label="Schließen (Timer läuft weiter)">✕</button>'+
+    '<p class="ktlab">'+esc(t.label)+'</p><div class="ktbig">'+ktRing(260,14,pct,t.done?"done":"")+'<div class="ktmid"><b data-ktnum="'+t.id+'">'+(t.done?"Fertig!":ktFmt(l))+'</b><small>'+(t.done?"Zeit ist um":(t.paused?"Pausiert":"von "+ktFmt(t.sec)))+'</small></div></div>'+
+    (t.done?'<div class="ktbtns"><button class="ktb" data-ktadd="'+t.id+'|60">+1 Min.</button><button class="ktplay ok" data-ktack="'+t.id+'" aria-label="Alarm aus">Alarm aus</button><button class="ktb" data-ktadd="'+t.id+'|300">+5 Min.</button></div>'
+     :'<div class="ktbtns"><button class="ktb" data-ktadd="'+t.id+'|-60" aria-label="1 Minute weniger">−1 Min.</button><button class="ktplay" data-kttoggle="'+t.id+'" aria-label="'+(t.paused?'Weiter':'Pause')+'">'+(t.paused?'<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>':'<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>')+'</button><button class="ktb" data-ktadd="'+t.id+'|60" aria-label="1 Minute mehr">+1 Min.</button></div>'+
+      '<button class="ktcancel" data-ktcancel="'+t.id+'">Timer abbrechen</button>')+'</div>';
+}
+setInterval(function(){
+  var ch=false;
+  KT.list.forEach(function(t){
+    if(!t.done&&!t.paused&&ktLeft(t)<=0){ t.done=true; ch=true; t.ring=0;
+      try{ navigator.vibrate&&navigator.vibrate([400,150,400,150,800]); }catch(e){}
+      ktBeep(); if(typeof fsPush==="function") fsPush({who:"fs",text:"⏰ "+t.label+": Zeit ist um!"}); if(!KT.view) ktOpen(t.id); }
+    if(t.done&&!t.ack){ t.ring=(t.ring||0)+1; if(t.ring%8===0&&t.ring<=96) ktBeep(); }
+    document.querySelectorAll('[data-ktnum="'+t.id+'"]').forEach(function(el){ el.textContent=t.done?"Fertig!":ktFmt(ktLeft(t)); });
+    var pct=t.done?1:1-ktLeft(t)/t.sec;
+    document.querySelectorAll('[data-ktopen="'+t.id+'"] .ktprog, [data-ktcard="'+t.id+'"] .ktprog').forEach(function(c){ var d=+c.getAttribute("stroke-dasharray"); c.setAttribute("stroke-dashoffset",(d*(1-pct)).toFixed(2)); });
+  });
+  if(KT.view){ var tv=ktGet(KT.view), c=document.querySelector("#ktview .ktprog"); if(tv&&c){ var d=+c.getAttribute("stroke-dasharray"); c.setAttribute("stroke-dashoffset",(d*(1-(tv.done?1:1-ktLeft(tv)/tv.sec))).toFixed(2)); } }
+  if(ch){ ktSave(); ktRender(); }
+},250);
+document.addEventListener("click",function(e){
+  var b=e.target.closest&&e.target.closest("[data-ktopen],[data-ktcancel],[data-kttoggle],[data-ktadd],[data-ktack],[data-ktclose],#ktview");
+  if(!b) return;
+  if(b.id==="ktview"){ if(e.target===b) ktClose(); return; }
+  e.stopPropagation();
+  if(b.dataset.ktopen){ ktOpen(b.dataset.ktopen); return; }
+  if(b.dataset.ktcancel){ ktCancel(b.dataset.ktcancel); return; }
+  if(b.dataset.kttoggle){ ktToggle(b.dataset.kttoggle); return; }
+  if(b.dataset.ktadd){ var p=b.dataset.ktadd.split("|"); ktAdd(p[0],+p[1]); return; }
+  if(b.dataset.ktack){ ktAck(b.dataset.ktack); return; }
+  if(b.dataset.ktclose){ ktClose(); return; }
+},true);
+document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&KT.view) ktClose(); });
+setTimeout(ktRender,0);
 /* ---------- Fragebogen beim ersten Start (Friedrich fragt) ---------- */
 var OB=null;
 var OB_DAYS=[1,2,3,4,5,6,0];

@@ -396,7 +396,7 @@ function vMood(){
   h+='<div class="kpis"><div class="kpi"><span>'+esc(t.avgHot)+'</span><strong>'+(got.length?num(av('hot')):'–')+'</strong></div><div class="kpi"><span>'+esc(t.avgMood)+'</span><strong class="kf">'+(got.length?'<span class="fc fc'+Math.round(av('mood'))+' sm">'+face(Math.round(av('mood')))+'</span>'+num(av('mood')):'–')+'</strong></div><div class="kpi"><span>'+esc(t.avgEnergy)+'</span><strong>'+(got.length?num(av('energy')):'–')+' <small class="muted" style="font-size:.8rem">/ 5</small></strong></div></div>';
   var mx=Math.max.apply(null,[4].concat(got.map(function(x){return x.hot;})));
   var info=days.map(function(d,i){var e=es[i];return e?fdw(d)+': '+e.hot+' '+t.hotDayShort+' · '+t.moodQ+' '+e.mood+'/5 · '+t.energyQ+' '+e.energy+'/5':fdw(d)+': –';});
-  h+='<div class="card"><h2>'+esc(t.hotDayShort)+' '+esc(t.perDay)+'</h2>'+(RANGE>14?hotWeekChart(days):'<div class="chart" data-info="'+esc(JSON.stringify(info))+'"><svg viewBox="0 0 340 150" role="img" aria-label="'+esc(t.hotDayShort)+'">'+barChart(days,es.map(function(e){return e?e.hot:null;}),mx)+'</svg><div class="chartinfo muted">'+esc(t.tapBar)+'</div></div>')+'</div>'+(RANGE>14?moodTrendChart(days):'');
+  h+=(hotOn()?'<div class="card"><h2>'+esc(t.hotDayShort)+' '+esc(t.perDay)+'</h2>'+(RANGE>14?hotWeekChart(days):'<div class="chart" data-info="'+esc(JSON.stringify(info))+'"><svg viewBox="0 0 340 150" role="img" aria-label="'+esc(t.hotDayShort)+'">'+barChart(days,es.map(function(e){return e?e.hot:null;}),mx)+'</svg><div class="chartinfo muted">'+esc(t.tapBar)+'</div></div>')+'</div>':'')+(RANGE>14?moodTrendChart(days):'');
   var all=S.mood.filter(function(x){return x.mood!=null;}).sort(byDate);
   h+='<div class="card">'+(all.length?'<ul class="list">'+all.map(function(x){return '<li><div class="mrow"><span class="fc fc'+x.mood+' sm">'+face(x.mood)+'</span><div><div class="t">'+esc(fdw(x.d))+'</div><div class="m">'+x.hot+' '+esc(t.hotDayShort)+' · '+esc(t.moodQ)+' '+x.mood+'/5 · '+esc(t.energyQ)+' '+x.energy+'/5'+(x.note?' · '+esc(x.note):'')+'</div></div></div><button class="edit" data-act="editMood" data-d="'+x.d+'" aria-label="'+esc(t.edit)+'">'+ic('pen')+'</button></li>';}).join('')+'</ul>':'<p class="empty">'+esc(t.none)+'</p>')+'</div>';
   return h;
@@ -471,7 +471,7 @@ function confirmSheet(q,label,fn){var t=T();openSheet('<h2>'+esc(q)+'</h2><div c
 function vReport(){
   var t=T(),from=addMonths(today(),-3),inR=function(x){return x.d>=from;};
   var sl=S.sleep.filter(inR).sort(byDate),wt=S.weight.filter(inR).sort(byDate),mo=S.mood.filter(inR).sort(byDate);
-  var h='<div class="card report"><h1>'+esc(t.repTitle)+'</h1><p class="meta">'+(S.name?esc(t.repFor)+': '+esc(S.name)+' · ':'')+esc(t.repPeriod)+': '+esc(fdl(from))+' – '+esc(fdl(today()))+'<br>'+esc(t.repCreated)+' '+esc(fdl(today()))+' · Proud Aging</p>';
+  var h='<div class="card report"><h1>'+esc(t.repTitle)+'</h1><p class="meta">'+(S.name?esc(t.repFor)+': '+esc(S.name)+' · ':'')+(S.who?esc(t['who_'+S.who])+' · ':'')+(S.age?S.age+' '+esc(t.yrs)+' · ':'')+esc(t.repPeriod)+': '+esc(fdl(from))+' – '+esc(fdl(today()))+'<br>'+esc(t.repCreated)+' '+esc(fdl(today()))+' · Proud Aging</p>';
   // Schlaf
   var avg=sl.length?sl.reduce(function(s,x){return s+x.h;},0)/sl.length:null;
   h+='<div class="sect"><h2>'+esc(t.repSleep)+'</h2>';
@@ -518,10 +518,12 @@ function parseCode(c){c=String(c||'').toUpperCase().replace(/[^A-Z]/g,'');if(c.i
 function vSetup(){
   var t=T(),M=S.mods||{sleep:false,mood:false,meds:false,weight:false,aes:false};
   var h='<div class="pagehead"><h1>'+esc(t.setupTitle)+'</h1><p>'+esc(t.setupSub)+'</p></div>';
+  h+='<div class="card about"><h2>'+esc(t.aboutYou)+'</h2><p class="sub">'+esc(t.whoHint)+'</p><div class="whos" role="radiogroup" aria-label="'+esc(t.whoQ)+'">'+['meno','woman','man'].map(function(w){return '<label class="whoc"><input type="radio" name="who" value="'+w+'"'+(S.who===w?' checked':'')+'><span>'+esc(t['who_'+w])+'</span></label>';}).join('')+'</div>'+
+    '<label class="field agef"><span>'+esc(t.ageL)+' <small class="muted">('+esc(t.ageHint)+')</small></span><span class="agerow"><input class="input" id="ageIn" type="number" inputmode="numeric" min="18" max="99" value="'+(S.age||'')+'" placeholder="54"><em>'+esc(t.yrs)+'</em></span></label></div>';
   h+='<div class="card"><label class="field"><span>'+esc(t.codeLabel)+'</span><small>'+esc(t.codeHint)+'</small><div class="coderow"><input class="input" id="codeIn" type="text" autocapitalize="characters" autocomplete="off" placeholder="PA-SBM" maxlength="12"><button class="btn" data-act="codeApply">'+esc(t.codeApply)+'</button></div></label></div>';
   h+='<p class="muted" style="margin:14px 4px 8px">'+esc(t.orChoose)+'</p>';
   var icn={sleep:'sleep',mood:'mood',meds:'meds',weight:'weight',aes:'aes'};
-  h+=MODS.map(function(k){var on=!!M[k];return '<label class="modc"><input type="checkbox" name="mod" value="'+k+'"'+(on?' checked':'')+'><span class="mc"><span class="hc-i">'+ic(icn[k])+'</span><span><strong>'+esc(t['mod_'+k])+'</strong><small>'+esc(t['mod_'+k+'D'])+'</small></span><span class="tick">'+ic('check')+'</span></span></label>'+
+  h+=MODS.map(function(k){var on=!!M[k];return '<label class="modc"><input type="checkbox" name="mod" value="'+k+'"'+(on?' checked':'')+'><span class="mc"><span class="hc-i">'+ic(icn[k])+'</span><span><strong>'+esc(modLabel(k))+'</strong><small>'+esc(modLabel(k,1))+'</small></span><span class="tick">'+ic('check')+'</span></span></label>'+
     (k==='meds'?'<label class="modc sub"><input type="checkbox" name="medask"'+(S.medAsk!==false?' checked':'')+'><span class="mc"><span></span><span><strong>'+esc(t.medAsk)+'</strong><small>'+esc(t.medAskD)+'</small></span><span class="tick">'+ic('check')+'</span></span></label>':'')+
     (k==='weight'?'<label class="modc sub"><input type="checkbox" name="glp1"'+(S.glp1?' checked':'')+'><span class="mc"><span></span><span><strong>'+esc(t.mod_glp1)+'</strong><small>'+esc(t.mod_glp1D)+'</small></span><span class="tick">'+ic('check')+'</span></span></label>':'');}).join('');
   h+='<p class="err" id="setupErr" hidden>'+esc(t.setupNeedOne)+'</p><button class="btn full" data-act="setupDone" style="margin:14px 0 20px">'+esc(t.setupDone)+'</button>';
@@ -725,7 +727,7 @@ function demoData(){
   Object.keys(fl).forEach(function(dd){var o={};o['m1:morning']=rnd()<0.95;o['m2:night']=rnd()<0.9;o['m3:morning']=rnd()<0.85;if(wd(dd)===fri)o['m0:weekly']=rnd()<0.97;log[dd]=o;});
   var area=L==='en'?['Forehead, frown lines','Under the eyes']:L==='tr'?['Alın, kaş arası','Göz altı']:['Stirn, Zornesfalte','Augenpartie'];
   var note=L==='en'?'Great progress! From Friday please stay on 2.4 mg. Call us if you feel nauseous.':L==='tr'?'Harika ilerleme! Cumadan itibaren 2,4 mg’da kalın. Mide bulantısında bizi arayın.':'Toller Verlauf! Bitte ab Freitag bei 2,4 mg bleiben. Bei Übelkeit gern anrufen.';
-  S=Object.assign(blank(),{lang:S.lang,name:S.name||(L==='tr'?'Ayşe':'Andrea'),big:S.big,
+  S=Object.assign(blank(),{lang:S.lang,name:S.name||(L==='tr'?'Ayşe':'Andrea'),who:S.who||'meno',age:S.age||54,big:S.big,
     mods:{sleep:true,mood:true,meds:true,weight:true,aes:true},glp1:true,filled:fl,sleep:s,mood:m,weight:w,goal:75,gi:gi,meds:meds,medLog:log,doseLog:dl,skin:skin,
     gen:{at:addDays(d0,-40),ein:false,durch:true},
     aes:[{id:'a1',type:'wrinkle',area:area[0],d:addDays(d0,-104),next:16,sat:5,again:true,satAt:addDays(d0,-88),src:'praxis'},{id:'a2',type:'polyn',area:area[1],d:addDays(d0,-3),next:3,src:'praxis'}],
@@ -768,7 +770,7 @@ function hubTiles(){var t=T(),M=mods(),out=[],td=today(),wk=addDays(td,-6);
     out.push(['sleep','sleep','c1',t.tabs.sleep,a7!=null?'Ø '+num(a7)+' '+t.h:'–',f7!=null&&a7!=null&&a7-f7>=.2?'+'+num(a7-f7)+' '+t.h+' '+t.hubSince:(l7.length?l7.filter(function(x){return x.through;}).length+'/'+l7.length+' '+t.legendThrough:t.hubNone),f7!=null&&a7-f7>=.2]);}
   if(M.mood){var m=asc(S.mood).filter(function(x){return x.mood!=null;}),l=m.filter(function(x){return x.d>=wk;}),mo=avgOf(l,'mood'),h1=m.length>=14?avgOf(m.slice(0,7),'hot'):null,h2=avgOf(l,'hot');
     var better=h1&&h2!=null&&(h1-h2)/h1>=.2;
-    out.push(['mood','mood','c4',t.tabs.mood,mo!=null?'<span class="fc fc'+Math.round(mo)+' sm">'+face(Math.round(mo))+'</span>'+num(mo):'–',better?'−'+Math.round((h1-h2)/h1*100)+' % '+t.hubHot:(h2!=null?'Ø '+num(h2)+' '+t.hotDayShort:t.hubNone),better,true]);}
+    out.push(['mood','mood','c4',t.tabs.mood,mo!=null?'<span class="fc fc'+Math.round(mo)+' sm">'+face(Math.round(mo))+'</span>'+num(mo):'–',!hotOn()?(l.length+'/7 '+t.hubDays):better?'−'+Math.round((h1-h2)/h1*100)+' % '+t.hubHot:(h2!=null?'Ø '+num(h2)+' '+t.hotDayShort:t.hubNone),hotOn()&&better,true]);}
   if(M.meds){var tot=0,ok=0;for(var i=0;i<7;i++){var d=addDays(td,-i);askDoses(d).forEach(function(x){tot++;if(takenOn(d,x.k))ok++;});}
     out.push(['meds','meds','c3',t.tabs.meds,tot?Math.round(ok/tot*100)+' %':S.meds.length+'',tot?t.hubTaken:t.pmMedN,tot&&ok/tot>=.9]);}
   if(M.weight){var w=asc(S.weight),lw=w[w.length-1],fw=w[0];
@@ -792,6 +794,18 @@ function face(i){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentCol
 function battery(i){var b='';for(var j=0;j<i;j++)b+='<rect x="'+(5.2+j*2.6)+'" y="9.2" width="1.8" height="5.6" rx=".5" fill="currentColor" stroke="none"/>';return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="7.5" width="15" height="9" rx="2"/><path d="M20.5 10.5v3"/>'+b+'</svg>';}
 
 /* ---------- Ausfüllen (Start) ---------- */
+var fbN=0;
+function fbFor(k,v){var f=T().fb,nm=S.name?S.name:'';fbN++;
+  var pick=function(x){return x.replace('{n}',nm).replace(/, $|,\s*!$/,'!').replace(' ,',',');};
+  if(k==='through')return v?f.through1:f.through0;
+  if(k==='hotN')return v?f.hotN1:f.hotN0;
+  if(k==='gi')return v?f.gi1:f.gi0;
+  if(k==='h')return v>=7?f.h7.replace('{h}',num(v)):v<6?f.hLow:f.gen[fbN%f.gen.length];
+  if(k==='mood'||k==='energy'||k==='skin'||k==='aesS')return v>=4?(nm?f.goodN.replace('{n}',nm):f.good):v<=2?f.low:f.mid;
+  if(k==='aesR')return f.gen[fbN%f.gen.length];
+  return (nm&&fbN%3===0)?f.nameT.replace('{n}',nm):f.gen[fbN%f.gen.length];}
+function hotOn(){return S.who!=='man'&&S.who!=='woman';}
+function modLabel(k,d){var t=T();if(!hotOn()){if(k==='mood')return d?t.mod_mood2D:t.mod_mood2;if(k==='sleep'&&d)return t.mod_sleep2D;}return t['mod_'+k+(d?'D':'')];}
 function dayDone(d){return !!(S.filled&&S.filled[d]);}
 function mods(){return S.mods||{sleep:true,mood:true,meds:true,weight:false};}
 function giFor(d){for(var i=0;i<S.gi.length;i++)if(S.gi[i].d===d)return S.gi[i];return null;}
@@ -824,8 +838,8 @@ function startForm(d){
   var s=sleepFor(d),m=moodFor(d),w=null;S.weight.forEach(function(x){if(x.d===d)w=x;});
   var meds={};askDoses(d).forEach(function(x){meds[x.k]=takenOn(d,x.k);});
   var M=mods(),steps=[],genHere=S.gen&&S.gen.at===d,gi=giFor(d);
-  if(M.sleep)steps.push('h','through','hotN');
-  if(M.mood)steps.push('hotD','mood','energy');
+  if(M.sleep){steps.push('h','through');if(hotOn())steps.push('hotN');}
+  if(M.mood){if(hotOn())steps.push('hotD');steps.push('mood','energy');}
   if(M.weight&&S.glp1)steps.push('gi');
   if(M.meds&&askDoses(d).length)steps.push('meds');
   if(M.weight&&weightDue(d))steps.push('kg');
@@ -839,12 +853,13 @@ function req(k){return ['through','hotN','mood','energy','ein','durch','gi','aes
 var navLock=0;
 function formNext(){if(Date.now()<navLock)return;navLock=Date.now()+450;var k=F.steps[F.i];if(req(k)&&F.a[k]==null)return;
   if(k==='kg'&&F.a.kg){var v=pnum(F.a.kg);if(!(v>=25&&v<=300)){var e=root.querySelector('.ferr');if(e)e.hidden=false;return;}}
+  if(k==='h'&&F.a.h!=null)F.fb=fbFor('h',+F.a.h);
   F.i=Math.min(F.i+1,F.steps.length-1);render();window.scrollTo(0,0);}
 function formPrev(){if(Date.now()<navLock)return;navLock=Date.now()+450;if(F.i===0){F=null;setView('fill');return;}F.i--;render();window.scrollTo(0,0);}
 function formSkip(){var k=F.steps[F.i];if(k==='kg')F.a.kg='';if(k==='note')F.a.note='';if(k==='wish')F.a.wish=[];F.i++;render();window.scrollTo(0,0);}
 var YN=['through','hotN','ein','durch','gi','aesR'];
 function formAnswer(k,v){F.a[k]=(k==='mood'||k==='energy'||k==='aesS'||k==='skin')?+v:k==='aesC'?v:v==='1';render();
-  if(F.i<F.steps.length-1){var i=F.i;navLock=Date.now()+600;setTimeout(function(){if(F&&F.i===i&&F.a[k]!=null){F.i++;render();window.scrollTo(0,0);navLock=Date.now()+450;}},260);}}
+  if(F.i<F.steps.length-1){var i=F.i;navLock=Date.now()+600;setTimeout(function(){if(F&&F.i===i&&F.a[k]!=null){F.fb=fbFor(k,F.a[k]);F.i++;render();window.scrollTo(0,0);navLock=Date.now()+450;}},260);}}
 function yesNo(k){var t=T(),v=F.a[k];return '<div class="bigchoice">'+[['1',t.yes],['0',t.no]].map(function(o){var on=v!=null&&(v===(o[0]==='1'));return '<button class="choice'+(on?' on':'')+'" data-act="fAns" data-k="'+k+'" data-val="'+o[0]+'" aria-pressed="'+on+'">'+esc(o[1])+'</button>';}).join('')+'</div>';}
 function scale5(k){var t=T(),v=F.a[k],h='<div class="scale5">';for(var i=1;i<=5;i++)h+='<button class="choice'+(v===i?' on':'')+'" data-act="fAns" data-k="'+k+'" data-val="'+i+'" aria-pressed="'+(v===i)+'" aria-label="'+i+' – '+esc(t.scale[i-1])+'"><span class="fc fc'+i+'">'+(k==='energy'?battery(i):face(i))+'</span><small>'+esc(t.scale[i-1])+'</small></button>';return h+'</div>';}
 function bigStepper(k,val,min,max,step,unit,dec){var a=' data-act="fStep" data-for="'+k+'" data-min="'+min+'" data-max="'+max+'" data-u="'+esc(unit)+'" data-dec="'+dec+'"';
@@ -874,7 +889,8 @@ function vForm(){
   var pre=(k==='ein'||k==='durch')?'<span class="fpre">'+esc(t.q_genPre)+'</span>':'';
   var ready=!req(k)||a[k]!=null;
   var nav='<div class="fnav">'+(opt?'<button class="btn light" data-act="fSkip">'+esc(t.skip)+'</button>':'<span></span>')+'<button class="btn" data-act="fNext"'+(ready?'':' disabled aria-disabled="true"')+'>'+esc(t.next)+' →</button></div>';
-  return head+prog+'<section class="fq">'+pre+'<h1>'+esc(q)+'</h1>'+(hint?'<p class="muted">'+esc(hint)+'</p>':'')+body+'</section>'+nav;
+  var gr='';if(F.fb&&F.i>0){gr='<div class="fb" role="status">'+ic('star',true)+'<span>'+esc(F.fb)+'</span></div>';F.fb=null;}else if(F.i===0&&F.d===today()){var hr=new Date().getHours();gr='<div class="fgreet"><strong>'+esc(t.hello[(hr>=5&&hr<11)?0:(hr>=11&&hr<18)?1:2]+(S.name?', '+S.name:''))+'</strong><span>'+esc(t.fgreetSub)+'</span></div>';}
+  return head+gr+prog+'<section class="fq">'+pre+'<h1>'+esc(q)+'</h1>'+(hint?'<p class="muted">'+esc(hint)+'</p>':'')+body+'</section>'+nav;
 }
 function ansText(k){var t=T(),a=F.a,v=a[k];
   if(k==='h')return num(v)+' '+t.h; if(k==='hotD')return String(v);
@@ -902,10 +918,18 @@ function formSave(){
   if(has('kg')){var kg=pnum(a.kg);S.weight=S.weight.filter(function(x){return x.d!==d;});if(kg>=25&&kg<=300)S.weight.push(PM?{d:d,kg:Math.round(kg*10)/10,src:'praxis'}:{d:d,kg:Math.round(kg*10)/10});}
   if(F.steps.indexOf('ein')>=0&&a.ein!=null&&a.durch!=null)S.gen={at:d,ein:!!a.ein,durch:!!a.durch};
   save();var dd=d;F=null;view='done';root.className='app formmode'+(REDUCED?'':' pa-in');lastKey='done';lastFi=-1;
-  root.innerHTML='<section class="donep"><span class="hc-i big">'+ic('check')+'</span><h1>'+esc(t.doneTitle)+'</h1><p>'+esc(t.doneText.replace('{d}',fdl(dd)))+'</p>'+streakBadge()+'<button class="btn full" data-act="go" data-v="data">'+esc(t.toData)+'</button><button class="btn light full" data-act="go" data-v="fill">'+esc(t.toStart)+'</button>'+(S.remAt?'':'<button class="btn ghost full" data-act="settings">'+ic('bell')+esc(t.remTitle)+'</button>')+'</section>';
+  var isToday=dd===today(),ins=isToday?insight():'';
+  root.innerHTML='<section class="donep">'+(isToday&&MSTONES.indexOf(streak())<0?'<div class="dn-burst" aria-hidden="true">'+[0,1,2,3,4,5,6,7].map(function(k){return '<i style="--a:'+(k*45)+'deg;--dl:'+(k%2?.08:0)+'s">'+FLAME+'</i>';}).join('')+'</div>':'')+'<span class="hc-i big pop">'+ic('check')+'</span><h1>'+esc(isToday?(S.name?t.doneTitleN.replace('{n}',S.name):t.doneTitle):t.doneTitle)+'</h1><p>'+esc(t.doneText.replace('{d}',fdl(dd)))+'</p>'+(ins?'<div class="insight">'+ic('star',true)+'<span>'+esc(ins)+'</span></div>':'')+streakBadge()+(isToday&&streak()>=1?'<div class="dn-week">'+weekDays().map(function(x){var f=dayDone(x),c=x===today()?'on today':x>today()?'fut':(f?'on':'off');return '<span class="st-d '+c+'"><small>'+esc(fd(x,{weekday:'short'}).replace('.','').slice(0,2))+'</small><i>'+(f?ic('check'):'')+'</i></span>';}).join('')+'</div><p class="dn-next">'+esc(t.doneNext.replace('{n}',streak()+1))+'</p>':'')+'<button class="btn full" data-act="go" data-v="data">'+esc(t.toData)+'</button><button class="btn light full" data-act="go" data-v="fill">'+esc(t.toStart)+'</button>'+(S.remAt?'':'<button class="btn ghost full" data-act="settings">'+ic('bell')+esc(t.remTitle)+'</button>')+'</section>';
   window.scrollTo(0,0);
 }
 
+function insight(){var t=T(),I=t.ins,td=today(),wk=addDays(td,-6);
+  var sl=asc(S.sleep);
+  if(sl.length>=14){var a=avgOf(sl.slice(0,7),'h'),b=avgOf(sl.filter(function(x){return x.d>=wk;}),'h');if(a!=null&&b!=null&&b-a>=.3)return I.sleepUp.replace('{x}',num(b-a));}
+  if(hotOn()){var mo=asc(S.mood).filter(function(x){return x.hot!=null;});if(mo.length>=14){var h1=avgOf(mo.slice(0,7),'hot'),h2=avgOf(mo.filter(function(x){return x.d>=wk;}),'hot');if(h1>0&&h2!=null&&(h1-h2)/h1>=.2)return I.hotDown.replace('{p}',Math.round((h1-h2)/h1*100));}}
+  var w=asc(S.weight);if(w.length>=2){var dk=w[w.length-1].kg-w[0].kg;if(dk<=-1&&mods().weight)return I.kgDown.replace('{x}',num(Math.abs(dk)));}
+  var tot=Object.keys(S.filled||{}).filter(function(d){return S.filled[d];}).length;
+  if(tot<=1)return I.first;if(streak()>=3)return I.streak.replace('{n}',streak());return I.gen;}
 /* ---------- Meine Daten ---------- */
 function vData(){
   var t=T(),M=mods();
@@ -924,7 +948,7 @@ root.addEventListener('click',function(e){
   if(a==='go'){if(b.dataset.v==='data'&&view!=='report')dataTab=null;setView(b.dataset.v);}
   else if(a==='settings')setView('settings');
   else if(a==='codeApply'){var r=parseCode((document.getElementById('codeIn')||{}).value);if(!r){toast(t.codeBad);return;}var ch=applySetup(r.mods,r.glp1);toast(t.codeOk);afterSetup(ch);}
-  else if(a==='setupDone'){var m={};MODS.forEach(function(k){var c=root.querySelector('input[name=mod][value='+k+']');m[k]=!!(c&&c.checked);});if(!MODS.some(function(k){return m[k];})){root.querySelector('#setupErr').hidden=false;return;}var g=root.querySelector('input[name=glp1]'),ma=root.querySelector('input[name=medask]');var oldAsk=S.medAsk!==false;S.medAsk=!ma||ma.checked;var ch=applySetup(m,g&&g.checked)||(oldAsk!==S.medAsk&&!!S.mods);toast(ch?t.progNew:t.saved);afterSetup(ch);}
+  else if(a==='setupDone'){var wsel=root.querySelector('input[name=who]:checked');if(!wsel){var e0=root.querySelector('#setupErr');e0.textContent=T().setupNeedWho;e0.hidden=false;root.querySelector('.about').scrollIntoView({behavior:'smooth',block:'center'});return;}var oldWho=S.who;S.who=wsel.value;var ag=parseInt((root.querySelector('#ageIn')||{}).value,10);S.age=(ag>=18&&ag<=99)?ag:null;var whoCh=!!oldWho&&oldWho!==S.who;var m={};MODS.forEach(function(k){var c=root.querySelector('input[name=mod][value='+k+']');m[k]=!!(c&&c.checked);});if(!MODS.some(function(k){return m[k];})){var e1=root.querySelector('#setupErr');e1.textContent=T().setupNeedOne;e1.hidden=false;return;}var g=root.querySelector('input[name=glp1]'),ma=root.querySelector('input[name=medask]');var oldAsk=S.medAsk!==false;S.medAsk=!ma||ma.checked;var first=!S.mods;var ch=applySetup(m,g&&g.checked)||(oldAsk!==S.medAsk&&!!S.mods)||whoCh;if(whoCh&&S.filled)delete S.filled[today()];save();toast(ch?t.progNew:t.saved);afterSetup(ch||(first&&!dayDone(today())));}
   else if(a==='pmStart')sheetPin();
   else if(a==='pmEnd'){PM=false;view='fill';render();toast(T().pmEnded);}
   else if(a==='pmAppt')sheetAppt();

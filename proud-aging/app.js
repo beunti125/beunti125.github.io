@@ -60,7 +60,7 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 
 /* ---------- Grundgerüst ---------- */
 var root=document.getElementById('app');
-var view='fill', sub=null, dataTab='sleep', F=null;
+var view='fill', sub=null, dataTab='over', F=null;
 function setView(v,s){view=v;sub=s||null;render();window.scrollTo(0,0);}
 function header(){
   return '<header class="top"><div class="brand"><span class="st">'+ic('star',true)+'</span>Proud <b>Aging</b></div>'+
@@ -636,7 +636,6 @@ function bestStreak(){var ds=Object.keys(S.filled||{}).filter(function(d){return
 function weekDays(){var d=today(),w=(wd(d)+6)%7,a=[];for(var i=0;i<7;i++)a.push(addDays(d,i-w));return a;}
 function streakCard(){var t=T(),n=streak(),best=Math.max(bestStreak(),n),done=dayDone(today()),td=today();
   var h='<div class="stc'+(n?'':' zero')+'"><div class="st-top"><span class="st-fl">'+FLAME+'<b>'+n+'</b></span><div class="st-txt"><strong>'+esc(n?(n===1?t.st1:t.stDays.replace('{n}',n)):t.stStart)+'</strong><span>'+esc(done?t.stDone:t.stTodo)+'</span>'+(best>1?'<small>'+esc(t.stBest.replace('{n}',best))+'</small>':'')+'</div></div>';
-  if(done)h+='<div class="st-done"><span>'+ic('check')+'</span><p><strong>'+esc(t.fillDone)+'</strong> '+esc(daySummary(today()))+'</p><button class="btn ghost sm" data-act="startForm">'+esc(t.change)+'</button></div>';
   h+='<div class="st-week">'+weekDays().map(function(d){var f=dayDone(d),c=d===td?(f?'on today':'today'):d>td?'fut':(f?'on':'off');return '<span class="st-d '+c+'"><small>'+esc(fd(d,{weekday:'short'}).replace('.','').slice(0,2))+'</small><i>'+(f?ic('check'):'')+'</i></span>';}).join('')+'</div>';
   h+='<button class="linkbtn" data-act="cal">'+ic('cal')+esc(t.calOpen)+'</button></div>';
   return h;}
@@ -665,20 +664,23 @@ function mods(){return S.mods||{sleep:true,mood:true,meds:true,weight:false};}
 function giFor(d){for(var i=0;i<S.gi.length;i++)if(S.gi[i].d===d)return S.gi[i];return null;}
 function weightDue(d){var has=false,last=null;S.weight.forEach(function(x){if(x.d===d)has=true;if(x.d<d&&(!last||x.d>last))last=x.d;});return has||!last||last<=addDays(d,-7);}
 function vFill(){
-  var t=T(),hr=new Date().getHours(),greet=t.hello[(hr>=5&&hr<11)?0:(hr>=11&&hr<18)?1:2]+(S.name?', '+S.name:''),n=streak();
-  var h='<div class="homehead"><div><h1>'+esc(greet)+'</h1><p>'+esc(fd(today(),{weekday:'long',day:'numeric',month:'long'}))+'</p></div>'+'</div>';
+  var t=T(),hr=new Date().getHours(),greet=t.hello[(hr>=5&&hr<11)?0:(hr>=11&&hr<18)?1:2]+(S.name?', '+S.name:''),n=streak(),done=dayDone(today());
+  var h='<div class="homehead"><div><h1>'+esc(greet)+'</h1><p>'+esc(fd(today(),{weekday:'long',day:'numeric',month:'long'}))+'</p></div></div>';
   h+=installHint()+apptCard()+pnoteCard();
   var empty=!S.sleep.length&&!S.weight.length&&!S.meds.length&&!S.mood.length&&!S.aes.length;
   if(empty)h+='<div class="welcome">'+esc(t.emptyStart)+'</div>';
-  var done=dayDone(today());
-  if(!done)h+='<div class="hero-card"><span class="hc-i">'+ic('pen')+'</span><h2>'+esc(t.fillToday)+'</h2><p>'+esc(t.fillMin)+(genDue()?' '+esc(t.extraGen):'')+'</p><button class="btn big full" data-act="startForm">'+esc(t.fillStart)+' →</button></div>';
-  h+=streakCard();
+  if(done)h+='<div class="todayok"><span class="ok">'+ic('check')+'</span><div><strong>'+esc(t.fillDone)+'</strong>'+(n>=2?'<button class="stline" data-act="cal">'+FLAME+esc(t.stDays.replace('{n}',n))+'</button>':'')+'</div><button class="btn ghost sm" data-act="startForm">'+esc(t.change)+'</button></div>';
+  else h+='<div class="hero-card"><span class="hc-i">'+ic('pen')+'</span><h2>'+esc(t.fillToday)+'</h2><p>'+esc(t.fillMin)+(genDue()?' '+esc(t.extraGen):'')+'</p><button class="btn big full" data-act="startForm">'+esc(t.fillStart)+' →</button>'+(n>=1?'<p class="hero-st">'+FLAME+esc(t.stKeep.replace('{n}',n))+'</p>':'')+'</div>';
   h+=aesRecallCard();
-  if(mods().weight&&S.glp1&&!S.meds.some(function(m){return m.when.indexOf('weekly')>=0;}))h+='<div class="welcome">'+esc(t.glp1Tip)+'</div>';
-  h+=progressCard()+journeyCard();
-  h+='<button class="linkbtn" data-act="otherDay">'+ic('cal')+esc(t.otherDay)+'</button>';
+  if(!empty)h+='<button class="overlink" data-act="over"><span class="hc-i">'+ic('chart')+'</span><span><strong>'+esc(t.overTitle)+'</strong><small>'+esc(t.overSub)+'</small></span><span class="arr">→</span></button>';
   return h;
 }
+function vOver(){var t=T(),h='<div class="pagehead"><h1>'+esc(t.tabs.over)+'</h1></div>';
+  h+=streakCard()+progressCard()+journeyCard();
+  if(mods().weight&&S.glp1&&!S.meds.some(function(m){return m.when.indexOf('weekly')>=0;}))h+='<div class="welcome">'+esc(T().glp1Tip)+'</div>';
+  h+='<button class="linkbtn" data-act="otherDay">'+ic('cal')+esc(t.otherDay)+'</button>';
+  return h;}
+
 function daySummary(d){var t=T(),s=sleepFor(d),m=moodFor(d),a=[];
   if(s)a.push(num(s.h)+' '+t.h+' · '+(s.through?t.legendThrough:t.legendNot));
   if(m&&m.mood!=null)a.push(t.moodQ+' '+m.mood+'/5 · '+t.energyQ+' '+m.energy+'/5');var g=giFor(d);if(g&&S.glp1)a.push(t.gi+': '+(g.v?t.yes:t.no));var w=null;S.weight.forEach(function(x){if(x.d===d)w=x;});if(w)a.push(num(w.kg)+' '+t.kg);return a.join(' · ');}
@@ -771,10 +773,10 @@ function formSave(){
 
 /* ---------- Meine Daten ---------- */
 function vData(){
-  var t=T(),M=mods(),tabs=[['sleep',t.tabs.sleep],['mood',t.tabs.mood],['meds',t.tabs.meds],['weight',t.tabs.weight],['aes',t.tabs.aes]].filter(function(x){return M[x[0]];});
+  var t=T(),M=mods(),tabs=[['over',t.tabs.over],['sleep',t.tabs.sleep],['mood',t.tabs.mood],['meds',t.tabs.meds],['weight',t.tabs.weight],['aes',t.tabs.aes]].filter(function(x){return x[0]==='over'||M[x[0]];});
   if(!tabs.some(function(x){return x[0]===dataTab;}))dataTab=tabs[0][0];
-  var h='<div class="pagehead"><h1>'+esc(t.data)+'</h1></div><div class="dtabs'+(tabs.length>4?' many':'')+'" role="tablist" style="grid-template-columns:repeat('+tabs.length+',1fr)">'+tabs.map(function(x){return '<button role="tab" data-act="dtab" data-t="'+x[0]+'" aria-selected="'+(dataTab===x[0])+'">'+esc(x[1])+'</button>';}).join('')+'</div>'+(dataTab==='meds'||dataTab==='aes'?'':rangeBar());
-  var inner=({sleep:vSleep,weight:vWeight,meds:vMeds,mood:vMood,aes:vAes}[dataTab])();
+  var h='<div class="pagehead"><h1>'+esc(t.data)+'</h1></div><div class="dtabs'+(tabs.length>4?' many':'')+'" role="tablist" style="grid-template-columns:repeat('+tabs.length+',1fr)">'+tabs.map(function(x){return '<button role="tab" data-act="dtab" data-t="'+x[0]+'" aria-selected="'+(dataTab===x[0])+'">'+esc(x[1])+'</button>';}).join('')+'</div>'+(dataTab==='meds'||dataTab==='aes'||dataTab==='over'?'':rangeBar());
+  var inner=({over:vOver,sleep:vSleep,weight:vWeight,meds:vMeds,mood:vMood,aes:vAes}[dataTab])();
   inner=inner.replace(/^<div class="pagehead"><h1>[^<]*<\/h1>(<p>[^<]*<\/p>)?<\/div>/,function(m,p1){return p1?'<p class="muted" style="margin:0 2px 12px">'+p1.replace(/<\/?p>/g,'')+'</p>':'';});
   h+=inner+'<button class="btn light full" data-act="go" data-v="report" style="margin-top:4px">'+ic('doc')+esc(t.report)+'</button>';
   return h;
@@ -795,6 +797,7 @@ root.addEventListener('click',function(e){
   else if(a==='fWish'){var w=b.dataset.w,ix=F.a.wish.indexOf(w);if(ix>=0)F.a.wish.splice(ix,1);else F.a.wish.push(w);render();}
   else if(a==='rng'){RANGE=+b.dataset.v;render();}
   else if(a==='cal')sheetCal();
+  else if(a==='over'){dataTab='over';setView('data');window.scrollTo(0,0);}
   else if(a==='jMore'){jOpen=!jOpen;render();}
   else if(a==='big'){S.big=b.dataset.b==='1';save();render();}
   else if(a==='ics')downloadIcs((document.getElementById('remT')||{}).value||'20:00');

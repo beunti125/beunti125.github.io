@@ -425,3 +425,14 @@ body.pf-body{margin:0;min-height:100vh;background:radial-gradient(1200px 700px a
 .pf-screen iframe{flex:1;width:100%;border:0;display:block;background:#F7F3EC}
 .pf-home{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#111;z-index:3;pointer-events:none}
 .st-done p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* --- schlanke Startseite --- */
+.todayok{display:flex;gap:12px;align-items:center;background:#fff;border-radius:22px;padding:16px;margin-bottom:14px}
+.todayok .ok{flex:none;width:48px;height:48px;border-radius:16px;background:#3E9B6A;color:#fff;display:grid;place-items:center}.todayok .ok svg{width:24px;height:24px}
+.todayok>div{flex:1;min-width:0}.todayok strong{display:block;font-size:1.1rem;color:#1C2E4A}
+.stline{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:5px;margin-top:4px;color:#3A6A95;font-weight:700;font-size:.92rem}.stline svg{width:15px;height:15px;color:#5B8DB8}
+.todayok .btn{flex:none;min-height:40px;background:#F7F3EC}
+.hero-st{display:flex;align-items:center;justify-content:center;gap:6px;margin:12px 0 0;font-size:.9rem;color:#C9D8E8;font-weight:600}.hero-st svg{width:15px;height:15px;color:#9CC0E0}
+.overlink{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:14px;width:100%;background:#fff;border-radius:22px;padding:16px;margin-bottom:14px}
+.overlink .hc-i{flex:none;width:46px;height:46px;border-radius:15px;background:#E3ECF5;color:#1C2E4A;display:grid;place-items:center}.overlink .hc-i svg{width:22px;height:22px}
+.overlink strong{display:block;font-size:1.05rem;color:#1C2E4A}.overlink small{display:block;color:var(--muted);font-size:.88rem;margin-top:2px}
+.overlink span:nth-child(2){flex:1}.overlink .arr{font-size:1.3rem;color:#5B8DB8;font-weight:700}

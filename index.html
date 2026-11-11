@@ -478,6 +478,18 @@ body.ob-open{overflow:hidden}
 .obfoot .btn{flex:1;min-height:50px;border-radius:14px;font-size:16px}
 .obfoot .obgo{flex:2;background:linear-gradient(180deg,#4b8ff8,#2563eb);box-shadow:0 6px 18px rgba(59,130,246,.4)}
 @media (prefers-reduced-motion:reduce){.obq,.obbody{animation:none}}
+.wpgo{display:block;margin:10px auto 0;border:0;background:none;color:var(--hi);font-weight:700;font-size:14px;padding:8px}
+.wpsum{display:flex;flex-direction:column;gap:2px;margin:10px 0}
+.wpbtns{display:flex;gap:8px;margin:0 0 12px}.wpbtns .btn{flex:1}
+.wpwhen{text-transform:none;letter-spacing:0;font-weight:500}
+.wpcur{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;color:var(--ink);text-align:left;padding:6px 0 0}
+.wptxt{display:flex;flex-direction:column;flex:1;min-width:0}
+.wpchg{color:var(--hi);font-weight:700;font-size:13px;flex:none}
+.wplist{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.wpopt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:1.5px solid var(--line);background:var(--tile);color:var(--ink);border-radius:12px;padding:10px 12px;text-align:left}
+.wpopt.sel{border-color:#7cb6ff;background:linear-gradient(180deg,rgba(75,143,248,.25),rgba(37,99,235,.18))}
+.wptag{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5be08f}
+.wptag.dim{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -845,7 +857,7 @@ function dayPlan(r, dow, realDow){
     p.tasks=["Nach der Uni mit dem Auto einkaufen – Einkaufsliste Woche "+r+" ist offen.","Fleisch für Samstag (Fakeaway) direkt einfrieren.","Kochen: "+w.bowl[0]+" – 4 Portionen (heute Abend, Di mittags + abends, Mi mittags)."]; }
   if(dow===2){ p.lunch=w.bowl; p.dinner=w.bowl; p.tasks=["Kein Kochen heute – nur aufwärmen. Falls du mittags länger in der Uni bist: Box mitnehmen."]; if(w.extra&&w.extra[3]) p.tasks.push(w.extra[3]); }
   if(dow===3){ p.lunch=w.bowl; p.dinner=w.pasta; p.cook=true;
-    p.tasks=["Freier Tag = großer Kochtag.","Kochen: "+w.wrap[0]+" – 4 Portionen (Do + Fr Uni-Box, Fr Snack, 1 Reserve).","Kochen: "+w.pasta[0]+(r===1?" – 4 Portionen essen, 8 einfrieren.":" – 4 Portionen (heute, Do + Fr abends, Sa mittags).")]; }
+    p.tasks=["Freier Tag = großer Kochtag.","Kochen: "+w.wrap[0]+" – 4 Portionen (Do + Fr Uni-Box, Fr Snack, 1 Reserve).","Kochen: "+w.pasta[0]+(w.pasta[1]==="bolognese"?" – 4 Portionen essen, 8 einfrieren.":" – 4 Portionen (heute, Do + Fr abends, Sa mittags).")]; }
   if(dow===4){ p.lunch=w.wrap; p.lunchLabel="Mittags · Uni-Box"; p.dinner=w.pasta; p.snack="Langer Uni-Tag? Brötchen mit Aufschnitt oder Skyr einpacken";
     p.tasks=["Uni-Box einpacken. Abends nur aufwärmen – kein Kochen nach einem langen Tag."]; }
   if(dow===5){ p.lunch=w.wrap; p.lunchLabel="Mittags · Uni-Box"; p.dinner=w.pasta; p.snack="Reserve-Wrap oder Brötchen einpacken – du bist bis 17 Uhr in der Uni";
@@ -874,7 +886,9 @@ var AWAY_OPTS={papa:["Bei Papa – Lammkotelett oder Fleisch","_papa"],out:["Aus
 function awayGet(d){ return load("away:"+fmtISO(d), null); }
 function awaySet(d, slot, kind){ var a=awayGet(d)||{}; if(kind) a[slot]=kind; else delete a[slot]; save("away:"+fmtISO(d), Object.keys(a).length?a:null); }
 function planFor(d){
-  var p=dayPlan(planRot(d), vdow(d), d.getDay()), a=awayGet(d), b=bockGet(d);
+  var r0=planRot(d), keepW=W[r0]; if(r0>0) W[r0]=wpWeek(r0,absWeek(d));
+  var p; try{ p=dayPlan(r0, vdow(d), d.getDay()); } finally { W[r0]=keepW; }
+  var a=awayGet(d), b=bockGet(d);
   if(b){ ["l","d"].forEach(function(sl){ var o=b[sl]; if(!o||!o.m) return; if(sl==="d"){ p.dinner=o.m; p.fake=false; } else { p.lunch=o.m; } p["bock"+sl]=o.src; p.tasks=[o.task,o.task2].filter(Boolean).concat(p.tasks||[]); }); }
   if(a){
     if(a.d){ p.leftover=p.dinner; p.dinner=AWAY_OPTS[a.d]; p.cook=false; p.fake=false; p.away=a.d; }
@@ -1119,7 +1133,7 @@ function dish(id,slot){
 }
 /* Einkaufsliste aus Rezepten: aggregieren, auf Packungen runden */
 var PANTRY_ITEMS=[["Öl (Raps oder Sonnenblume)","1 Flasche",2.0],["Mehl","1 kg",0.8],["Zucker","1 kg",1.1],["Honig","1 Glas",2.5],["Sojasoße","1 Flasche",1.5],["Senf + Mayo + Ketchup","je 1",3.0],["Tomatenmark","1 Tube",0.6],["Paniermehl + Speisestärke","je 1",1.5],["Gewürze: Salz, Pfeffer, Knoblauch, Paprikapulver, Curry","Grundset",4.0],["Brühe (Pulver)","1 Glas",1.2]];
-function shopFor(w){
+function shopFor(w,cover){
   var need={}, why={};
   function add(id,slot,mult){
     var list=REC_SHOP[id]; if(!list) return;
@@ -1135,14 +1149,15 @@ function shopFor(w){
   if(w.sun) add(w.sun,"sun",1);
   if(w.mi) { need.kartoffel=(need.kartoffel||0)+1500*PF; (why.kartoffel=why.kartoffel||[]).push("Bratkartoffeln"); }
   else if(w.sunDinner) add(w.sunDinner,"fake",(w.sunDinner==="bratkartoffeln"||R2[w.sunDinner])?1:0.6);
+  if(cover) for(var ck in cover){ if(need[ck]!=null){ need[ck]-=cover[ck]; if(need[ck]<=50) delete need[ck]; } }
   var out=[];
   Object.keys(need).forEach(function(k){
     var m=SHOPDB[k]; if(!m) return; var g=need[k], u=m.u, q, price, nm=m.n;
     if(PROF.diet==="nopork"){ if(k==="hack"){ nm="Rinderhack"; } if(k==="speck"){ nm="Puten- oder Rinderspeckwürfel"; } }
-    if(hasAlg("laktose")&&LF_KEYS.indexOf(k)>=0) nm+=" (laktosefrei)"; if(k==="reis") nm="Reis (Basmati oder Rundkornreis, lose Packung – keine Kochbeutel)";
+    if(hasAlg("laktose")&&LF_KEYS.indexOf(k)>=0) nm+=" (laktosefrei)"; if(k==="reis"&&!ISY) nm="Reis (Basmati oder Rundkornreis, lose Packung – keine Kochbeutel)";
     var pkg=(PROF.diet==="nopork"&&k==="hack")?10.5:m.p;
     if(u[0]==="g"){ var gg=Math.max(100,Math.round(g/100)*100); q=gg>=1000?(String(Math.round(gg/100)/10).replace(".",",")+" kg"):gg+" g"; price=gg/1000*pkg; }
-    else { var n=Math.max(1,Math.ceil(g/u[1]-0.15)); q=u[0]==="stk"?n+" "+u[2]:(n>1?n+" × ":"")+u[2]; price=n*u[1]/1000*pkg; }
+    else { var n=Math.max(1,Math.ceil(g/u[1]-0.15)); q=u[0]==="stk"?n+" "+u[2]:(n>1?n+" × "+u[2]:"1 "+u[2].replace(/^Packung à /,"Packung à ").replace(/^kg-Packung/,"kg-Packung")); price=n*u[1]/1000*pkg; }
     out.push([nm,q,Math.round(price*100)/100,m.s,why[k].join(" · ")]);
   });
   return out;
@@ -1220,6 +1235,105 @@ function dayPlanC(r, vd, dow){
   return p;
 }
 applyProfileTexts(); buildCustom();
+/* ---------- Wochenplanung: selbst aussuchen, Vorschläge, Einkaufsliste passt sich an ---------- */
+var WP_SLOTS=[["bowl","Bowl","Einkaufstag abends + Tag 2"],["wrap","Box / Wrap","Mittags an den langen Tagen"],["pasta","Warmes Hauptgericht","Kochtag bis Fakeaway-Mittag"],["fake","Fakeaway","Statt Bestellen"],["sun","Süßes","Sonntag mittags"],["so","Sonntag abends","Ausklang der Woche"]];
+var Y_TASTE={likes:["huhn","fastfood","cremig","pasta","deftig","hack","tuerkisch"],dis:["brokkoli","paprika","kohl"],budget:"mid"};
+function wpTaste(){ return ISY?Y_TASTE:PROF; }
+function wpGet(abs){ return load("wp:"+abs,null); }
+function wpSet(abs,o){ save("wp:"+abs, o&&Object.keys(o).length?o:null); }
+function wpOk(id){ if(!R[id]) return false; if(!ISY) return recOk(id); var tg=REC_TAGS[id]||[]; return !tg.some(function(t){ return Y_TASTE.dis.indexOf(t)>=0; }); }
+function wpIds(r){ // Rotation als ids
+  var w=W[r]; if(!w) return {};
+  var so=w.mi?"schnitzelvorrat":(w.sunDinner?w.sunDinner[1]:"bratkartoffeln");
+  return {bowl:w.bowl&&w.bowl[1], wrap:w.wrap&&w.wrap[1], pasta:w.pasta&&w.pasta[1], fake:w.fake&&w.fake[1], sun:w.sun&&w.sun[1], so:so};
+}
+function wpPlanIds(abs){ var r=rot(abs), base=wpIds(r), o=wpGet(abs)||{}, out={}; for(var k in base) out[k]=o[k]!==undefined?o[k]:base[k]; return out; }
+function wpWeek(r,abs){
+  var o=wpGet(abs); if(!o) return W[r];
+  var ids=wpPlanIds(abs), base=W[r], w={act:{},extra:{}};
+  ["bowl","wrap","pasta","fake","sun"].forEach(function(sl){ w[sl]=(o[sl]===undefined)?base[sl]:(ids[sl]?dish(ids[sl],sl):(sl==="sun"?["Reste der Woche oder Brötchen","broetchen"]:FREE)); });
+  if(ids.pasta==="bolognese"){ w.act[3]={key:"bolo",delta:8,label:"8 Portionen Bolognese eingefroren"}; if(w.pasta) w.pasta=[R.bolognese.name.split(" (")[0]+" (12 Portionen)","bolognese"]; }
+  if(ids.pasta==="lasagne"){ w.act[3]={key:"bolo",delta:-6,label:"6 Portionen Bolognese verbraucht"}; w.extra[3]="Heute 6 Portionen Bolognese aus dem Gefrierfach in den Kühlschrank legen."; }
+  if(ids.fake==="schnitzel") w.act[6]={key:"schnitzel",delta:4,label:"4 Schnitzel eingefroren"};
+  if(ids.so==="schnitzelvorrat"){ w.mi=["Rahmschnitzel aus dem Gefrierfach + Bratkartoffeln","schnitzel"]; w.act[0]={key:"schnitzel",delta:-4,label:"4 Schnitzel verbraucht"}; }
+  else if(ids.so&&ids.so!=="bratkartoffeln"){ w.mi=null; w.sunDinner=dish(ids.so,"fake"); if(ISY) w.mi=w.sunDinner; }
+  else { w.mi=null; w.sunDinner=ISY?null:dish("bratkartoffeln","x"); }
+  return w;
+}
+function wpShop(r,abs){
+  var o=wpGet(abs); if(!o) return null;
+  var ids=wpPlanIds(abs), g={bowl:ids.bowl,wrap:ids.wrap,pasta:ids.pasta,fake:ids.fake,sun:ids.sun};
+  if(ids.so==="schnitzelvorrat") g.mi="schnitzel"; else if(ids.so&&(ids.so!=="bratkartoffeln"||!ISY)) g.sunDinner=ids.so;
+  var add=shopFor(g, ISY?{zwiebel:1000,gurke:350,tomate:500,ei:600,milch:1000,skyr:4000,banane:1500,broetchen:600}:null), base=(ISY?BASE:BASE).map(function(x){return x.slice();});
+  add.forEach(function(it){ var hit=base.filter(function(b){return b[0]===it[0];})[0];
+    if(hit){ hit[1]=hit[1]+" + "+it[1]; hit[2]=Math.round((hit[2]+it[2])*100)/100; hit[4]=hit[4]+" · "+it[4]; } else base.push(it); });
+  if(!ISY&&rot(abs)===1) WEEK_ITEMS[1].filter(function(x){return x[3]==="Grundvorrat (einmalig)";}).forEach(function(x){ base.push(x); });
+  return base;
+}
+function wpRecent(abs){ var s={}; [abs-1,abs-2].forEach(function(a){ if(a<0) return; var ids=wpPlanIds(a); for(var k in ids) if(ids[k]) s[ids[k]]=1; }); return s; }
+function wpCands(slot,abs){
+  var P=wpTaste(), rec=wpRecent(abs), cur=wpPlanIds(abs);
+  var pool=slot==="so"?["bratkartoffeln"].concat(POOL.fake):POOL[slot].slice();
+  if(slot==="pasta"&&pool.indexOf("lasagne")<0) pool.push("lasagne");
+  var list=pool.filter(function(id,i){ return pool.indexOf(id)===i && wpOk(id); }).map(function(id){
+    var used=Object.keys(cur).some(function(k){ return k!==slot&&cur[k]===id; });
+    return {id:id, s:recScore(id,P)-(rec[id]?5:0)-(used?8:0)+(ISY&&id==="bratkartoffeln"?6:0), recent:!!rec[id], used:used};
+  });
+  list.sort(function(a,b){ return b.s-a.s; });
+  if(slot==="so"&&load("stock:schnitzel",0)>=4) list.unshift({id:"schnitzelvorrat",s:99});
+  return list;
+}
+function wpAuto(abs){
+  var o={}, taken={};
+  WP_SLOTS.forEach(function(sl){ var c=wpCands(sl[0],abs).filter(function(x){ return !taken[x.id]&&!x.recent; });
+    if(!c.length) c=wpCands(sl[0],abs).filter(function(x){ return !taken[x.id]; });
+    var top=c.slice(0,3), pick=top[Math.floor(Math.random()*top.length)]; if(pick){ o[sl[0]]=pick.id; taken[pick.id]=1; } });
+  wpSet(abs,o);
+}
+var wpUI={abs:0,open:null};
+function wpRefresh(){ try{ ({heute:renderHeute,einkauf:renderEinkauf,vorrat:renderVorrat})[lastView]&&({heute:renderHeute,einkauf:renderEinkauf,vorrat:renderVorrat})[lastView](); }catch(e){} }
+function wpName(id){ if(id==="schnitzelvorrat") return "Rahmschnitzel aus dem Gefrierfach + Bratkartoffeln"; if(id==="bratkartoffeln") return dish("bratkartoffeln","x")[0]; return R[id]?R[id].name:"Freie Wahl"; }
+function wpMeta(id){ var k=id==="schnitzelvorrat"?"schnitzel":id, n=NUT[k]; return n?eur(n.eur)+" · "+n.kcal+" kcal pro Portion":""; }
+function openWeekPlan(abs){
+  var t=today(), s=startDate(), cur=t<s?0:absWeek(t); if(t>=s&&vdow(t)===0) cur+=1;
+  wpUI.abs=(abs==null?cur:abs); wpUI.cur=cur; wpUI.open=null; renderWeekPlan();
+  var sh=document.getElementById("sheet"); sh.classList.add("open"); sh.scrollTop=0;
+}
+function renderWeekPlan(){
+  var abs=wpUI.abs, ids=wpPlanIds(abs), o=wpGet(abs)||{}, ws=addDays(startDate(),abs*7);
+  var items=wpShop(rot(abs),abs)||BASE.concat(WEEK_ITEMS[rot(abs)]), cost=items.filter(function(x){return x[3]!=="Grundvorrat (einmalig)";}).reduce(function(a,b){return a+b[2];},0);
+  var h='<button class="back" id="close">Zurück</button><h1 id="r-title">Woche planen</h1>';
+  h+='<div class="seg" role="group" aria-label="Woche wählen"><button data-wpabs="'+wpUI.cur+'" aria-pressed="'+(abs===wpUI.cur)+'">Diese Woche</button><button data-wpabs="'+(wpUI.cur+1)+'" aria-pressed="'+(abs===wpUI.cur+1)+'">Nächste Woche</button></div>';
+  h+='<p class="note">Einkauf '+DOW_LONG[SD]+', '+fmtShort(ws)+' · Woche '+rot(abs)+' von '+NW+'. Tipp ein Gericht an, um es zu tauschen – die Einkaufsliste passt sich automatisch an.</p>';
+  h+='<div class="wpsum card"><span class="label">Einkauf diese Woche ca.</span><span class="big">'+eur(cost)+'</span><span class="note">≈ '+eur(cost/21)+' pro Mahlzeit · bestellt wären es ca. 13 €</span></div>';
+  h+='<div class="wpbtns"><button class="btn" data-wpauto="1">Vorschläge für die ganze Woche</button>'+(Object.keys(o).length?'<button class="btn ghost" data-wpreset="1">Standardplan</button>':'')+'</div>';
+  h+='<div class="stack">';
+  WP_SLOTS.forEach(function(sl){
+    var id=ids[sl[0]], ch=o[sl[0]]!==undefined, open=wpUI.open===sl[0];
+    h+='<div class="card wpslot'+(open?' open':'')+'"><span class="label">'+esc(sl[1])+' <span class="wpwhen">· '+esc(sl[2])+'</span></span>'+
+      '<button class="wpcur" data-wpopen="'+sl[0]+'" aria-expanded="'+open+'">'+(id&&R[id==="schnitzelvorrat"?"schnitzel":id]?ico(R_ICON[id==="schnitzelvorrat"?"schnitzel":id],"s"):'')+'<span class="wptxt"><span class="dish">'+esc(id?wpName(id):"Nichts")+'</span><span class="note">'+(ch?'Von dir gewählt · ':'Aus dem Plan · ')+wpMeta(id)+'</span></span><span class="wpchg">'+(open?'Schließen':'Ändern')+'</span></button>';
+    if(open){
+      var c=wpCands(sl[0],abs);
+      h+='<div class="wplist">'+c.map(function(x,i){ var sel=x.id===id;
+        return '<button class="wpopt'+(sel?' sel':'')+'" data-wppick="'+sl[0]+'|'+x.id+'" aria-pressed="'+sel+'">'+(i<3&&!sel?'<span class="wptag">Vorschlag</span>':'')+(x.recent?'<span class="wptag dim">letzte Wochen</span>':'')+(x.used?'<span class="wptag dim">schon diese Woche</span>':'')+'<span class="dish">'+esc(wpName(x.id))+'</span><span class="note">'+wpMeta(x.id)+'</span></button>'; }).join("")+
+        (sl[0]==="sun"?'<button class="wpopt" data-wppick="sun|-">Kein Süßes – Reste essen</button>':'')+'</div>';
+    }
+    h+='</div>';
+  });
+  h+='</div><button class="btn" data-wpshop="1" style="margin-top:14px;width:100%">Zur Einkaufsliste</button>';
+  document.getElementById("sheet-body").innerHTML=h;
+}
+document.addEventListener("click",function(e){
+  var b=e.target.closest&&e.target.closest("[data-wpopen],[data-wppick],[data-wpauto],[data-wpreset],[data-wpabs],[data-wpshop],[data-wpgo]"); if(!b) return;
+  if(b.dataset.wpgo){ if(typeof fs!=="undefined"&&fs.open) fsClose(); openWeekPlan(b.dataset.wpgo==="cur"?null:+b.dataset.wpgo); return; }
+  if(b.dataset.wpopen){ wpUI.open=wpUI.open===b.dataset.wpopen?null:b.dataset.wpopen; renderWeekPlan(); return; }
+  if(b.dataset.wpabs){ wpUI.abs=+b.dataset.wpabs; wpUI.open=null; renderWeekPlan(); return; }
+  if(b.dataset.wpauto){ wpAuto(wpUI.abs); wpUI.open=null; renderWeekPlan(); wpRefresh(); return; }
+  if(b.dataset.wpreset){ wpSet(wpUI.abs,null); renderWeekPlan(); wpRefresh(); return; }
+  if(b.dataset.wppick){ var pr=b.dataset.wppick.split("|"), o=wpGet(wpUI.abs)||{}; o[pr[0]]=pr[1]==="-"?null:pr[1]; wpSet(wpUI.abs,o); wpUI.open=null; renderWeekPlan(); wpRefresh(); return; }
+  if(b.dataset.wpshop){ listRot=rot(wpUI.abs); document.getElementById("sheet").classList.remove("open"); if(location.hash==="#einkauf") show(); else location.hash="einkauf"; return; }
+});
+
 
 
 /* ---------- Ansichten ---------- */
@@ -1327,6 +1441,7 @@ function renderHeute(){
   html += mealRow(p.lunchLabel, p.lunch, p.bockl?' <span class="tag wish">'+(p.bockl==="swap"?'Getauscht':'Dein Wunsch')+'</span>':'');
   html += mealRow("Abends", p.dinner, p.bockd?' <span class="tag wish">'+(p.bockd==="swap"?'Getauscht':'Dein Wunsch')+'</span>':p.cook?' <span class="tag">Kochtag</span>':(p.fake?' <span class="tag">Fakeaway</span>':(p.away?' <span class="tag away">Woanders</span>':'')));
   html += '<div class="awayline">'+(p.away?'<button class="link" data-away="'+fmtISO(d)+'|d|">Doch zu Hause essen</button>':'<span>Abends nicht zu Hause?</span><button class="awaybtn" data-away="'+fmtISO(d)+'|d|papa">'+MINI.star.replace('class="mi"','class="mi"')+' '+(ISY?'Bei Papa':'Familie/Freunde')+'</button><button class="awaybtn" data-away="'+fmtISO(d)+'|d|out">Woanders</button>')+'</div>';
+  html += '<button class="wpgo" data-wpgo="cur">Woche planen ›</button>';
   if(!p.away && daysBetween(t,d)>=0) html += '<div class="bockline">'+((p.bockd||p.bockl)?'<button class="link" data-bockundo="'+fmtISO(d)+'">Wieder wie geplant</button>':'')+'<button class="bockbtn" data-bockopen="'+fmtISO(d)+'|d"><span>'+MINI.spark+' Worauf hast du '+(diff===0?'heute':'da')+' Bock?</span><span class="hintgo">Plan anpassen ›</span></button></div>';
   html += '<div class="snackline">+ Snack: '+esc(p.snack)+'</div>';
   html += '<div class="totals"><span><b>'+tot.kcal+'</b> kcal</span><span><b>'+tot.p+' g</b> Eiweiß</span><span><b>'+eur2(tot.eur)+'</b></span></div>';
@@ -1358,7 +1473,7 @@ function defaultRot(){ var t=today(), s=startDate(); if(t<s) return (!ISY||daysB
 
 function renderEinkauf(){
   var r = (listRot!==null ? listRot : defaultRot()), abs = shopAbs(r), key="chk:"+abs, chk=load(key,{});
-  var items = BASE.concat(WEEK_ITEMS[r]);
+  var items = (r>0&&wpShop(r,abs))||BASE.concat(WEEK_ITEMS[r]);
   var total=0, open=0, doneN=0;
   items.forEach(function(it,i){ total+=it[2]; if(chk[i]) doneN++; else open+=it[2]; });
   var wkStart = addDays(startDate(), abs*7);
@@ -1368,6 +1483,7 @@ function renderEinkauf(){
   if(ISY && today()<startDate()) html+='<button data-wk="0" aria-pressed="'+(r===0)+'">Start</button>';
   for(var w=1;w<=NW;w++) html+='<button data-wk="'+w+'" aria-pressed="'+(w===r)+'">Woche '+w+'</button>';
   html+='</div>';
+  if(r>0) html+='<button class="bockbtn" data-wpgo="'+abs+'"><span>'+(wpGet(abs)?'Deine Woche ist selbst geplant – ändern':'Woche planen: Gerichte selbst aussuchen')+'</span><span aria-hidden="true">›</span></button>';
   html+='<div class="sum"><div class="card"><span class="label">Noch offen</span><span class="big">'+eur(open)+'</span></div><div class="card"><span class="label">Gesamt ca.</span><span class="big">'+eur(total)+'</span></div></div>';
   html+='<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+items.length+'" aria-valuenow="'+doneN+'" aria-label="Eingekauft"><i style="width:'+(doneN/items.length*100)+'%"></i></div>';
   SECTIONS.forEach(function(sec){
@@ -1663,6 +1779,7 @@ function fsAnswer(raw){
   if(fsHas(t,[" danke "," dankeschön "," merci "])) return {text:"Immer gern. Jedes selbst gekochte Essen ist ein Lieferando-Euro weniger.", quick:["Was gibt's morgen?"]};
   if(fsHas(t,[" witz "," scherz "," lustig "])) return {text:FS_JOKES[Math.floor(Math.random()*FS_JOKES.length)], quick:["Noch einen Witz","Was koche ich heute?"]};
   if(fsHas(t,[" wieder wie geplant "," wie geplant "])){ var ud=fsDayFrom(t); bockUndo(ud,"l"); bockUndo(ud,"d"); if(typeof renderHeute==="function") renderHeute(); return {text:"Alles zurück – "+fsDayName(ud).toLowerCase()+" gilt wieder der normale Plan.", card:{type:"day",day:fmtISO(ud)}}; }
+ if(fsHas(t,[" woche planen "," wochenplanung "," plan ändern "," nächste woche planen "," woche zusammenstellen "," gerichte aussuchen "," selbst aussuchen "," planen "])) return {text:"Klar – such dir für jeden Teil der Woche aus, worauf du Lust hast. Ich zeig dir oben die besten Vorschläge, die Einkaufsliste passt sich automatisch an.", card:{type:"wpopen"}, quick:["Was kostet die Woche?","Was muss ich einkaufen?"]};
   if(fsHas(t,[" bock "," lust auf "," appetit "," hunger auf "," heute lieber "," lieber was "," craving "]) && !fsHas(t,[" keine lust "," kein bock "])){
     var bd=fsDayFrom(t), bsl=fsHas(t,[" mittag"])?"l":"d", bk=fsFindRecipe(t), bm=null;
     [["fastfood",[" burger"," pizza"," pommes"," fastfood"," fast food"," mc"," nuggets"," chicken wings"]],["pasta",[" nudel"," pasta"," spaghetti"]],["cremig",[" sahne"," cremig"," rahm"]],["deftig",[" fleisch"," deftig"," herzhaft"," steak"," schnitzel"," fett"]],["asia",[" asia"," chinesisch"," japanisch"," sushi"," gebratene"," teriyaki"]],["scharf",[" scharf"," mexikanisch"," burrito"," indisch"," curry"]],["suess",[" süß"," süss"," suess"," dessert"," kuchen"," schoko"]],["leicht",[" leicht"," salat"," gesund"]]].some(function(x){ if(fsHas(t,x[1])){ bm=x[0]; return true; } return false; });
@@ -1715,6 +1832,7 @@ function fsCard(c){
   if(!c) return "";
   if(c.type==="day"){ var d=parseD(c.day), p=planFor(d), rows=[["b","Frühstück",p.breakfast],["l",p.lunchLabel,p.lunch],["d","Abends",p.dinner]].filter(function(x){return !c.only||x[0]===c.only;});
     return '<div class="fc"><div class="fchead">'+DOW_LONG[d.getDay()]+', '+fmtShort(d)+(p.cook?' <span class="tag">Kochtag</span>':(p.fake?' <span class="tag">Fakeaway</span>':''))+'</div>'+rows.map(function(x){ var n=NUT[x[2][1]]; return '<button class="fcrow" '+(x[2][1]&&R[x[2][1]]?'data-r="'+x[2][1]+'"':'disabled')+'>'+ico(R_ICON[x[2][1]]||"bowl","s")+'<span class="fct"><small>'+x[1]+'</small><b>'+esc(x[2][0])+'</b></span>'+(n?'<span class="fcm">'+n.kcal+' kcal</span>':'')+'</button>'; }).join("")+(p.tasks&&p.tasks.length&&!c.only?'<div class="fcnote">'+MINI.spark+' '+esc(p.tasks[0])+'</div>':'')+'</div>'; }
+  if(c.type==="wpopen") return '<button class="bockbtn" data-wpgo="cur"><span>Woche planen öffnen</span><span aria-hidden="true">›</span></button>';
   if(c.type==="bock"||c.type==="bockopen"){ var bd2=parseD(c.day), bc2=c.type==="bock"?bockCands(bd2,c.sl):null;
     var rows2=(c.top||[]).map(function(y){ var x=(bc2[y[0]]||[]).filter(function(z){return z.key===y[1];})[0]; if(!x) return ""; var ln=bockLine(x,y[0]); return '<button class="fcrow" data-bockpick="'+[c.day,c.sl,y[0],y[1],y[2],y[3]].join("|")+'">'+ico(R_ICON[y[1]]||"bowl","s")+'<span class="fct"><b>'+esc(x.m[0])+' · '+ln[1]+'</b><small>'+esc(ln[0])+'</small></span></button>'; }).join("");
     return '<div class="fc"><div class="fchead">'+DOW_LONG[bd2.getDay()]+', '+(c.sl==="l"?"mittags":"abends")+'</div>'+rows2+'<button class="fcrow" data-bockopen="'+c.day+'|'+c.sl+'"><span class="fct"><b>Alle Optionen ansehen ›</b></span></button></div>'; }
@@ -1726,7 +1844,7 @@ function fsCard(c){
   if(c.type==="freezer"){ var b=load("stock:bolo",0), s2=load("stock:schnitzel",0); return '<div class="fc"><div class="fcstats"><span>'+ico("pasta","s")+'<b>'+b+'</b>Bolognese</span><span>'+ico("schnitzel","s")+'<b>'+s2+'</b>Schnitzel</span></div>'+(b===0?'<div class="fcnote">Keine Bolognese mehr – die nächste Ladung kommt in Woche 1.</div>':'')+'</div>'; }
   if(c.type==="daytot"){ var dd=parseD(c.day), pp=planFor(dd), tt={k:0,p:0,e:0}; [pp.breakfast[1],pp.lunch[1],"_snack",pp.dinner[1]].forEach(function(k){var z=NUT[k]; if(z){tt.k+=z.kcal; tt.p+=z.p; tt.e+=z.eur;}}); return '<div class="fc"><div class="fcstats"><span><b>'+tt.k+'</b>kcal</span><span><b>'+tt.p+' g</b>Eiweiß</span><span><b>'+eur2(tt.e)+'</b>Kosten</span></div><div class="fcnote">'+(tt.k<kcalTarget()*0.9?'Etwas knapp – nimm eine größere Portion oder einen zweiten Snack.':'Passt zu deinen rund '+kcalTarget().toLocaleString("de-DE")+' kcal.')+'</div></div>'; }
   if(c.type==="shop"){ var sh=fsShop(); var pct=Math.round(sh.done/sh.items.length*100); return '<div class="fc"><div class="fchead">'+(sh.r===0?'Startwoche':'Woche '+sh.r)+'<span class="fcsn">'+sh.done+'/'+sh.items.length+' erledigt</span></div><div class="stbar"><i style="width:'+pct+'%"></i></div>'+(sh.open.length?'<div class="fcchips">'+sh.open.slice(0,10).map(function(it){return '<span>'+ico(itemIcon(it[0]),"xs")+esc(it[0])+'</span>';}).join("")+(sh.open.length>10?'<span>+'+(sh.open.length-10)+' weitere</span>':'')+'</div><div class="fcnote">Noch offen: ca. '+eur2(sh.sum)+'</div>':'')+'<div class="fcbtns"><button class="fcb pri" data-go="einkauf">Liste öffnen</button></div></div>'; }
-  if(c.type==="week"){ var r=planRot(today()); if(r<0) r=1; var w=W[r]; return '<div class="fc"><div class="fchead">'+(r===0?'Startwoche':'Woche '+r+' von 6')+'</div>'+[[DOW[SD]+" · Bowl",w.bowl],[DOW[(SD+2)%7]+(ISY?" · Uni-Wrap":" · Wrap"),w.wrap],[DOW[(SD+2)%7]+" · Warm",w.pasta],[DOW[(SD+5)%7]+" · Fakeaway",w.fake]].filter(function(x){return x[1];}).map(function(x){return '<button class="fcrow" data-r="'+x[1][1]+'">'+ico(R_ICON[x[1][1]]||"bowl","s")+'<span class="fct"><small>'+x[0]+'</small><b>'+esc(x[1][0])+'</b></span></button>';}).join("")+'</div>'; }
+  if(c.type==="week"){ var r=planRot(today()); if(r<0) r=1; var w=r>0?wpWeek(r,absWeek(today())):W[r]; return '<div class="fc"><div class="fchead">'+(r===0?'Startwoche':'Woche '+r+' von 6')+'</div>'+[[DOW[SD]+" · Bowl",w.bowl],[DOW[(SD+2)%7]+(ISY?" · Uni-Wrap":" · Wrap"),w.wrap],[DOW[(SD+2)%7]+" · Warm",w.pasta],[DOW[(SD+5)%7]+" · Fakeaway",w.fake]].filter(function(x){return x[1];}).map(function(x){return '<button class="fcrow" data-r="'+x[1][1]+'">'+ico(R_ICON[x[1][1]]||"bowl","s")+'<span class="fct"><small>'+x[0]+'</small><b>'+esc(x[1][0])+'</b></span></button>';}).join("")+'</div>'; }
   return "";
 }
 function fsPush(m){ m.t=new Date(); fs.msgs.push(m); if(fs.msgs.length>60) fs.msgs.shift(); fsRender(true); }

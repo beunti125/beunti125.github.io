@@ -1,6 +1,13 @@
 /* Proud Aging – Handy-App. Alle Daten bleiben im Speicher dieses Geräts (localStorage). */
 (function(){
 'use strict';
+if(window.innerWidth>=700&&window.name!=='pa-inner'){
+  document.body.className='pf-body';
+  document.body.innerHTML='<div class="pf-wrap"><div class="pf-phone" id="pfPhone"><div class="pf-screen"><div class="pf-status"><span id="pfTime"></span><span class="pf-island"></span><span class="pf-icons"><i></i><i></i><i></i><b></b></span></div><iframe name="pa-inner" title="Proud Aging App" src="'+location.href.split('#')[0]+'"></iframe><span class="pf-home"></span></div></div></div>';
+  var tick=function(){var d=new Date(),e=document.getElementById('pfTime');if(e)e.textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');};tick();setInterval(tick,30000);
+  var fit=function(){var ph=document.getElementById('pfPhone');if(!ph)return;var sc=Math.min(1,(window.innerHeight-32)/880);ph.style.transform='scale('+sc+')';};fit();window.addEventListener('resize',fit);
+  return;
+}
 var KEY='proud-aging-app-v1';
 var ICONS={
   today:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
@@ -491,8 +498,8 @@ function journeyCard(){var t=T(),ev=[],M=mods();
   ev.sort(byDate);var nx=M.aes?aesRecall():null,fut=null;S.aes.forEach(function(x){var due=aesDue(x);if(due&&due>today()&&(!fut||due<aesDue(fut)))fut=x;});
   var h='<section class="journey card"><h2>'+esc(t.jTitle)+'</h2><ol>';
   if(fut&&M.aes)h+='<li class="fut"><span class="jd">'+ic('cal')+'</span><div><small>'+esc(fd(aesDue(fut),{day:'numeric',month:'short',year:'numeric'}))+'</small><strong>'+esc(t.jNext.replace('{t}',aesName(fut)))+'</strong></div></li>';
-  var lim=jOpen?ev.length:4;h+=ev.slice(0,lim).map(function(e){return '<li class="'+(e.c||'')+'"><span class="jd">'+ic(e.i,e.i==='star')+'</span><div><small>'+esc(fd(e.d,{day:'numeric',month:'short',year:'numeric'}))+'</small><strong>'+esc(e.x)+'</strong></div></li>';}).join('');
-  return h+'</ol>'+(ev.length>4?'<button class="linkbtn" data-act="jMore">'+esc(jOpen?t.jLess:t.jMore)+'</button>':'')+'</section>';}
+  var lim=jOpen?ev.length:3;h+=ev.slice(0,lim).map(function(e){return '<li class="'+(e.c||'')+'"><span class="jd">'+ic(e.i,e.i==='star')+'</span><div><small>'+esc(fd(e.d,{day:'numeric',month:'short',year:'numeric'}))+'</small><strong>'+esc(e.x)+'</strong></div></li>';}).join('');
+  return h+'</ol>'+(ev.length>3?'<button class="linkbtn" data-act="jMore">'+esc(jOpen?t.jLess:t.jMore)+'</button>':'')+'</section>';}
 var jOpen=false;
 
 /* ---------- Kalender-Erinnerung ---------- */
@@ -623,12 +630,13 @@ function demoData(){
 
 
 /* ---------- Serie & Ausfüll-Kalender ---------- */
-var FLAME='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 3.5 4.5 5.5 4.5 10a4.5 4.5 0 0 1-9 0c0-2 1-3.4 2-4.4.2 1.5.9 2.6 2 3.1C11 8.5 11 5 12 2z" fill="currentColor"/><path d="M12 13c.8 1.2 1.8 1.9 1.8 3.2a1.8 1.8 0 0 1-3.6 0c0-1.2.9-2 1.8-3.2z" fill="#FFE7A3"/></svg>';
+var FLAME='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z" fill="currentColor"/></svg>';
 function bestStreak(){var ds=Object.keys(S.filled||{}).filter(function(d){return S.filled[d];}).sort(),b=0,c=0,prev=null;
   ds.forEach(function(d){c=(prev&&dDiff(prev,d)===1)?c+1:1;if(c>b)b=c;prev=d;});return b;}
 function weekDays(){var d=today(),w=(wd(d)+6)%7,a=[];for(var i=0;i<7;i++)a.push(addDays(d,i-w));return a;}
 function streakCard(){var t=T(),n=streak(),best=Math.max(bestStreak(),n),done=dayDone(today()),td=today();
   var h='<div class="stc'+(n?'':' zero')+'"><div class="st-top"><span class="st-fl">'+FLAME+'<b>'+n+'</b></span><div class="st-txt"><strong>'+esc(n?(n===1?t.st1:t.stDays.replace('{n}',n)):t.stStart)+'</strong><span>'+esc(done?t.stDone:t.stTodo)+'</span>'+(best>1?'<small>'+esc(t.stBest.replace('{n}',best))+'</small>':'')+'</div></div>';
+  if(done)h+='<div class="st-done"><span>'+ic('check')+'</span><p><strong>'+esc(t.fillDone)+'</strong> '+esc(daySummary(today()))+'</p><button class="btn ghost sm" data-act="startForm">'+esc(t.change)+'</button></div>';
   h+='<div class="st-week">'+weekDays().map(function(d){var f=dayDone(d),c=d===td?(f?'on today':'today'):d>td?'fut':(f?'on':'off');return '<span class="st-d '+c+'"><small>'+esc(fd(d,{weekday:'short'}).replace('.','').slice(0,2))+'</small><i>'+(f?ic('check'):'')+'</i></span>';}).join('')+'</div>';
   h+='<button class="linkbtn" data-act="cal">'+ic('cal')+esc(t.calOpen)+'</button></div>';
   return h;}
@@ -658,13 +666,12 @@ function giFor(d){for(var i=0;i<S.gi.length;i++)if(S.gi[i].d===d)return S.gi[i];
 function weightDue(d){var has=false,last=null;S.weight.forEach(function(x){if(x.d===d)has=true;if(x.d<d&&(!last||x.d>last))last=x.d;});return has||!last||last<=addDays(d,-7);}
 function vFill(){
   var t=T(),hr=new Date().getHours(),greet=t.hello[(hr>=5&&hr<11)?0:(hr>=11&&hr<18)?1:2]+(S.name?', '+S.name:''),n=streak();
-  var h='<div class="homehead"><div><h1>'+esc(greet)+'</h1><p>'+esc(fd(today(),{weekday:'long',day:'numeric',month:'long'}))+'</p></div>'+(n>=1?'<button class="chip" data-act="cal" aria-label="'+esc(t.stDays.replace('{n}',n))+'">'+FLAME+n+'</button>':'')+'</div>';
+  var h='<div class="homehead"><div><h1>'+esc(greet)+'</h1><p>'+esc(fd(today(),{weekday:'long',day:'numeric',month:'long'}))+'</p></div>'+'</div>';
   h+=installHint()+apptCard()+pnoteCard();
   var empty=!S.sleep.length&&!S.weight.length&&!S.meds.length&&!S.mood.length&&!S.aes.length;
   if(empty)h+='<div class="welcome">'+esc(t.emptyStart)+'</div>';
   var done=dayDone(today());
-  if(done)h+='<div class="donebar"><span class="hc-i">'+ic('check')+'</span><div><strong>'+esc(t.fillDone)+'</strong><small>'+esc(daySummary(today()))+'</small></div><button class="btn ghost sm" data-act="startForm">'+esc(t.change)+'</button></div>';
-  else h+='<div class="hero-card"><span class="hc-i">'+ic('pen')+'</span><h2>'+esc(t.fillToday)+'</h2><p>'+esc(t.fillMin)+(genDue()?' '+esc(t.extraGen):'')+'</p><button class="btn big full" data-act="startForm">'+esc(t.fillStart)+' →</button></div>';
+  if(!done)h+='<div class="hero-card"><span class="hc-i">'+ic('pen')+'</span><h2>'+esc(t.fillToday)+'</h2><p>'+esc(t.fillMin)+(genDue()?' '+esc(t.extraGen):'')+'</p><button class="btn big full" data-act="startForm">'+esc(t.fillStart)+' →</button></div>';
   h+=streakCard();
   h+=aesRecallCard();
   if(mods().weight&&S.glp1&&!S.meds.some(function(m){return m.when.indexOf('weekly')>=0;}))h+='<div class="welcome">'+esc(t.glp1Tip)+'</div>';

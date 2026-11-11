@@ -386,3 +386,42 @@ html{font-size:17px}html.bigtext{font-size:19.5px}
 .cal-ms{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
 .ms{display:inline-flex;align-items:center;gap:3px;padding:6px 11px;border-radius:999px;background:#F1ECE4;color:#9A8F80;font-weight:800;font-size:.85rem}
 .ms svg{width:14px;height:14px}.ms.got{background:#FFF0E0;color:#B4560F}
+/* --- Serie im Proud-Aging-Design --- */
+.chip{background:#EFE6D6;color:#1C2E4A}.chip svg{color:#5B8DB8}
+.st-fl{background:#1C2E4A;color:#fff;border-radius:20px}
+.st-fl svg{width:20px;height:20px;opacity:1;color:#9CC0E0;top:7px;right:7px;position:absolute}
+.st-fl b{font-size:1.7rem}
+.stc.zero .st-fl{background:#EFE6D6;color:#8A8F99}.stc.zero .st-fl svg{color:#C9BBA3}
+.st-txt small{color:#3A6A95}
+.st-d i{background:#F1ECE4}
+.st-d.on i{background:#1C2E4A}
+.st-d.today i{box-shadow:0 0 0 2.5px #5B8DB8 inset}.st-d.today small{color:#3A6A95}
+.st-d.on.today i{background:#5B8DB8;box-shadow:none}
+.st-d.fut i{border-color:#E3DACB}
+.cal-d.on{background:#DDE7F1;color:#1C2E4A;font-weight:800}
+.cal-d.today{box-shadow:0 0 0 2px #1C2E4A inset}
+.cal-d.on.today{background:#1C2E4A;color:#fff}
+.ms.got{background:#1C2E4A;color:#fff}.ms.got svg{color:#9CC0E0}
+.ms{background:#F1ECE4;color:#9A8F80}
+/* --- aufgeräumte Startseite --- */
+.st-done{display:flex;gap:10px;align-items:center;background:#EEF5EF;border-radius:16px;padding:10px 12px;margin:14px 0 2px}
+.st-done>span{flex:none;width:30px;height:30px;border-radius:50%;background:#3E9B6A;color:#fff;display:grid;place-items:center}.st-done>span svg{width:16px;height:16px}
+.st-done p{flex:1;margin:0;font-size:.82rem;line-height:1.35;color:#35513F}.st-done strong{color:#1F4D33}
+.st-done .btn{flex:none;min-height:36px;padding:0 12px;background:#fff;font-size:.85rem}
+/* --- Handy-Rahmen für große Bildschirme --- */
+body.pf-body{margin:0;min-height:100vh;background:radial-gradient(1200px 700px at 50% 0%,#F7F3EC,#E6DED1);display:grid;place-items:center;overflow:hidden}
+.pf-wrap{display:grid;place-items:center;width:100vw;height:100vh}
+.pf-phone{width:418px;height:872px;flex:none;border-radius:62px;background:#0B0B0D;padding:14px;box-shadow:0 0 0 2px #2A2A2E,0 40px 90px -30px rgba(28,46,74,.55),inset 0 0 0 1px #3A3A40;transform-origin:center center;position:relative}
+.pf-phone::before,.pf-phone::after{content:"";position:absolute;background:#1A1A1D;border-radius:3px}
+.pf-phone::before{left:-4px;top:170px;width:4px;height:64px;box-shadow:0 84px 0 #1A1A1D}
+.pf-phone::after{right:-4px;top:220px;width:4px;height:96px}
+.pf-screen{position:relative;width:390px;height:844px;border-radius:48px;overflow:hidden;background:#F7F3EC;display:flex;flex-direction:column}
+.pf-status{flex:none;height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 30px 0 34px;font:600 15px/1 system-ui,-apple-system,sans-serif;color:#111;position:relative;z-index:2}
+.pf-island{position:absolute;left:50%;top:11px;transform:translateX(-50%);width:124px;height:36px;border-radius:20px;background:#0B0B0D}
+.pf-icons{display:flex;align-items:center;gap:5px}.pf-icons i{width:3px;background:#111;border-radius:1px;display:block}
+.pf-icons i:nth-child(1){height:5px}.pf-icons i:nth-child(2){height:8px}.pf-icons i:nth-child(3){height:11px}
+.pf-icons b{width:24px;height:11px;border:1.5px solid #111;border-radius:3.5px;margin-left:6px;position:relative;display:block}
+.pf-icons b::after{content:"";position:absolute;inset:1.5px;width:70%;background:#111;border-radius:1px}
+.pf-screen iframe{flex:1;width:100%;border:0;display:block;background:#F7F3EC}
+.pf-home{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#111;z-index:3;pointer-events:none}
+.st-done p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}

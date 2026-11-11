@@ -789,7 +789,7 @@ function formPrev(){if(Date.now()<navLock)return;navLock=Date.now()+450;if(F.i==
 function formSkip(){var k=F.steps[F.i];if(k==='kg')F.a.kg='';if(k==='note')F.a.note='';if(k==='wish')F.a.wish=[];F.i++;render();window.scrollTo(0,0);}
 var YN=['through','hotN','ein','durch','gi','aesR'];
 function formAnswer(k,v){F.a[k]=(k==='mood'||k==='energy'||k==='aesS'||k==='skin')?+v:k==='aesC'?v:v==='1';render();
-  if(v==='0'&&YN.indexOf(k)>=0&&F.i<F.steps.length-1){var i=F.i;navLock=Date.now()+600;setTimeout(function(){if(F&&F.i===i&&F.a[k]===false){F.i++;render();window.scrollTo(0,0);navLock=Date.now()+450;}},260);}}
+  if(F.i<F.steps.length-1){var i=F.i;navLock=Date.now()+600;setTimeout(function(){if(F&&F.i===i&&F.a[k]!=null){F.i++;render();window.scrollTo(0,0);navLock=Date.now()+450;}},260);}}
 function yesNo(k){var t=T(),v=F.a[k];return '<div class="bigchoice">'+[['1',t.yes],['0',t.no]].map(function(o){var on=v!=null&&(v===(o[0]==='1'));return '<button class="choice'+(on?' on':'')+'" data-act="fAns" data-k="'+k+'" data-val="'+o[0]+'" aria-pressed="'+on+'">'+esc(o[1])+'</button>';}).join('')+'</div>';}
 function scale5(k){var t=T(),v=F.a[k],h='<div class="scale5">';for(var i=1;i<=5;i++)h+='<button class="choice'+(v===i?' on':'')+'" data-act="fAns" data-k="'+k+'" data-val="'+i+'" aria-pressed="'+(v===i)+'" aria-label="'+i+' – '+esc(t.scale[i-1])+'"><span class="fc fc'+i+'">'+(k==='energy'?battery(i):face(i))+'</span><small>'+esc(t.scale[i-1])+'</small></button>';return h+'</div>';}
 function bigStepper(k,val,min,max,step,unit,dec){var a=' data-act="fStep" data-for="'+k+'" data-min="'+min+'" data-max="'+max+'" data-u="'+esc(unit)+'" data-dec="'+dec+'"';

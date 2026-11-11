@@ -519,7 +519,7 @@ function nextAppt(){var n=today(),r=null;S.appts.forEach(function(x){if(x.d>=n&&
 var APPT=['ctrl','video','aes','first','lab'];
 function apptCard(){var x=nextAppt();if(!x)return '';var t=T(),n=dDiff(today(),x.d);
   return '<div class="apptc"><span class="hc-i">'+ic('cal')+'</span><div><small>'+esc(n===0?t.apToday:n===1?t.apTomorrow:t.apNext)+'</small><strong>'+esc(fd(x.d,{weekday:'long',day:'numeric',month:'long'}))+(x.time?' · '+esc(x.time)+(t.clock?' '+esc(t.clock):''):'')+'</strong><span>'+esc(t.apTypes[x.type]||'')+(x.note?' · '+esc(x.note):'')+'</span></div></div>';}
-function pnoteCard(){if(!S.pnote||!S.pnote.text)return '';var t=T();return '<div class="pnote"><small>'+esc(t.pnoteFrom)+' · '+esc(fdl(S.pnote.d))+'</small><p>'+esc(S.pnote.text)+'</p></div>';}
+function pnoteCard(inHub){if(!S.pnote||!S.pnote.text)return '';if(!inHub&&S.pnote.hidden)return '';if(inHub&&!S.pnote.hidden)return '';var t=T();return '<div class="pnote">'+(inHub?'':'<button class="pn-x" data-act="pnoteHide" aria-label="'+esc(t.pnoteHide)+'">✕</button>')+'<small>'+esc(t.pnoteFrom)+' · '+esc(fdl(S.pnote.d))+'</small><p>'+esc(S.pnote.text)+'</p></div>';}
 function sheetAppt(){var t=T();openSheet('<h2>'+esc(t.apSet)+'</h2>'+fDate(addDays(today(),28))+'<label class="field"><span>'+esc(t.apTime)+'</span><input class="input" type="time" name="tm" value="10:00"></label><label class="field"><span>'+esc(t.apType)+'</span><select class="input" name="ty">'+APPT.map(function(k){return '<option value="'+k+'">'+esc(t.apTypes[k])+'</option>';}).join('')+'</select></label>'+fText('note',t.apNote,'',t.apNoteEx)+fActions(false),
   function(f){S.appts.push({id:uid(),d:f.d.value||today(),time:f.tm.value,type:f.ty.value,note:f.note.value.trim()});save();render();toast(t.saved);});
   var dd=sheet.querySelector('[name=d]');if(dd){dd.removeAttribute('max');}}
@@ -675,6 +675,7 @@ function vHub(){var t=T();
   h+=hubTiles().map(function(x){var act=x[0]==='cal'?'data-act="cal"':'data-act="dtab" data-t="'+x[0]+'"';
     return '<button class="hubt '+x[2]+'" '+act+'><span class="hb-i">'+ic(x[1],x[1]==='star')+'</span><span class="hb-n">'+esc(x[3])+'</span><strong>'+(x[7]?x[4]:esc(x[4]))+'</strong><small class="'+(x[6]?'up':'')+'">'+esc(x[5])+'</small></button>';}).join('');
   var n=streak();h+='</div>'+(n?'<button class="hubst" data-act="cal">'+FLAME+'<span>'+esc(t.stDays.replace('{n}',n))+'</span><em>'+esc(t.hubCal)+' →</em></button>':'')+journeyCard();
+  h+=pnoteCard(true);
   h+='<button class="btn light full" data-act="go" data-v="report" style="margin-top:4px">'+ic('doc')+esc(t.report)+'</button>';
   h+='<button class="linkbtn" data-act="otherDay">'+ic('cal')+esc(t.otherDay)+'</button>';
   return h;}
@@ -824,6 +825,7 @@ root.addEventListener('click',function(e){
   else if(a==='fWish'){var w=b.dataset.w,ix=F.a.wish.indexOf(w);if(ix>=0)F.a.wish.splice(ix,1);else F.a.wish.push(w);render();}
   else if(a==='rng'){RANGE=+b.dataset.v;render();}
   else if(a==='cal')sheetCal();
+  else if(a==='pnoteHide'){if(S.pnote){S.pnote.hidden=true;save();render();toast(T().pnoteHidden);}}
   else if(a==='over'){dataTab=null;setView('data');window.scrollTo(0,0);}
   else if(a==='jMore'){jOpen=!jOpen;render();}
   else if(a==='big'){S.big=b.dataset.b==='1';save();render();}

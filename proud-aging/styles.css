@@ -451,3 +451,6 @@ body.pf-body{margin:0;min-height:100vh;background:radial-gradient(1200px 700px a
 .hubst svg{width:16px;height:16px;color:#5B8DB8;flex:none}.hubst span{flex:1}.hubst em{font-style:normal;color:#3A6A95;font-size:.88rem}
 .backlink{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;color:#3A6A95;font-weight:700;padding:6px 2px 2px;margin-bottom:2px}.backlink svg{width:18px;height:18px}
 .hubt:last-child:nth-child(odd){grid-column:1/-1;min-height:0}
+.pnote{position:relative;padding-right:46px}
+.pn-x{all:unset;cursor:pointer;position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#7A5A00;font-size:.95rem;background:rgba(255,255,255,.6)}
+.pn-x:active{background:#fff}

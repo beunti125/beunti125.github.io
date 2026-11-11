@@ -607,3 +607,7 @@ p,small{text-wrap:pretty}
 .dn-week{display:flex;justify-content:space-between;gap:6px;margin:6px 0 6px}
 .dn-next{color:#5c6577;font-size:.92rem;margin:4px 0 16px}
 @media (prefers-reduced-motion:reduce){.fb,.donep .hc-i.pop,.dn-burst i{animation:none}.dn-burst{display:none}}
+
+.about .hotc{margin:0 0 14px}
+.about .hotc .mc{grid-template-columns:1fr 28px;background:#F7F9FC}
+.about .hotc .mc>span:first-child{display:none}

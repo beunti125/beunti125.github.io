@@ -513,12 +513,13 @@ function shareReport(){
 /* ---------- Programm einrichten ---------- */
 var MODS=['sleep','mood','meds','weight','aes'];
 function parseCode(c){c=String(c||'').toUpperCase().replace(/[^A-Z]/g,'');if(c.indexOf('PA')===0)c=c.slice(2);
-  if(!c||/[^SBMGAH]/.test(c))return null;var m={aes:c.indexOf('H')>=0,sleep:c.indexOf('S')>=0,mood:c.indexOf('B')>=0,meds:c.indexOf('M')>=0||c.indexOf('A')>=0,weight:c.indexOf('G')>=0||c.indexOf('A')>=0};
-  return {mods:m,glp1:c.indexOf('A')>=0};}
+  if(!c||/[^SBMGAHW]/.test(c))return null;var m={aes:c.indexOf('H')>=0,sleep:c.indexOf('S')>=0,mood:c.indexOf('B')>=0,meds:c.indexOf('M')>=0||c.indexOf('A')>=0,weight:c.indexOf('G')>=0||c.indexOf('A')>=0};
+  return {mods:m,glp1:c.indexOf('A')>=0,hot:c.indexOf('W')>=0};}
 function vSetup(){
   var t=T(),M=S.mods||{sleep:false,mood:false,meds:false,weight:false,aes:false};
   var h='<div class="pagehead"><h1>'+esc(t.setupTitle)+'</h1><p>'+esc(t.setupSub)+'</p></div>';
   h+='<div class="card about"><h2>'+esc(t.aboutYou)+'</h2><p class="sub">'+esc(t.whoHint)+'</p><div class="whos" role="radiogroup" aria-label="'+esc(t.whoQ)+'">'+['meno','woman','man'].map(function(w){return '<label class="whoc"><input type="radio" name="who" value="'+w+'"'+(S.who===w?' checked':'')+'><span>'+esc(t['who_'+w])+'</span></label>';}).join('')+'</div>'+
+    '<label class="modc hotc"><input type="checkbox" name="hot"'+(hotOn()?' checked':'')+'><span class="mc"><span></span><span><strong>'+esc(t.hotAsk)+'</strong><small>'+esc(t.hotAskD)+'</small></span><span class="tick">'+ic('check')+'</span></span></label>'+
     '<label class="field agef"><span>'+esc(t.ageL)+' <small class="muted">('+esc(t.ageHint)+')</small></span><span class="agerow"><input class="input" id="ageIn" type="number" inputmode="numeric" min="18" max="99" value="'+(S.age||'')+'" placeholder="54"><em>'+esc(t.yrs)+'</em></span></label></div>';
   h+='<div class="card"><label class="field"><span>'+esc(t.codeLabel)+'</span><small>'+esc(t.codeHint)+'</small><div class="coderow"><input class="input" id="codeIn" type="text" autocapitalize="characters" autocomplete="off" placeholder="PA-SBM" maxlength="12"><button class="btn" data-act="codeApply">'+esc(t.codeApply)+'</button></div></label></div>';
   h+='<p class="muted" style="margin:14px 4px 8px">'+esc(t.orChoose)+'</p>';
@@ -804,7 +805,13 @@ function fbFor(k,v){var f=T().fb,nm=S.name?S.name:'';fbN++;
   if(k==='mood'||k==='energy'||k==='skin'||k==='aesS')return v>=4?(nm?f.goodN.replace('{n}',nm):f.good):v<=2?f.low:f.mid;
   if(k==='aesR')return f.gen[fbN%f.gen.length];
   return (nm&&fbN%3===0)?f.nameT.replace('{n}',nm):f.gen[fbN%f.gen.length];}
-function hotOn(){return S.who!=='man'&&S.who!=='woman';}
+/* Rueckmeldungen nur manchmal: max. 2 pro Fragebogen, nie zweimal hintereinander; Sicherheitshinweis immer */
+function fbMaybe(k,v){if(k==='gi'&&v)return fbFor(k,v);
+  F.fbC=F.fbC||0;if(F.fbC>=2||F.fbPrev===F.i-1)return null;
+  var f=T().fb,txt=fbFor(k,v);if(!txt||f.gen.indexOf(txt)>=0||txt===f.mid||txt===f.nameT.replace('{n}',S.name||''))return null;
+  if(Math.random()>.34)return null;F.fbC++;F.fbPrev=F.i;return txt;}
+function hotDefault(w){return w!=='man'&&w!=='woman';}
+function hotOn(){return S.hot!=null?!!S.hot:hotDefault(S.who);}
 function modLabel(k,d){var t=T();if(!hotOn()){if(k==='mood')return d?t.mod_mood2D:t.mod_mood2;if(k==='sleep'&&d)return t.mod_sleep2D;}return t['mod_'+k+(d?'D':'')];}
 function dayDone(d){return !!(S.filled&&S.filled[d]);}
 function mods(){return S.mods||{sleep:true,mood:true,meds:true,weight:false};}
@@ -853,13 +860,13 @@ function req(k){return ['through','hotN','mood','energy','ein','durch','gi','aes
 var navLock=0;
 function formNext(){if(Date.now()<navLock)return;navLock=Date.now()+450;var k=F.steps[F.i];if(req(k)&&F.a[k]==null)return;
   if(k==='kg'&&F.a.kg){var v=pnum(F.a.kg);if(!(v>=25&&v<=300)){var e=root.querySelector('.ferr');if(e)e.hidden=false;return;}}
-  if(k==='h'&&F.a.h!=null)F.fb=fbFor('h',+F.a.h);
+  if(k==='h'&&F.a.h!=null)F.fb=fbMaybe('h',+F.a.h);
   F.i=Math.min(F.i+1,F.steps.length-1);render();window.scrollTo(0,0);}
 function formPrev(){if(Date.now()<navLock)return;navLock=Date.now()+450;if(F.i===0){F=null;setView('fill');return;}F.i--;render();window.scrollTo(0,0);}
 function formSkip(){var k=F.steps[F.i];if(k==='kg')F.a.kg='';if(k==='note')F.a.note='';if(k==='wish')F.a.wish=[];F.i++;render();window.scrollTo(0,0);}
 var YN=['through','hotN','ein','durch','gi','aesR'];
 function formAnswer(k,v){F.a[k]=(k==='mood'||k==='energy'||k==='aesS'||k==='skin')?+v:k==='aesC'?v:v==='1';render();
-  if(F.i<F.steps.length-1){var i=F.i;navLock=Date.now()+600;setTimeout(function(){if(F&&F.i===i&&F.a[k]!=null){F.fb=fbFor(k,F.a[k]);F.i++;render();window.scrollTo(0,0);navLock=Date.now()+450;}},260);}}
+  if(F.i<F.steps.length-1){var i=F.i;navLock=Date.now()+600;setTimeout(function(){if(F&&F.i===i&&F.a[k]!=null){F.fb=fbMaybe(k,F.a[k]);F.i++;render();window.scrollTo(0,0);navLock=Date.now()+450;}},260);}}
 function yesNo(k){var t=T(),v=F.a[k];return '<div class="bigchoice">'+[['1',t.yes],['0',t.no]].map(function(o){var on=v!=null&&(v===(o[0]==='1'));return '<button class="choice'+(on?' on':'')+'" data-act="fAns" data-k="'+k+'" data-val="'+o[0]+'" aria-pressed="'+on+'">'+esc(o[1])+'</button>';}).join('')+'</div>';}
 function scale5(k){var t=T(),v=F.a[k],h='<div class="scale5">';for(var i=1;i<=5;i++)h+='<button class="choice'+(v===i?' on':'')+'" data-act="fAns" data-k="'+k+'" data-val="'+i+'" aria-pressed="'+(v===i)+'" aria-label="'+i+' – '+esc(t.scale[i-1])+'"><span class="fc fc'+i+'">'+(k==='energy'?battery(i):face(i))+'</span><small>'+esc(t.scale[i-1])+'</small></button>';return h+'</div>';}
 function bigStepper(k,val,min,max,step,unit,dec){var a=' data-act="fStep" data-for="'+k+'" data-min="'+min+'" data-max="'+max+'" data-u="'+esc(unit)+'" data-dec="'+dec+'"';
@@ -947,8 +954,8 @@ root.addEventListener('click',function(e){
   var b=e.target.closest('[data-act]');if(!b)return;var a=b.dataset.act,t=T();
   if(a==='go'){if(b.dataset.v==='data'&&view!=='report')dataTab=null;setView(b.dataset.v);}
   else if(a==='settings')setView('settings');
-  else if(a==='codeApply'){var r=parseCode((document.getElementById('codeIn')||{}).value);if(!r){toast(t.codeBad);return;}var ch=applySetup(r.mods,r.glp1);toast(t.codeOk);afterSetup(ch);}
-  else if(a==='setupDone'){var wsel=root.querySelector('input[name=who]:checked');if(!wsel){var e0=root.querySelector('#setupErr');e0.textContent=T().setupNeedWho;e0.hidden=false;root.querySelector('.about').scrollIntoView({behavior:'smooth',block:'center'});return;}var oldWho=S.who;S.who=wsel.value;var ag=parseInt((root.querySelector('#ageIn')||{}).value,10);S.age=(ag>=18&&ag<=99)?ag:null;var whoCh=!!oldWho&&oldWho!==S.who;var m={};MODS.forEach(function(k){var c=root.querySelector('input[name=mod][value='+k+']');m[k]=!!(c&&c.checked);});if(!MODS.some(function(k){return m[k];})){var e1=root.querySelector('#setupErr');e1.textContent=T().setupNeedOne;e1.hidden=false;return;}var g=root.querySelector('input[name=glp1]'),ma=root.querySelector('input[name=medask]');var oldAsk=S.medAsk!==false;S.medAsk=!ma||ma.checked;var first=!S.mods;var ch=applySetup(m,g&&g.checked)||(oldAsk!==S.medAsk&&!!S.mods)||whoCh;if(whoCh&&S.filled)delete S.filled[today()];save();toast(ch?t.progNew:t.saved);afterSetup(ch||(first&&!dayDone(today())));}
+  else if(a==='codeApply'){var r=parseCode((document.getElementById('codeIn')||{}).value);if(!r){toast(t.codeBad);return;}var oh=hotOn();S.hot=r.hot;var ch=applySetup(r.mods,r.glp1)||(!!S.mods&&oh!==hotOn());toast(t.codeOk);afterSetup(ch);}
+  else if(a==='setupDone'){var wsel=root.querySelector('input[name=who]:checked');if(!wsel){var e0=root.querySelector('#setupErr');e0.textContent=T().setupNeedWho;e0.hidden=false;root.querySelector('.about').scrollIntoView({behavior:'smooth',block:'center'});return;}var oldWho=S.who;S.who=wsel.value;var ag=parseInt((root.querySelector('#ageIn')||{}).value,10);S.age=(ag>=18&&ag<=99)?ag:null;var whoCh=!!oldWho&&oldWho!==S.who;var hcb=root.querySelector('input[name=hot]'),oldHot=hotOn();S.hot=hcb?hcb.checked:null;whoCh=whoCh||(!!S.mods&&oldHot!==hotOn());var m={};MODS.forEach(function(k){var c=root.querySelector('input[name=mod][value='+k+']');m[k]=!!(c&&c.checked);});if(!MODS.some(function(k){return m[k];})){var e1=root.querySelector('#setupErr');e1.textContent=T().setupNeedOne;e1.hidden=false;return;}var g=root.querySelector('input[name=glp1]'),ma=root.querySelector('input[name=medask]');var oldAsk=S.medAsk!==false;S.medAsk=!ma||ma.checked;var first=!S.mods;var ch=applySetup(m,g&&g.checked)||(oldAsk!==S.medAsk&&!!S.mods)||whoCh;if(whoCh&&S.filled)delete S.filled[today()];save();toast(ch?t.progNew:t.saved);afterSetup(ch||(first&&!dayDone(today())));}
   else if(a==='pmStart')sheetPin();
   else if(a==='pmEnd'){PM=false;view='fill';render();toast(T().pmEnded);}
   else if(a==='pmAppt')sheetAppt();
@@ -1013,6 +1020,8 @@ root.addEventListener('touchend',fswEnd);root.addEventListener('touchcancel',fsw
 root.addEventListener('input',function(e){if(!F)return;if(e.target.name==='fkg')F.a.kg=e.target.value;if(e.target.name==='fnote')F.a.note=e.target.value;});
 root.addEventListener('change',function(e){
   if(e.target.id==='importIn'&&e.target.files[0])importData(e.target.files[0]);
+  if(e.target.name==='hot')e.target.dataset.touched='1';
+  if(e.target.name==='who'){var hc=root.querySelector('input[name=hot]');if(hc&&!hc.dataset.touched)hc.checked=hotDefault(e.target.value);}
   if(e.target.id==='nameIn'){S.name=e.target.value.trim();save();toast(T().saved);}
 });
 

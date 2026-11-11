@@ -994,7 +994,7 @@ root.addEventListener('change',function(e){
 render();
 if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').then(function(reg){
     var chk=function(){if(document.visibilityState==='visible')reg.update().catch(function(){});};
-    setInterval(chk,60000);document.addEventListener('visibilitychange',chk);window.addEventListener('focus',chk);
+    setInterval(chk,15000);document.addEventListener('visibilitychange',chk);window.addEventListener('focus',chk);
   }).catch(function(){});
   var hadCtl=!!navigator.serviceWorker.controller,pendingReload=false;
   var doReload=function(){if(F){pendingReload=true;return;}try{sessionStorage.setItem('pa-upd','1');}catch(e){}location.reload();};

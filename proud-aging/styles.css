@@ -474,3 +474,7 @@ body.pf-body{margin:0;min-height:100vh;background:radial-gradient(1200px 700px a
 .md i{display:grid;place-items:center;width:26px;height:26px;margin:0 auto;border-radius:50%;background:#F1ECE4}.md i svg{width:13px;height:13px;color:#fff}
 .md.ok i{background:#3E9B6A}.md.part i{background:linear-gradient(90deg,#3E9B6A 50%,#F1ECE4 50%)}.md.miss i{background:#F6E2DE}.md.open i{box-shadow:0 0 0 2px #5B8DB8 inset;background:#fff}.md.na i{background:transparent;border:1.5px dashed #E8E1D5}
 .md.miss i{background:#E9E3D9}
+.dchips{margin:-4px 0 14px}.dchips:empty{display:none}
+.dchips p{margin:0 2px 8px;font-size:.85rem;color:var(--muted);font-weight:600}
+.dchip{all:unset;cursor:pointer;display:inline-block;margin:0 6px 8px 0;padding:10px 14px;border-radius:999px;background:#fff;border:1.5px solid rgba(28,46,74,.16);font-weight:800;color:#1C2E4A;font-size:.95rem}
+.dchip.on{background:#1C2E4A;border-color:#1C2E4A;color:#fff}

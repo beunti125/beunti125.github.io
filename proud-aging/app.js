@@ -926,5 +926,13 @@ root.addEventListener('change',function(e){
 
 /* ---------- Start ---------- */
 render();
-if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){});}
+if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').then(function(reg){
+    var chk=function(){if(document.visibilityState==='visible')reg.update().catch(function(){});};
+    setInterval(chk,60000);document.addEventListener('visibilitychange',chk);window.addEventListener('focus',chk);
+  }).catch(function(){});
+  var hadCtl=!!navigator.serviceWorker.controller,pendingReload=false;
+  var doReload=function(){if(F){pendingReload=true;return;}try{sessionStorage.setItem('pa-upd','1');}catch(e){}location.reload();};
+  navigator.serviceWorker.addEventListener('controllerchange',function(){if(hadCtl)doReload();hadCtl=true;});
+  setInterval(function(){if(pendingReload&&!F)doReload();},2000);
+  try{if(sessionStorage.getItem('pa-upd')){sessionStorage.removeItem('pa-upd');setTimeout(function(){var t=document.createElement('div');t.className='updtoast';t.textContent=(S.lang==='en'?'App updated':S.lang==='tr'?'Uygulama güncellendi':'App aktualisiert');document.body.appendChild(t);setTimeout(function(){t.remove();},2600);},400);}}catch(e){}}
 })();

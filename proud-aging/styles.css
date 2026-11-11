@@ -504,3 +504,6 @@ body.pf-body{margin:0;min-height:100vh;background:radial-gradient(1200px 700px a
 /* Handy-Rahmen exakt mittig */
 .pf-wrap{position:fixed;inset:0;width:auto;height:auto;display:block}
 .pf-wrap .pf-phone{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);transform-origin:center center}
+
+.updtoast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);transform:translateX(-50%);background:#1C2E4A;color:#fff;padding:9px 16px;border-radius:999px;font-size:.85rem;font-weight:600;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.2);animation:updIn .3s ease}
+@keyframes updIn{from{opacity:0;transform:translate(-50%,-8px)}}

@@ -199,6 +199,17 @@ nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stro
 .rks{font-size:18px;font-variant-numeric:tabular-nums}
 .rkflop{margin-top:10px}
 .spill{display:inline-block;font-size:11px;font-weight:800;padding:1px 6px;border-radius:999px;border:1.5px solid currentColor;margin-left:4px;vertical-align:1px;line-height:1.3}
+.dpill{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:800;padding:1px 7px;border-radius:999px;vertical-align:1px;line-height:1.4;white-space:nowrap}
+.dpill .mi{width:12px;height:12px}
+.d-low{background:rgba(61,220,132,.16);color:#3ddc84}.d-mid{background:rgba(255,197,61,.16);color:#ffc53d}.d-high{background:rgba(255,107,107,.16);color:#ff6b6b}
+.dish .dhd,.dishday .dhd{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.dishday .label{display:flex;align-items:center;gap:6px}
+.dlist{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:8px 0}
+.dlist li{background:var(--tile);border-radius:8px;padding:4px 9px;font-size:13px;font-weight:600}
+.dtips{display:flex;flex-direction:column;gap:6px}
+.dtip{display:flex;flex-direction:column;gap:1px;border-left:3px solid var(--accent);padding:2px 0 2px 10px}
+.dtip b{font-size:13px}.dtip span{font-size:13px;color:var(--muted)}
+.dline{font-size:13px;font-weight:600;margin:6px 0 0}
 /* Kein Doppeltipp-Zoom (Pinch-Zoom bleibt möglich), kein Auto-Zoom beim Tippen in Felder */
 html,body,*{touch-action:manipulation}
 input,select,textarea{font-size:max(16px,1em)}
@@ -996,7 +1007,7 @@ function planFor(d){
 /* ---------- Worauf hast du Bock? – Plan nach Lust anpassen ----------
    Reihenfolge nach Kosten: 1) schon gekocht/gekauft diese Woche (Tag tauschen, 0 €)
    2) Gefrierfach (0 €) 3) Vorrat (Carbonara) 4) kurz einkaufen (4 Portionen, Rest einfrieren). */
-var BOCK_MOODS=[["fastfood","Fastfood",["fastfood"]],["pasta","Pasta",["pasta"]],["cremig","Was Cremiges",["cremig"]],["deftig","Deftig & Fleisch",["deftig","rind"]],["asia","Asiatisch",["asiatisch"]],["scharf","Scharf & Mexikanisch",["scharf","mexikanisch","indisch"]],["suess","Was Süßes",["suess"]],["leicht","Was Leichtes",["salat","veggie"]]];
+var BOCK_MOODS=[["fastfood","Fastfood",["fastfood"]],["pasta","Pasta",["pasta"]],["cremig","Was Cremiges",["cremig"]],["deftig","Deftig & Fleisch",["deftig","rind"]],["asia","Asiatisch",["asiatisch"]],["scharf","Scharf & Mexikanisch",["scharf","mexikanisch","indisch"]],["suess","Was Süßes",["suess"]],["leicht","Was Leichtes",["salat","veggie"]],["faul","Wenig Abwasch",[]]];
 var BOCK_SKIP={oats:1,nougat:1,broetchen:1};
 var BOCK_ORDER=13; // ungefähre Kosten einer Bestellung
 function bockGet(d){ return load("bock:"+fmtISO(d), null); }
@@ -1022,15 +1033,17 @@ function bockCands(d,sl){
   if(recOk("carbonara")&&!seen.carbonara){ seen.carbonara=1; out.pantry.push({key:"carbonara",m:[R.carbonara.name,"carbonara"]}); }
   Object.keys(R).forEach(function(k){ if(seen[k]||BOCK_SKIP[k]||!NUT[k]||!REC_SHOP[k]||!recOk(k)) return; out.buy.push({key:k,m:[R[k].name,k],eur:NUT[k].eur*4}); });
   var SM=scoreMap(); [out.have,out.freezer,out.buy].forEach(function(L){ L.forEach(function(x){ x.score=SM[x.key]; }); });
-  out.have.sort(function(a,b){ return (b.score||60)-(a.score||60) || a.days-b.days; });
-  out.buy.sort(function(a,b){ var fa=(a.score||0)>=70, fb=(b.score||0)>=70; return (fb-fa) || a.eur-b.eur; });
+  function dp(k){ var z=dishTools(k); return z?z.pts:5; }
+  out.have.sort(function(a,b){ return (b.score||60)-(a.score||60) || dp(a.key)-dp(b.key) || a.days-b.days; });
+  out.buy.sort(function(a,b){ var fa=(a.score||0)>=70, fb=(b.score||0)>=70; return (fb-fa) || (a.eur+dp(a.key)*.15)-(b.eur+dp(b.key)*.15); });
   return out;
 }
 function bockMatch(key,f){
   if(!f) return true;
   if(f.key) return key===f.key;
   var tg=REC_TAGS[key]||[], nm=(R[key]?R[key].name:"").toLowerCase();
-  if(f.mood){ var mo=BOCK_MOODS.filter(function(x){return x[0]===f.mood;})[0]; if(mo && !mo[2].some(function(t){return tg.indexOf(t)>=0;})) return false; }
+  if(f.mood==="faul"){ var dt=dishTools(key); if(!dt||dt.pts>3.5) return false; }
+  else if(f.mood){ var mo=BOCK_MOODS.filter(function(x){return x[0]===f.mood;})[0]; if(mo && !mo[2].some(function(t){return tg.indexOf(t)>=0;})) return false; }
   if(f.q){ var q=f.q.toLowerCase().trim(); if(q && nm.indexOf(q)<0 && !tg.some(function(t){return t.indexOf(q)===0;})) return false; }
   return true;
 }
@@ -1481,7 +1494,7 @@ function recipeBody(id){
   return '<div class="rbody"><div class="meta" style="margin:4px 0 8px"><span class="pill green">'+esc(x.time)+'</span><span class="pill green">'+esc(x.por)+'</span></div>'+nutRow(id)+
     '<span class="label">Zutaten</span><ul class="ing">'+x.ing.map(function(i){return "<li>"+esc(i)+"</li>";}).join("")+'</ul>'+
     '<span class="label" style="margin-top:10px">So geht\'s</span>'+ST_LEGEND+'<ol class="steps">'+x.steps.map(function(z,i){return stLi(z,i,x.name);}).join("")+'</ol>'+
-    '<div class="tip" style="margin-top:12px">'+esc(x.tip)+'</div>'+techButtons(id)+'</div>';
+    '<div style="margin-top:12px">'+dishCard(id)+'</div><div class="tip" style="margin-top:12px">'+esc(x.tip)+'</div>'+techButtons(id)+'</div>';
 }
 var openCards={};
 function mealCard(label, meal, extraCls, pill){
@@ -1505,6 +1518,70 @@ function mealRow(label, meal, pill){
   var head='<span class="mico">'+ico(R_ICON[meal[1]]||"bowl","s")+'</span><span class="mtxt"><span class="mlabel">'+label+(pill||"")+'</span><span class="mname">'+esc(meal[0])+'</span></span>'+(n?'<span class="mmeta">'+(meal[1]&&meal[1][0]==="_"?"ca. ":"")+n.kcal+' kcal</span>':'')+(meal[1]&&R[meal[1]]?'<span class="chev'+(open?' up':'')+'" aria-hidden="true"></span>':'');
   if(!meal[1]||!R[meal[1]]) return '<div class="mrow">'+head+'</div>';
   return '<div class="mitem"><button class="mrow acchead2" data-tog="'+esc(key)+'" aria-expanded="'+open+'">'+head+'</button>'+(open?'<div class="mbody">'+recipeBody(meal[1])+'</div>':'')+'</div>';
+}
+/* ---------- Abwasch: Utensilien pro Rezept aus den Schritten ableiten ----------
+   Punkte ≈ Spülaufwand: Topf/Pfanne mit Soße 2, Auflaufform 3, Blech 2 (mit Backpapier 0,5),
+   Schüssel/Sieb/Brett/Mixer 1, Messer/Tasse/Schneebesen 0,5. Gegessen wird aus der Box = 0. */
+var DISH_W={topf:2,pfanne:2,form:3,blech:2,blechp:.5,schuessel:1,sieb:1,brett:1,messer:.5,tasse:.5,mixer:1.5,puerier:1,reibe:1,besen:.5,stampfer:1};
+var DISH_N={topf:"Topf",pfanne:"Pfanne",form:"Auflaufform",blech:"Backblech",blechp:"Blech mit Backpapier",schuessel:"Schüssel",sieb:"Sieb",brett:"Schneidebrett",messer:"Messer",tasse:"Tasse",mixer:"Handmixer",puerier:"Pürierstab",reibe:"Reibe",besen:"Schneebesen",stampfer:"Stampfer"};
+var _dishC={};
+function dishTools(id){
+  if(_dishC[id]) return _dishC[id];
+  var x=R[id]; if(!x) return null;
+  var all=x.steps.join(" ")+" "+x.ing.join(" "), low=all.toLowerCase(), u={}, has={};
+  function add(k,n){ u[k]=Math.max(u[k]||0,n||1); }
+  x.steps.forEach(function(st){ var m=st.match(/^([a-z]+)\|[^|]*\|[^|]*\|([\s\S]*)$/), ty=m?m[1]:"", tx=(m?m[2]:st).toLowerCase(); has[ty]=1;
+    if(ty==="pot"||/\btopf\b/.test(tx)&&ty!=="wash") add("topf", /(zweite[nm]?|kleine[nm]?|weitere[nm]?) topf/.test(tx)&&/(große[nm]?|größte[nm]?) topf/.test(low)?2:1);
+    if(ty==="pan"||/pfanne\b/.test(tx)&&ty!=="wash"&&ty!=="serve") add("pfanne", /zweite[n]? pfanne/.test(tx)?2:1);
+    if(ty==="oven"){ if(/auflaufform/.test(tx)) add("form"); else if(/blech/.test(tx)) add(/backpapier/.test(low)?"blechp":"blech", /zweite[s]? blech/.test(low)?2:1); }
+    if(ty==="mix"){ if(/tasse|becher/.test(tx)) add("tasse"); else if(/box|gefrierbeutel|topf|pfanne|form|blech/.test(tx)&&!/schüssel/.test(tx)) {} else add("schuessel", /zweite[n]? schüssel/.test(low)?2:1); }
+    if(ty==="sieve"||/\bsieb\b/.test(tx)) add("sieb");
+    if(ty==="cut"||ty==="peel"){ add("brett"); add("messer"); }
+  });
+  if(/handmixer|mit dem mixer|rührgerät/.test(low)) add("mixer");
+  if(/pürierstab/.test(low)) add("puerier");
+  if(/(^|[^a-zäöüß])(reibe|reiben)([^a-zäöüß]|$)/.test(low)&&!/gerieben|reibekäse/.test(low)) add("reibe");
+  if(/auflaufform|ofenform|backform/.test(low)){ add("form"); delete u.blech; delete u.blechp; }
+  if(/schneebesen/.test(low)) add("besen");
+  if(/stampfer|stampfen/.test(low)) add("stampfer");
+  if(u.mixer&&u.besen) delete u.besen;
+  var pts=0, n=0; Object.keys(u).forEach(function(k){ pts+=DISH_W[k]*u[k]; n+=u[k]; });
+  // Spar-Tipps, die wirklich Teile einsparen
+  var tips=[], save=0;
+  if(u.sieb&&u.topf&&/nudel|pasta|penne|spaghetti|spätzle|gnocchi/.test(low)){ tips.push(["Sieb sparen","Nudeln mit dem Deckel einen Spalt offen über der Spüle abgießen – oder mit der Schaumkelle direkt in die Soße heben."]); save+=1; }
+  if(u.topf&&u.pfanne&&u.sieb&&/soße|sosse|sahne/.test(low)){ tips.push(["Pfanne sparen","Nudeln abgießen, dann die Soße im leeren, noch heißen Nudeltopf machen und die Nudeln zurückgeben."]); save+=2; }
+  if(u.schuessel&&/marinier|einreiben|würzen|vermischen|vermengen/.test(low)&&(has.oven||has.pan)){ tips.push(["Schüssel sparen","Zum Marinieren alles in die Vorratsbox oder einen Gefrierbeutel geben, Deckel zu, schütteln."]); save+=1; }
+  if(u.blech){ tips.push(["Blech sauber halten","Backpapier drauflegen – dann ist das Blech nach 10 Sekunden abgewischt statt eingeweicht."]); save+=1.5; }
+  if(u.form){ tips.push(["Auflaufform","Direkt nach dem Essen mit heißem Wasser + Spüli füllen – 20 Min. einweichen spart das Schrubben."]); }
+  if(u.brett&&/hähnchen|hack|fleisch|schnitzel|steak|speck/.test(low)&&/zwiebel|gurke|tomate|salat|champignon|kartoffel|paprika/.test(low)){ tips.push(["Ein Brett, einmal waschen","Erst Gemüse, dann Fleisch schneiden – so musst du das Brett nur am Ende einmal spülen."]); }
+  if(u.tasse&&u.schuessel){ tips.push(["Tasse sparen","Soße gleich in der Schüssel anrühren, die du sowieso benutzt."]); save+=.5; }
+  tips.push(["Kein Teller","Direkt aus der Vorratsbox essen – die musst du ohnehin spülen."]);
+  var lv=pts<=3.5?["Wenig Abwasch","d-low"]:(pts<=6.5?["Mittel","d-mid"]:["Viel Abwasch","d-high"]);
+  _dishC[id]={u:u,pts:pts,n:n,min:Math.max(2,Math.round(pts*1.5)),tips:tips,after:Math.max(0,pts-save),lv:lv};
+  return _dishC[id];
+}
+function dishBadge(id){ var d=dishTools(id); if(!d||!d.n) return ""; return '<span class="dpill '+d.lv[1]+'" title="'+d.lv[0]+'">'+DISH_ICO+d.n+'</span>'; }
+var DISH_ICO='<svg viewBox="0 0 16 16" class="mi" aria-hidden="true"><path d="M3 9.5h10l-1 4H4z" fill="currentColor"/><circle cx="6" cy="5" r="1.6" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="10.5" cy="3.5" r="1.1" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="9.5" cy="7" r=".9" fill="none" stroke="currentColor" stroke-width="1"/></svg>';
+function dishCard(id){
+  var d=dishTools(id); if(!d||!d.n) return "";
+  var items=Object.keys(d.u).map(function(k){ return '<li>'+(d.u[k]>1?d.u[k]+'× ':'')+DISH_N[k]+'</li>'; }).join("");
+  return '<div class="card dish"><div class="dhd"><span class="label">Abwasch</span><span class="dpill '+d.lv[1]+'">'+d.lv[0]+' · '+d.n+' Teile · ca. '+d.min+' Min.</span></div><ul class="dlist">'+items+'</ul>'+
+    '<div class="dtips">'+d.tips.map(function(t){ return '<div class="dtip"><b>'+esc(t[0])+'</b><span>'+esc(t[1])+'</span></div>'; }).join("")+'</div>'+
+    (d.after<d.pts?'<p class="note">Mit den Tipps: ca. '+Math.max(1,Math.round(d.after*1.5))+' statt '+d.min+' Min. spülen.</p>':'')+'</div>';
+}
+/* Kochtag: mehrere Rezepte nacheinander – gemeinsame Teile nur einmal spülen */
+var W_NAME2KEY=null;
+function cookKeysFor(p){
+  if(!W_NAME2KEY){ W_NAME2KEY={}; Object.keys(W).forEach(function(r){ var w=W[r]; ["bowl","wrap","pasta","fake","sun","mi"].forEach(function(f){ if(w[f]) W_NAME2KEY[w[f][0]]=w[f][1]; }); }); Object.keys(R).forEach(function(k){ W_NAME2KEY[R[k].name]=k; }); }
+  var ks=[]; (p.tasks||[]).forEach(function(t){ var m=t.match(/Kochen: (.+?) [–-] /); if(m&&W_NAME2KEY[m[1]]&&ks.indexOf(W_NAME2KEY[m[1]])<0) ks.push(W_NAME2KEY[m[1]]); });
+  if(!ks.length && p.dinner && p.dinner[1] && R[p.dinner[1]] && (p.fake||p.dinner[1]==="bratkartoffeln"||p.bockd==="buy"||p.bockd==="pantry")) ks.push(p.dinner[1]);
+  return ks.filter(function(k){ return dishTools(k); });
+}
+function dishDay(keys){
+  if(!keys.length) return null;
+  var naive=0, comb={}; keys.forEach(function(k){ var d=dishTools(k); naive+=d.pts; Object.keys(d.u).forEach(function(t){ comb[t]=Math.max(comb[t]||0,d.u[t]); }); });
+  var pts=0, n=0; Object.keys(comb).forEach(function(t){ pts+=DISH_W[t]*comb[t]; n+=comb[t]; });
+    return {pts:pts,naive:naive,n:n,min:Math.max(2,Math.round(pts*1.5)),nmin:Math.round(naive*1.5),comb:comb,keys:keys};
 }
 /* ---------- Lecker-Score: Bewertungen pro Gericht ----------
    Speicher: "rate:<Datum>|<l/d>" = {k:Rezept, s:1–5}. Score 0–100 mit Ausgleich
@@ -1576,7 +1653,7 @@ function renderBockList(){
     if(g[0]==="buy"){ if(!f.mood&&!f.q&&!f.key){ html+='<p class="note bockhint">Neue Gerichte (mit Einkauf) zeige ich dir, sobald du oben eine Richtung wählst oder etwas eintippst.</p>'; return; } list=list.slice(0,8); } else freeN+=list.length;
     if(!list.length) return;
     html+='<div class="section"><h3 class="sech">'+g[1]+'</h3>'+list.map(function(x){ var ln=bockLine(x,g[0]);
-      return '<button class="item bockitem'+(g[0]==="buy"?'':' free')+'" data-bockpick="'+[bockUI.iso,bockUI.sl,g[0],x.key,x.from||"",x.fs||""].join("|")+'">'+ico(R_ICON[x.key]||"bowl","s")+'<span class="txt"><span class="n">'+esc(x.m[0])+(x.score!=null?' <span class="spill '+scoreTier(x.score)[1]+'">'+x.score+'</span>':'')+'</span><span class="q">'+esc(ln[0])+'</span></span><span class="p">'+ln[1]+'</span></button>'; }).join("")+'</div>';
+      return '<button class="item bockitem'+(g[0]==="buy"?'':' free')+'" data-bockpick="'+[bockUI.iso,bockUI.sl,g[0],x.key,x.from||"",x.fs||""].join("|")+'">'+ico(R_ICON[x.key]||"bowl","s")+'<span class="txt"><span class="n">'+esc(x.m[0])+(x.score!=null?' <span class="spill '+scoreTier(x.score)[1]+'">'+x.score+'</span>':'')+(g[0]==="have"&&!x.fresh?'':' '+dishBadge(x.key))+'</span><span class="q">'+esc(ln[0])+'</span></span><span class="p">'+ln[1]+'</span></button>'; }).join("")+'</div>';
   });
   if(!html) html='<p class="note">Dazu habe ich nichts im Plan. Probier eine andere Richtung oder lösch den Suchbegriff.</p>';
   else if(!freeN) html='<p class="note">Davon ist diese Woche nichts schon da – unten die günstigsten Optionen. Immer noch billiger als bestellen.</p>'+html;
@@ -1634,6 +1711,10 @@ function renderHeute(){
   html += '</section>';
   // To-do als abhakbare Liste
   var tk="todo:"+fmtISO(d), done=load(tk,{});
+  var dd0=dishDay(cookKeysFor(p));
+  if(dd0) html += '<section class="card dishday"><div class="dhd"><span class="label">'+DISH_ICO+' Abwasch '+(diff===0?'heute':'an dem Tag')+'</span><span class="dpill '+(dd0.pts<=4?'d-low':(dd0.pts<=8?'d-mid':'d-high'))+'">'+dd0.n+' Teile · ca. '+dd0.min+' Min.</span></div>'+
+    (dd0.keys.length>1?'<p class="note">Beides nacheinander mit denselben Sachen kochen – nur am Ende einmal spülen'+(dd0.naive>dd0.pts?' (ca. '+dd0.min+' statt '+dd0.nmin+' Min.)':'')+'. Reihenfolge: erst das Gericht ohne rohes Fleisch auf dem Brett, Pfanne zwischendurch nur mit Küchenpapier auswischen.</p>':'<p class="note">'+esc(dishTools(dd0.keys[0]).tips[0][0])+': '+esc(dishTools(dd0.keys[0]).tips[0][1])+'</p>')+
+    '<p class="dline">'+Object.keys(dd0.comb).map(function(k){ return (dd0.comb[k]>1?dd0.comb[k]+'× ':'')+DISH_N[k]; }).join(' · ')+'</p></section>';
   html += '<section class="card todo"><span class="label">To-do</span>'+p.tasks.map(function(x,i){ var on=!!done[i]; return '<button class="tdo" data-todo="'+tk+'|'+i+'" aria-pressed="'+on+'"><span class="box" aria-hidden="true"></span><span>'+esc(x)+'</span></button>'; }).join("");
   if(p.act){
     var doneKey="act:"+abs+":"+dow, dn=load(doneKey,false);
@@ -1696,7 +1777,7 @@ function renderRezepte(){
   var SM=scoreMap();
   var html='<div class="head"><h3>'+ORD.length+' Rezepte</h3><h1>Rezepte</h1></div>'+renderRanking()+'<h3 class="sech">Alle Rezepte</h3><div class="rlist">';
   ORD.forEach(function(id){ var x=R[id];
-    html+='<button class="ritem" data-r="'+id+'">'+ico(R_ICON[id])+'<span style="display:flex;flex-direction:column;gap:2px;flex:1"><span class="n">'+esc(x.name)+(SM[id]!=null?' <span class="spill '+scoreTier(SM[id])[1]+'">'+SM[id]+'</span>':'')+'</span><span class="t">'+(NUT[id]?'ca. '+eur2(NUT[id].eur)+' · '+NUT[id].kcal+' kcal · '+NUT[id].p+' g Eiweiß':esc(x.time))+'</span></span><span class="chev" aria-hidden="true"></span></button>';
+    html+='<button class="ritem" data-r="'+id+'">'+ico(R_ICON[id])+'<span style="display:flex;flex-direction:column;gap:2px;flex:1"><span class="n">'+esc(x.name)+(SM[id]!=null?' <span class="spill '+scoreTier(SM[id])[1]+'">'+SM[id]+'</span>':'')+' '+dishBadge(id)+'</span><span class="t">'+(NUT[id]?'ca. '+eur2(NUT[id].eur)+' · '+NUT[id].kcal+' kcal · '+NUT[id].p+' g Eiweiß':esc(x.time))+'</span></span><span class="chev" aria-hidden="true"></span></button>';
   });
   el.innerHTML=html+'</div>';
 }
@@ -1722,7 +1803,7 @@ function openRecipe(id){
   b.innerHTML='<button class="back" id="close">Zurück</button>'+ico(R_ICON[id],"xl")+'<h1 id="r-title">'+esc(x.name)+'</h1><div class="meta">'+(function(){ var sx=dishStats().filter(function(z){return z.key===id;})[0]; return sx?'<span class="pill green">Lecker-Score '+sx.score+' · '+sx.n+'×</span>':''; })()+'<span class="pill green">'+esc(x.time)+'</span><span class="pill green">'+esc(x.por)+'</span></div>'+nutRow(id)+
     '<div class="stack"><div class="card"><span class="label">Zutaten</span><ul class="ing">'+x.ing.map(function(i){return "<li>"+esc(i)+"</li>";}).join("")+'</ul></div>'+
     '<div class="card"><span class="label">So geht\'s</span>'+ST_LEGEND+'<ol class="steps">'+x.steps.map(function(z,i){return stLi(z,i,x.name);}).join("")+'</ol></div>'+
-    '<div class="tip">'+esc(x.tip)+'</div>'+techButtons(id)+'</div>';
+    dishCard(id)+'<div class="tip">'+esc(x.tip)+'</div>'+techButtons(id)+'</div>';
   var sh=document.getElementById("sheet"); sh.classList.add("open"); sh.scrollTop=0;
   document.getElementById("close").focus();
 }

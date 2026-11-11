@@ -158,6 +158,47 @@ nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stro
 .bockitem .p{font-weight:800;white-space:nowrap}
 .bockitem.free .p{color:var(--accent)}
 .bockex{margin-bottom:8px}
+.rate{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px 10px 62px;margin-top:-4px}
+.rate .rq{font-size:12px;color:var(--muted);font-weight:600}
+.rate .stars{display:flex;gap:2px}
+.rate .st{border:0;background:none;padding:6px 4px;color:var(--line);cursor:pointer;line-height:0;min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center}
+.rate .st .mi{width:22px;height:22px}
+.rate .st.on{color:#ffc53d}
+.rate .st:active{transform:scale(1.25)}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:700;font-size:14px;opacity:0;transition:.25s;z-index:99;pointer-events:none;max-width:88vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.rank{margin:4px 0 18px}
+.rank.empty{margin-bottom:18px}
+.rkhead{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.rkstats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.rkstats span{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--muted)}
+.rkstats b{font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums}
+.rkstats .sv b{color:#3ddc84}
+.podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;align-items:end;margin-bottom:12px}
+.pod{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:18px;padding:16px 8px 12px;color:inherit;font:inherit;cursor:pointer;box-shadow:var(--shadow)}
+.pod.p1{padding-top:22px;background:linear-gradient(180deg,rgba(255,197,61,.18),var(--surface) 70%);border-color:rgba(255,197,61,.55)}
+.pod.p2{background:linear-gradient(180deg,rgba(200,210,225,.14),var(--surface) 70%)}
+.pod.p3{background:linear-gradient(180deg,rgba(214,140,80,.16),var(--surface) 70%)}
+.pod .medal{position:absolute;top:-11px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#1a1a1a;background:#cfd6e2}
+.pod.p1 .medal{background:#ffc53d;width:28px;height:28px;top:-13px}
+.pod.p3 .medal{background:#d68c50}
+.pod .pn{font-weight:700;font-size:12.5px;line-height:1.2;text-align:center;min-height:2.4em;display:flex;align-items:center}
+.pod .pm{font-size:11px;color:var(--muted)}
+.ring{position:relative;display:inline-flex;align-items:center;justify-content:center;line-height:0}
+.ring b{position:absolute;font-size:12px;line-height:1;font-variant-numeric:tabular-nums;color:var(--ink)}
+.ring.big b{font-size:18px}
+.t-leg{color:#ffc53d}.t-top{color:#3ddc84}.t-ok{color:#7aa7ff}.t-flop{color:#ff6b6b}
+.rkl{display:flex;flex-direction:column;gap:6px}
+.rkrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 12px;color:inherit;font:inherit;cursor:pointer}
+.rkn{width:18px;text-align:center;font-weight:800;color:var(--muted);font-size:13px}
+.rkt{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.rkt .n{font-weight:700;font-size:14px}
+.rkt .q{font-size:11.5px;color:var(--muted)}
+.rkt .bar{height:5px;border-radius:9px;background:var(--tile);overflow:hidden}
+.rkt .bar i{display:block;height:100%;background:currentColor;border-radius:9px}
+.rks{font-size:18px;font-variant-numeric:tabular-nums}
+.rkflop{margin-top:10px}
+.spill{display:inline-block;font-size:11px;font-weight:800;padding:1px 6px;border-radius:999px;border:1.5px solid currentColor;margin-left:4px;vertical-align:1px;line-height:1.3}
 /* Technik */
 .tstage svg .ol{stroke:#1b130e;stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round;paint-order:stroke}
 .tstage svg .slice,.tstage svg .chick,.tstage svg .schnbody,.tstage svg .pattybody,.tstage svg .stkbody,.tstage svg .brown{stroke:#1b130e;stroke-width:1.8;paint-order:stroke}
@@ -977,7 +1018,9 @@ function bockCands(d,sl){
   if(ISY){ [["bolo","bolognese","Bolognese aus dem Gefrierfach"],["schnitzel","schnitzel","Rahmschnitzel aus dem Gefrierfach"]].forEach(function(f){ var n=load("stock:"+f[0],0); if(n>0&&!seen[f[1]]){ seen[f[1]]=1; out.freezer.push({key:f[1],m:[f[2],f[1]],n:n}); } }); }
   if(recOk("carbonara")&&!seen.carbonara){ seen.carbonara=1; out.pantry.push({key:"carbonara",m:[R.carbonara.name,"carbonara"]}); }
   Object.keys(R).forEach(function(k){ if(seen[k]||BOCK_SKIP[k]||!NUT[k]||!REC_SHOP[k]||!recOk(k)) return; out.buy.push({key:k,m:[R[k].name,k],eur:NUT[k].eur*4}); });
-  out.buy.sort(function(a,b){ return a.eur-b.eur; });
+  var SM=scoreMap(); [out.have,out.freezer,out.buy].forEach(function(L){ L.forEach(function(x){ x.score=SM[x.key]; }); });
+  out.have.sort(function(a,b){ return (b.score||60)-(a.score||60) || a.days-b.days; });
+  out.buy.sort(function(a,b){ var fa=(a.score||0)>=70, fb=(b.score||0)>=70; return (fb-fa) || a.eur-b.eur; });
   return out;
 }
 function bockMatch(key,f){
@@ -1460,6 +1503,53 @@ function mealRow(label, meal, pill){
   if(!meal[1]||!R[meal[1]]) return '<div class="mrow">'+head+'</div>';
   return '<div class="mitem"><button class="mrow acchead2" data-tog="'+esc(key)+'" aria-expanded="'+open+'">'+head+'</button>'+(open?'<div class="mbody">'+recipeBody(meal[1])+'</div>':'')+'</div>';
 }
+/* ---------- Lecker-Score: Bewertungen pro Gericht ----------
+   Speicher: "rate:<Datum>|<l/d>" = {k:Rezept, s:1–5}. Score 0–100 mit Ausgleich
+   (eine einzelne 5 zählt weniger als fünf 5er), damit das Ranking fair bleibt. */
+var RATE_TXT=["","Nie wieder","Naja","Okay","Lecker","Mega lecker"];
+function rateKey(d,sl){ return "rate:"+fmtISO(d)+"|"+sl; }
+function rateAll(){
+  var keys={}, by={};
+  try{ for(var i=0;i<localStorage.length;i++){ var lk=localStorage.key(i); if(lk&&lk.indexOf("ep:rate:")===0) keys[lk.slice(3)]=1; } }catch(e){}
+  Object.keys(mem).forEach(function(k){ if(k.indexOf("rate:")===0) keys[k]=1; });
+  Object.keys(keys).forEach(function(k){ var v=load(k,null); if(v&&v.k&&v.s) (by[v.k]=by[v.k]||[]).push({s:v.s,d:k.slice(5,15)}); });
+  return by;
+}
+function toastMsg(t){ var el=document.getElementById("toast"); if(!el){ el=document.createElement("div"); el.id="toast"; el.className="toast"; el.setAttribute("role","status"); document.body.appendChild(el); } el.textContent=t; el.classList.add("on"); clearTimeout(toastMsg._t); toastMsg._t=setTimeout(function(){ el.classList.remove("on"); },2200); }
+function scoreOf(arr){ if(!arr||!arr.length) return null; var n=arr.length, sum=arr.reduce(function(a,b){return a+b.s;},0), C=1.5, prior=3.4;
+  return Math.max(0,Math.min(100,Math.round(((sum+prior*C)/(n+C)-1)/4*100))); }
+function scoreTier(sc){ return sc>=85?["Legendär","t-leg"]:(sc>=70?["Stark","t-top"]:(sc>=50?["Okay","t-ok"]:["Flop","t-flop"])); }
+function dishStats(){
+  var by=rateAll(), out=[];
+  Object.keys(by).forEach(function(k){ if(!R[k]) return; var a=by[k], sc=scoreOf(a), avg=a.reduce(function(x,y){return x+y.s;},0)/a.length;
+    out.push({key:k, score:sc, n:a.length, avg:avg, last:a.map(function(x){return x.d;}).sort().pop(), saved:Math.max(0,(BOCK_ORDER-(NUT[k]?NUT[k].eur:3)))*a.length}); });
+  out.sort(function(a,b){ return b.score-a.score || b.n-a.n; });
+  return out;
+}
+function scoreMap(){ var m={}; dishStats().forEach(function(x){ m[x.key]=x.score; }); return m; }
+function scoreRing(sc,big){ var r=big?26:15, c=2*Math.PI*r, w=big?6:4, sz=(r+w)*2, tier=scoreTier(sc);
+  return '<span class="ring '+tier[1]+(big?' big':'')+'" aria-label="Lecker-Score '+sc+' von 100"><svg viewBox="0 0 '+sz+' '+sz+'" width="'+sz+'" height="'+sz+'"><circle cx="'+sz/2+'" cy="'+sz/2+'" r="'+r+'" fill="none" stroke="var(--tile)" stroke-width="'+w+'"/><circle cx="'+sz/2+'" cy="'+sz/2+'" r="'+r+'" fill="none" stroke="currentColor" stroke-width="'+w+'" stroke-linecap="round" stroke-dasharray="'+(c*sc/100).toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 '+sz/2+' '+sz/2+')"/></svg><b>'+sc+'</b></span>'; }
+function rateRow(d,sl,meal){
+  if(!meal||!meal[1]||!R[meal[1]]||meal[1][0]==="_") return "";
+  var v=load(rateKey(d,sl),null), cur=v&&v.k===meal[1]?v.s:0;
+  var h='<div class="rate" role="group" aria-label="'+esc(meal[0])+' bewerten"><span class="rq">'+(cur?RATE_TXT[cur]:'Wie war\'s?')+'</span><span class="stars">';
+  for(var i=1;i<=5;i++) h+='<button class="st'+(i<=cur?' on':'')+'" data-rate="'+fmtISO(d)+'|'+sl+'|'+meal[1]+'|'+i+'" aria-label="'+i+' von 5 – '+RATE_TXT[i]+'" aria-pressed="'+(i===cur)+'">'+MINI.star+'</button>';
+  return h+'</span></div>';
+}
+function setRate(iso,sl,key,st){ var d=parseD(iso), k=rateKey(d,sl), v=load(k,null); if(v&&v.k===key&&v.s===st){ save(k,null); try{ localStorage.removeItem("ep:"+k); }catch(e){} delete mem[k]; return 0; } save(k,{k:key,s:st}); return st; }
+function renderRanking(){
+  var st=dishStats(), html='';
+  if(!st.length) return '<section class="card rank empty"><span class="label">Lecker-Ranking</span><p class="note">Noch nichts bewertet. Tipp nach dem Essen auf „Heute“ die Sterne an – hier entsteht dann deine Bestenliste mit Score.</p></section>';
+  var tot=st.reduce(function(a,b){return a+b.n;},0), sav=st.reduce(function(a,b){return a+b.saved;},0), avg=Math.round(st.reduce(function(a,b){return a+b.score*b.n;},0)/tot);
+  html+='<section class="rank"><div class="rkhead"><span class="label">Lecker-Ranking</span><div class="rkstats"><span><b>'+st.length+'</b>Gerichte</span><span><b>'+tot+'</b>bewertet</span><span><b>'+avg+'</b>Ø Score</span><span class="sv"><b>'+eur(sav)+'</b>gespart</span></div></div>';
+  var pod=st.slice(0,3), order=pod.length===3?[1,0,2]:pod.map(function(_,i){return i;});
+  html+='<div class="podium">'+order.map(function(i){ var x=pod[i]; return '<button class="pod p'+(i+1)+'" data-r="'+x.key+'"><span class="medal">'+(i+1)+'</span>'+ico(R_ICON[x.key]||"bowl")+'<span class="pn">'+esc(R[x.key].name)+'</span>'+scoreRing(x.score,i===0)+'<span class="pm">'+x.n+'× · Ø '+x.avg.toFixed(1).replace(".",",")+' ★</span></button>'; }).join("")+'</div>';
+  var rest=st.slice(3);
+  if(rest.length) html+='<div class="rkl">'+rest.map(function(x,i){ var tr=scoreTier(x.score); return '<button class="rkrow" data-r="'+x.key+'"><span class="rkn">'+(i+4)+'</span>'+ico(R_ICON[x.key]||"bowl","s")+'<span class="rkt"><span class="n">'+esc(R[x.key].name)+'</span><span class="bar '+tr[1]+'"><i style="width:'+x.score+'%"></i></span><span class="q">'+tr[0]+' · '+x.n+'× gegessen · Ø '+x.avg.toFixed(1).replace(".",",")+' ★</span></span><b class="rks '+tr[1]+'">'+x.score+'</b></button>'; }).join("")+'</div>';
+  var flop=st.filter(function(x){return x.score<50&&x.n>=2;});
+  if(flop.length) html+='<p class="note rkflop">Flop'+(flop.length>1?'s':'')+': '+flop.map(function(x){return esc(R[x.key].name);}).join(", ")+' – sag Bescheid, dann tausche ich '+(flop.length>1?'sie':'es')+' in der Rotation gegen etwas aus deinen Top-Gerichten.</p>';
+  return html+'</section>';
+}
 /* ---------- Bock-Auswahl (Sheet) ---------- */
 var bockUI=null;
 function openBock(iso,sl,f){
@@ -1483,7 +1573,7 @@ function renderBockList(){
     if(g[0]==="buy"){ if(!f.mood&&!f.q&&!f.key){ html+='<p class="note bockhint">Neue Gerichte (mit Einkauf) zeige ich dir, sobald du oben eine Richtung wählst oder etwas eintippst.</p>'; return; } list=list.slice(0,8); } else freeN+=list.length;
     if(!list.length) return;
     html+='<div class="section"><h3 class="sech">'+g[1]+'</h3>'+list.map(function(x){ var ln=bockLine(x,g[0]);
-      return '<button class="item bockitem'+(g[0]==="buy"?'':' free')+'" data-bockpick="'+[bockUI.iso,bockUI.sl,g[0],x.key,x.from||"",x.fs||""].join("|")+'">'+ico(R_ICON[x.key]||"bowl","s")+'<span class="txt"><span class="n">'+esc(x.m[0])+'</span><span class="q">'+esc(ln[0])+'</span></span><span class="p">'+ln[1]+'</span></button>'; }).join("")+'</div>';
+      return '<button class="item bockitem'+(g[0]==="buy"?'':' free')+'" data-bockpick="'+[bockUI.iso,bockUI.sl,g[0],x.key,x.from||"",x.fs||""].join("|")+'">'+ico(R_ICON[x.key]||"bowl","s")+'<span class="txt"><span class="n">'+esc(x.m[0])+(x.score!=null?' <span class="spill '+scoreTier(x.score)[1]+'">'+x.score+'</span>':'')+'</span><span class="q">'+esc(ln[0])+'</span></span><span class="p">'+ln[1]+'</span></button>'; }).join("")+'</div>';
   });
   if(!html) html='<p class="note">Dazu habe ich nichts im Plan. Probier eine andere Richtung oder lösch den Suchbegriff.</p>';
   else if(!freeN) html='<p class="note">Davon ist diese Woche nichts schon da – unten die günstigsten Optionen. Immer noch billiger als bestellen.</p>'+html;
@@ -1528,8 +1618,11 @@ function renderHeute(){
   var tot={eur:0,kcal:0,p:0}; [p.breakfast[1],p.lunch[1],"_snack",p.dinner[1]].forEach(function(k){ var n=NUT[k]; if(n){ tot.eur+=n.eur; tot.kcal+=n.kcal; tot.p+=n.p; } });
   html += '<section class="card meals">';
   html += mealRow("Frühstück", p.breakfast);
+  var canRate = diff<=0;
   html += mealRow(p.lunchLabel, p.lunch, p.bockl?' <span class="tag wish">'+(p.bockl==="swap"?'Getauscht':'Dein Wunsch')+'</span>':'');
+  if(canRate && !p.awayL) html += rateRow(d,"l",p.lunch);
   html += mealRow("Abends", p.dinner, p.bockd?' <span class="tag wish">'+(p.bockd==="swap"?'Getauscht':'Dein Wunsch')+'</span>':p.cook?' <span class="tag">Kochtag</span>':(p.fake?' <span class="tag">Fakeaway</span>':(p.away?' <span class="tag away">Woanders</span>':'')));
+  if(canRate && !p.away) html += rateRow(d,"d",p.dinner);
   html += '<div class="awayline">'+(p.away?'<button class="link" data-away="'+fmtISO(d)+'|d|">Doch zu Hause essen</button>':'<span>Abends nicht zu Hause?</span><button class="awaybtn" data-away="'+fmtISO(d)+'|d|papa">'+MINI.star.replace('class="mi"','class="mi"')+' '+(ISY?'Bei Papa':'Familie/Freunde')+'</button><button class="awaybtn" data-away="'+fmtISO(d)+'|d|out">Woanders</button>')+'</div>';
   html += '<button class="wpgo" data-wpgo="cur">Woche planen ›</button>';
   if(!p.away && daysBetween(t,d)>=0) html += '<div class="bockline">'+((p.bockd||p.bockl)?'<button class="link" data-bockundo="'+fmtISO(d)+'">Wieder wie geplant</button>':'')+'<button class="bockbtn" data-bockopen="'+fmtISO(d)+'|d"><span>'+MINI.spark+' Worauf hast du '+(diff===0?'heute':'da')+' Bock?</span><span class="hintgo">Plan anpassen ›</span></button></div>';
@@ -1597,9 +1690,10 @@ function renderEinkauf(){
 function renderRezepte(){
   var el=document.getElementById("v-rezepte");
   var ORD=ISY?ORDER:Object.keys(R).filter(function(id){ var bfm={oats:'muesli',nougat:'cereals',broetchen:'broetchen'}; if(bfm[id]) return (PROF.bf||[]).indexOf(bfm[id])>=0; return !!(REC_TAGS[id]&&recOk(id)); });
-  var html='<div class="head"><h3>'+ORD.length+' Rezepte</h3><h1>Rezepte</h1></div><div class="rlist">';
+  var SM=scoreMap();
+  var html='<div class="head"><h3>'+ORD.length+' Rezepte</h3><h1>Rezepte</h1></div>'+renderRanking()+'<h3 class="sech">Alle Rezepte</h3><div class="rlist">';
   ORD.forEach(function(id){ var x=R[id];
-    html+='<button class="ritem" data-r="'+id+'">'+ico(R_ICON[id])+'<span style="display:flex;flex-direction:column;gap:2px;flex:1"><span class="n">'+esc(x.name)+'</span><span class="t">'+(NUT[id]?'ca. '+eur2(NUT[id].eur)+' · '+NUT[id].kcal+' kcal · '+NUT[id].p+' g Eiweiß':esc(x.time))+'</span></span><span class="chev" aria-hidden="true"></span></button>';
+    html+='<button class="ritem" data-r="'+id+'">'+ico(R_ICON[id])+'<span style="display:flex;flex-direction:column;gap:2px;flex:1"><span class="n">'+esc(x.name)+(SM[id]!=null?' <span class="spill '+scoreTier(SM[id])[1]+'">'+SM[id]+'</span>':'')+'</span><span class="t">'+(NUT[id]?'ca. '+eur2(NUT[id].eur)+' · '+NUT[id].kcal+' kcal · '+NUT[id].p+' g Eiweiß':esc(x.time))+'</span></span><span class="chev" aria-hidden="true"></span></button>';
   });
   el.innerHTML=html+'</div>';
 }
@@ -1622,7 +1716,7 @@ function renderVorrat(){
 function openRecipe(id){
   var x=R[id]; if(!x) return;
   var b=document.getElementById("sheet-body");
-  b.innerHTML='<button class="back" id="close">Zurück</button>'+ico(R_ICON[id],"xl")+'<h1 id="r-title">'+esc(x.name)+'</h1><div class="meta"><span class="pill green">'+esc(x.time)+'</span><span class="pill green">'+esc(x.por)+'</span></div>'+nutRow(id)+
+  b.innerHTML='<button class="back" id="close">Zurück</button>'+ico(R_ICON[id],"xl")+'<h1 id="r-title">'+esc(x.name)+'</h1><div class="meta">'+(function(){ var sx=dishStats().filter(function(z){return z.key===id;})[0]; return sx?'<span class="pill green">Lecker-Score '+sx.score+' · '+sx.n+'×</span>':''; })()+'<span class="pill green">'+esc(x.time)+'</span><span class="pill green">'+esc(x.por)+'</span></div>'+nutRow(id)+
     '<div class="stack"><div class="card"><span class="label">Zutaten</span><ul class="ing">'+x.ing.map(function(i){return "<li>"+esc(i)+"</li>";}).join("")+'</ul></div>'+
     '<div class="card"><span class="label">So geht\'s</span>'+ST_LEGEND+'<ol class="steps">'+x.steps.map(function(z,i){return stLi(z,i,x.name);}).join("")+'</ol></div>'+
     '<div class="tip">'+esc(x.tip)+'</div>'+techButtons(id)+'</div>';
@@ -1786,6 +1880,8 @@ document.addEventListener("click", function(e){
   if(t.dataset.tnext){ setTechStep(t.dataset.tnext,(techState[t.dataset.tnext]||0)+1); return; }
   if(t.dataset.tprev){ setTechStep(t.dataset.tprev,(techState[t.dataset.tprev]||0)-1); return; }
   if(t.dataset.tplay){ var u=t.dataset.tplay; techPaused[u]=!techPaused[u]; t.textContent=techPaused[u]?"▶":"❚❚"; setTechStep(u, techState[u]||0); return; }
+  if(t.dataset.rate){ var rt=t.dataset.rate.split("|"), got=setRate(rt[0],rt[1],rt[2],+rt[3]); renderHeute();
+    if(got){ var sc=scoreMap()[rt[2]]; toastMsg((got>=4?"Notiert – ":"Notiert. ")+R[rt[2]].name+" hat jetzt "+sc+" Punkte."); } return; }
   if(t.dataset.bockopen){ var bo=t.dataset.bockopen.split("|"); if(typeof fs!=="undefined"&&fs.open) fsClose(); openBock(bo[0],bo[1],bo[2]?{key:bo[2]}:null); return; }
   if(t.dataset.bocksl){ bockUI.sl=t.dataset.bocksl; bockUI.key=null; openBock(bockUI.iso,bockUI.sl,bockUI); return; }
   if(t.dataset.bockmood){ bockUI.mood=bockUI.mood===t.dataset.bockmood?null:t.dataset.bockmood; bockUI.key=null; document.querySelectorAll("[data-bockmood]").forEach(function(x){ x.setAttribute("aria-pressed", String(x.dataset.bockmood===bockUI.mood)); }); renderBockList(); return; }
@@ -1870,6 +1966,14 @@ function fsAnswer(raw){
   if(fsHas(t,[" wer bist du "," wie heißt du "," was kannst du "," hilfe "])) return {text:"Ich bin Friedrich Scherz – halb Koch, halb Comedian. Ich kenne deinen Plan, deine Einkaufsliste und dein Gefrierfach, führe dich Schritt für Schritt durch Rezepte und stelle Timer.", quick:["Was koche ich heute?",(ISY||recOk("bratkartoffeln")?"Bratkartoffeln kochen":"Zeig mir die Woche"),"Timer 10 Minuten"]};
   if(fsHas(t,[" danke "," dankeschön "," merci "])) return {text:"Immer gern. Jedes selbst gekochte Essen ist ein Lieferando-Euro weniger.", quick:["Was gibt's morgen?"]};
   if(fsHas(t,[" witz "," scherz "," lustig "])) return {text:FS_JOKES[Math.floor(Math.random()*FS_JOKES.length)], quick:["Noch einen Witz","Was koche ich heute?"]};
+  if(fsHas(t,[" ranking "," bestenliste "," lieblingsgericht"," lieblingsessen"," top gerichte "," score "," was fand ich lecker"])){ var stx=dishStats(); if(!stx.length) return {text:"Noch nichts bewertet. Sag mir nach dem Essen einfach „War lecker“ – dann baue ich dein Ranking."}; return {text:"Deine Top-Gerichte:", card:{type:"rank"}, quick:["Was koche ich heute?"]}; }
+  if(fsHas(t,[" lecker "," schmeckt "," geschmeckt "," eklig "," nie wieder "," war geil "," war gut "," war okay "," war naja "," hat gut "]) && !fsHas(t,[" was ist lecker "," was war lecker "])){
+    var rd=fsDayFrom(t), rsl=fsHas(t,[" mittag"])?"l":(fsHas(t,[" abend"])?"d":(daysBetween(today(),rd)<0||new Date().getHours()>=16?"d":"l")), rp=planFor(rd), rm=slotMeal(rp,rsl);
+    if(!rm||!rm[1]||!R[rm[1]]) return {text:"Für "+fsDayName(rd).toLowerCase()+" "+(rsl==="l"?"mittags":"abends")+" steht nichts zum Bewerten im Plan."};
+    var neg=fsHas(t,[" nicht "," eklig "," schlecht "," naja "," nie wieder "," mies "]), rs=fsHas(t,[" nie wieder "," eklig "])?1:(neg?2:(fsHas(t,[" okay "," ok "," geht "," ganz gut "])?3:(fsHas(t,[" mega "," sehr "," geil "," krass "," richtig "," mega "," hammer "," bombe "])?5:4)));
+    setRate(fmtISO(rd),rsl,rm[1],rs); if(typeof renderHeute==="function") renderHeute(); var rsc=scoreMap()[rm[1]];
+    return {text:(rs>=4?"Notiert – ":"Okay, notiert. ")+rm[0]+": "+rs+" von 5 ★. Lecker-Score jetzt "+rsc+"."+(rs<=2?" Wenn das öfter passiert, fliegt es aus der Rotation.":""), card:{type:"rank"}, quick:["Was gibt's morgen?","Ranking"]};
+  }
   if(fsHas(t,[" wieder wie geplant "," wie geplant "])){ var ud=fsDayFrom(t); bockUndo(ud,"l"); bockUndo(ud,"d"); if(typeof renderHeute==="function") renderHeute(); return {text:"Alles zurück – "+fsDayName(ud).toLowerCase()+" gilt wieder der normale Plan.", card:{type:"day",day:fmtISO(ud)}}; }
  if(fsHas(t,[" woche planen "," wochenplanung "," plan ändern "," nächste woche planen "," woche zusammenstellen "," gerichte aussuchen "," selbst aussuchen "," planen "])) return {text:"Klar – such dir für jeden Teil der Woche aus, worauf du Lust hast. Ich zeig dir oben die besten Vorschläge, die Einkaufsliste passt sich automatisch an.", card:{type:"wpopen"}, quick:["Was kostet die Woche?","Was muss ich einkaufen?"]};
   if(fsHas(t,[" bock "," lust auf "," appetit "," hunger auf "," heute lieber "," lieber was "," craving "]) && !fsHas(t,[" keine lust "," kein bock "])){
@@ -1921,6 +2025,7 @@ function fsCard(c){
   if(c.type==="day"){ var d=parseD(c.day), p=planFor(d), rows=[["b","Frühstück",p.breakfast],["l",p.lunchLabel,p.lunch],["d","Abends",p.dinner]].filter(function(x){return !c.only||x[0]===c.only;});
     return '<div class="fc"><div class="fchead">'+DOW_LONG[d.getDay()]+', '+fmtShort(d)+(p.cook?' <span class="tag">Kochtag</span>':(p.fake?' <span class="tag">Fakeaway</span>':''))+'</div>'+rows.map(function(x){ var n=NUT[x[2][1]]; return '<button class="fcrow" '+(x[2][1]&&R[x[2][1]]?'data-r="'+x[2][1]+'"':'disabled')+'>'+ico(R_ICON[x[2][1]]||"bowl","s")+'<span class="fct"><small>'+x[1]+'</small><b>'+esc(x[2][0])+'</b></span>'+(n?'<span class="fcm">'+n.kcal+' kcal</span>':'')+'</button>'; }).join("")+(p.tasks&&p.tasks.length&&!c.only?'<div class="fcnote">'+MINI.spark+' '+esc(p.tasks[0])+'</div>':'')+'</div>'; }
   if(c.type==="wpopen") return '<button class="bockbtn" data-wpgo="cur"><span>Woche planen öffnen</span><span aria-hidden="true">›</span></button>';
+  if(c.type==="rank"){ var rk=dishStats().slice(0,5); return '<div class="fc"><div class="fchead">Lecker-Ranking</div>'+rk.map(function(x,i){ var tr=scoreTier(x.score); return '<button class="fcrow" data-r="'+x.key+'"><span class="rkn">'+(i+1)+'</span>'+ico(R_ICON[x.key]||"bowl","s")+'<span class="fct"><b>'+esc(R[x.key].name)+'</b><small>'+tr[0]+' · '+x.n+'× gegessen</small></span><b class="rks '+tr[1]+'">'+x.score+'</b></button>'; }).join("")+'<button class="fcrow" data-go="rezepte"><span class="fct"><b>Ganzes Ranking ansehen ›</b></span></button></div>'; }
   if(c.type==="bock"||c.type==="bockopen"){ var bd2=parseD(c.day), bc2=c.type==="bock"?bockCands(bd2,c.sl):null;
     var rows2=(c.top||[]).map(function(y){ var x=(bc2[y[0]]||[]).filter(function(z){return z.key===y[1];})[0]; if(!x) return ""; var ln=bockLine(x,y[0]); return '<button class="fcrow" data-bockpick="'+[c.day,c.sl,y[0],y[1],y[2],y[3]].join("|")+'">'+ico(R_ICON[y[1]]||"bowl","s")+'<span class="fct"><b>'+esc(x.m[0])+' · '+ln[1]+'</b><small>'+esc(ln[0])+'</small></span></button>'; }).join("");
     return '<div class="fc"><div class="fchead">'+DOW_LONG[bd2.getDay()]+', '+(c.sl==="l"?"mittags":"abends")+'</div>'+rows2+'<button class="fcrow" data-bockopen="'+c.day+'|'+c.sl+'"><span class="fct"><b>Alle Optionen ansehen ›</b></span></button></div>'; }

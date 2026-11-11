@@ -238,6 +238,7 @@ var SLOTS=['morning','noon','evening','night'];
 function wd(d){return parse(d||today()).getDay();}
 function wdName(n){return new Date(2024,0,7+(+n)).toLocaleDateString(T().locale,{weekday:'long'});}
 function slotLabel(m,s){var t=T();return s==='weekly'?t.weekly+' ('+wdName(m.day==null?1:m.day)+')':t.slots[s];}
+function askDoses(d){var ds=doses(d);return S.medAsk===false?ds.filter(function(x){return /:weekly$/.test(x.k);}):ds;}
 function doses(d){d=d||today();var a=[];S.meds.forEach(function(m){if(m.since&&d<m.since)return;SLOTS.forEach(function(s){if(m.when.indexOf(s)>=0)a.push({m:m,s:s,k:m.id+':'+s});});if(m.when.indexOf('weekly')>=0&&+m.day===wd(d))a.push({m:m,s:'weekly',k:m.id+':weekly'});});return a;}
 function takenOn(d,k){return !!(S.medLog[d]&&S.medLog[d][k]);}
 function medChecklist(){
@@ -270,7 +271,8 @@ function nextWeekly(m){var d=today();for(var i=0;i<8;i++){var x=addDays(d,i);if(
 function vMeds(){
   var t=T(),h='<div class="pagehead"><h1>'+esc(t.medsTitle)+'</h1><p>'+esc(t.medsHint)+'</p></div>';
   if(S.meds.length){
-    var tot=0,ok=0;for(var i=0;i<7;i++){var d=addDays(today(),-i);doses(d).forEach(function(x){tot++;if(takenOn(d,x.k))ok++;});}
+    var tot=0,ok=0;for(var i=0;i<7;i++){var d=addDays(today(),-i);askDoses(d).forEach(function(x){tot++;if(takenOn(d,x.k))ok++;});}
+    if(S.medAsk===false)h+='<p class="muted" style="margin:0 4px 12px">'+esc(t.medAskOffHint)+'</p>';
     var pc=tot?ok/tot:0,C=2*Math.PI*22;
     h+='<div class="card madh"><svg viewBox="0 0 54 54" class="mring" aria-hidden="true"><circle cx="27" cy="27" r="22" fill="none" stroke="#EDE7DD" stroke-width="7"/><circle cx="27" cy="27" r="22" fill="none" stroke="'+(pc>=.9?'#3E9B6A':pc>=.7?'#5B8DB8':'#C9762B')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+(C*(1-pc)).toFixed(1)+'" transform="rotate(-90 27 27)"/></svg><div><strong>'+Math.round(pc*100)+' %</strong><span>'+esc(t.adherence)+'</span><small>'+esc(t.medTakenOf.replace('{a}',ok).replace('{b}',tot))+'</small></div></div>';
     var days7=[];for(var j=6;j>=0;j--)days7.push(addDays(today(),-j));
@@ -283,7 +285,7 @@ function vMeds(){
       return '<div class="medc"><div class="mc-top"><span class="mc-i" style="background:'+f[0]+';color:'+f[1]+'">'+svgI(f[2])+'</span><div class="mc-n"><strong>'+esc(m.name)+'</strong><span class="mc-d">'+esc(m.dose)+'</span>'+(m.src==='praxis'?'<span class="pbadge">'+esc(t.fromPraxis)+'</span>':'')+'</div><button class="edit" data-act="editMed" data-id="'+m.id+'" aria-label="'+esc(t.edit)+'">'+ic('pen')+'</button></div>'+
         '<div class="mslots">'+slots+'</div>'+
         (nx?'<p class="mc-next">'+svgI(SLOTIC.weekly)+esc(t.medNext)+': <strong>'+esc(nx===today()?t.today:fd(nx,{weekday:'short',day:'numeric',month:'short'}))+'</strong></p>':'')+
-        (wk?'':'<div class="mstrip">'+strip+'</div>')+'</div>';}).join('');
+        (wk||S.medAsk===false?'':'<div class="mstrip">'+strip+'</div>')+'</div>';}).join('');
   } else h+='<p class="empty card">'+esc(t.none)+'</p>';
   h+='<button class="btn full" data-act="addMed" style="margin-bottom:12px">'+ic('plus')+esc(t.addMed)+'</button>';
   return h;
@@ -430,7 +432,7 @@ function vReport(){
   if(S.glp1){var gr=S.gi.filter(inR);h+='<p class="sum">'+esc(t.gi)+': '+gr.filter(function(x){return x.v;}).length+' / '+gr.length+' '+esc(t.repDays)+'</p>';}
   // Medikation
   h+='<div class="sect"><h2>'+esc(t.repMeds)+'</h2>';
-  if(S.meds.length){var tot=0,ok=0;for(var i=0;i<30;i++){var d=addDays(today(),-i);doses(d).forEach(function(x){tot++;if(takenOn(d,x.k))ok++;});}
+  if(S.meds.length){var tot=0,ok=0;for(var i=0;i<30;i++){var d=addDays(today(),-i);askDoses(d).forEach(function(x){tot++;if(takenOn(d,x.k))ok++;});}
     h+='<div class="tw"><table><thead><tr><th>'+esc(t.medName)+'</th><th>'+esc(t.medDose)+'</th><th>'+esc(t.medWhen)+'</th></tr></thead><tbody>'+S.meds.map(function(m){return '<tr><td>'+esc(m.name)+(m.how?'<br><span class="muted">'+esc(m.how)+'</span>':'')+'</td><td>'+esc(m.dose)+'</td><td>'+m.when.map(function(s){return esc(slotLabel(m,s));}).join(', ')+'</td></tr>';}).join('')+'</tbody></table></div><p class="sum">'+(S.lang==='en'?'Marked as taken (last 30 days)':S.lang==='tr'?'Alındı olarak işaretlenen (son 30 gün)':'Als genommen abgehakt (letzte 30 Tage)')+': '+ok+' / '+tot+' ('+(tot?Math.round(ok/tot*100):0)+' %)</p>';}
   else h+='<p class="sum muted">'+esc(t.none)+'</p>';
   h+='</div>';
@@ -465,6 +467,7 @@ function vSetup(){
   h+='<p class="muted" style="margin:14px 4px 8px">'+esc(t.orChoose)+'</p>';
   var icn={sleep:'sleep',mood:'mood',meds:'meds',weight:'weight',aes:'aes'};
   h+=MODS.map(function(k){var on=!!M[k];return '<label class="modc"><input type="checkbox" name="mod" value="'+k+'"'+(on?' checked':'')+'><span class="mc"><span class="hc-i">'+ic(icn[k])+'</span><span><strong>'+esc(t['mod_'+k])+'</strong><small>'+esc(t['mod_'+k+'D'])+'</small></span><span class="tick">'+ic('check')+'</span></span></label>'+
+    (k==='meds'?'<label class="modc sub"><input type="checkbox" name="medask"'+(S.medAsk!==false?' checked':'')+'><span class="mc"><span></span><span><strong>'+esc(t.medAsk)+'</strong><small>'+esc(t.medAskD)+'</small></span><span class="tick">'+ic('check')+'</span></span></label>':'')+
     (k==='weight'?'<label class="modc sub"><input type="checkbox" name="glp1"'+(S.glp1?' checked':'')+'><span class="mc"><span></span><span><strong>'+esc(t.mod_glp1)+'</strong><small>'+esc(t.mod_glp1D)+'</small></span><span class="tick">'+ic('check')+'</span></span></label>':'');}).join('');
   h+='<p class="err" id="setupErr" hidden>'+esc(t.setupNeedOne)+'</p><button class="btn full" data-act="setupDone" style="margin:14px 0 20px">'+esc(t.setupDone)+'</button>';
   return h;
@@ -524,7 +527,7 @@ function progressCard(){var t=T(),M=mods(),tiles=[];var asc=function(a){return a
   if(M.mood){var m=asc(S.mood);if(m.length>=14){var h1=m.slice(0,7).reduce(function(q,x){return q+x.hot;},0)/7,h2=m.slice(-7).reduce(function(q,x){return q+x.hot;},0)/7;if(h1>0&&(h1-h2)/h1>=0.2)tiles.push(['c3','−'+Math.round((h1-h2)/h1*100)+' %',t.prHot,spark(m.slice(-14).map(function(x){return x.hot;}),'#C9762B')]);
     var e1=m.slice(0,7).reduce(function(q,x){return q+x.mood;},0)/7,e2=m.slice(-7).reduce(function(q,x){return q+x.mood;},0)/7;if(e2-e1>=0.4)tiles.push(['c4','<span class="fc fc'+Math.round(e2)+' sm">'+face(Math.round(e2))+'</span>+'+num(e2-e1),t.prMood,'']);}}
   if(M.aes){var k2=S.skin.slice().sort(function(a,b){return a.d<b.d?-1:1;});if(k2.length>=4){var s1=(k2[0].v+k2[1].v)/2,s2=(k2[k2.length-1].v+k2[k2.length-2].v)/2;if(s2-s1>=0.5)tiles.push(['c5','<span class="fc fc'+Math.round(s2)+' sm">'+face(Math.round(s2))+'</span>+'+num(s2-s1),t.prSkin,'']);}}
-  if(M.meds&&S.meds.length){var tot=0,ok=0;for(var i=0;i<7;i++){var d=addDays(today(),-i);doses(d).forEach(function(x){tot++;if(takenOn(d,x.k))ok++;});}if(tot>=3&&ok/tot>=0.8)tiles.push(['c4',Math.round(ok/tot*100)+' %',t.prMeds,ring(ok/tot)]);}
+  if(M.meds&&S.meds.length){var tot=0,ok=0;for(var i=0;i<7;i++){var d=addDays(today(),-i);askDoses(d).forEach(function(x){tot++;if(takenOn(d,x.k))ok++;});}if(tot>=3&&ok/tot>=0.8)tiles.push(['c4',Math.round(ok/tot*100)+' %',t.prMeds,ring(ok/tot)]);}
   if(!tiles.length)return '';
   return '<section class="prog"><h2>'+esc(t.prTitle)+'</h2><p class="muted">'+esc(t.prSub)+'</p><div class="ptiles">'+tiles.slice(0,4).map(function(x){return '<div class="ptile '+x[0]+'"><strong>'+x[1]+'</strong><span>'+esc(x[2])+'</span>'+x[3]+'</div>';}).join('')+'</div></section>';}
 function streak(){var n=0,d=today();if(!dayDone(d))d=addDays(d,-1);while(dayDone(d)){n++;d=addDays(d,-1);}return n;}
@@ -707,7 +710,7 @@ function hubTiles(){var t=T(),M=mods(),out=[],td=today(),wk=addDays(td,-6);
   if(M.mood){var m=asc(S.mood).filter(function(x){return x.mood!=null;}),l=m.filter(function(x){return x.d>=wk;}),mo=avgOf(l,'mood'),h1=m.length>=14?avgOf(m.slice(0,7),'hot'):null,h2=avgOf(l,'hot');
     var better=h1&&h2!=null&&(h1-h2)/h1>=.2;
     out.push(['mood','mood','c4',t.tabs.mood,mo!=null?'<span class="fc fc'+Math.round(mo)+' sm">'+face(Math.round(mo))+'</span>'+num(mo):'–',better?'−'+Math.round((h1-h2)/h1*100)+' % '+t.hubHot:(h2!=null?'Ø '+num(h2)+' '+t.hotDayShort:t.hubNone),better,true]);}
-  if(M.meds){var tot=0,ok=0;for(var i=0;i<7;i++){var d=addDays(td,-i);doses(d).forEach(function(x){tot++;if(takenOn(d,x.k))ok++;});}
+  if(M.meds){var tot=0,ok=0;for(var i=0;i<7;i++){var d=addDays(td,-i);askDoses(d).forEach(function(x){tot++;if(takenOn(d,x.k))ok++;});}
     out.push(['meds','meds','c3',t.tabs.meds,tot?Math.round(ok/tot*100)+' %':S.meds.length+'',tot?t.hubTaken:t.pmMedN,tot&&ok/tot>=.9]);}
   if(M.weight){var w=asc(S.weight),lw=w[w.length-1],fw=w[0];
     out.push(['weight','weight','c2',t.tabs.weight,lw?num(lw.kg)+' '+t.kg:'–',w.length>1?(lw.kg-fw.kg>0?'+':'−')+num(Math.abs(lw.kg-fw.kg))+' '+t.kg+' '+t.hubSince:t.hubNone,w.length>1&&lw.kg<fw.kg]);}
@@ -760,12 +763,12 @@ function sheetDay(){var t=T();openSheet('<h2>'+esc(t.chooseDay)+'</h2>'+fDate(ad
 /* ---------- Fragebogen ---------- */
 function startForm(d){
   var s=sleepFor(d),m=moodFor(d),w=null;S.weight.forEach(function(x){if(x.d===d)w=x;});
-  var meds={};doses(d).forEach(function(x){meds[x.k]=takenOn(d,x.k);});
+  var meds={};askDoses(d).forEach(function(x){meds[x.k]=takenOn(d,x.k);});
   var M=mods(),steps=[],genHere=S.gen&&S.gen.at===d,gi=giFor(d);
   if(M.sleep)steps.push('h','through','hotN');
   if(M.mood)steps.push('hotD','mood','energy');
   if(M.weight&&S.glp1)steps.push('gi');
-  if(M.meds&&doses(d).length)steps.push('meds');
+  if(M.meds&&askDoses(d).length)steps.push('meds');
   if(M.weight&&weightDue(d))steps.push('kg');
   if(M.sleep&&(genDue()||genHere))steps.push('ein','durch');
   var ac=M.aes?aesCheckFor(d):null,as=M.aes?aesSatFor(d):null;if(ac)steps.push('aesC');if(as)steps.push('aesS','aesR');if(M.aes&&skinDue(d))steps.push('skin');if(M.aes&&wishDue(d))steps.push('wish');
@@ -796,7 +799,7 @@ function vForm(){
   else if(k==='hotD'){q=t.q_hotD;body=bigStepper('hotD',a.hotD,0,30,1,'',0);}
   else if(k==='mood'){q=t.q_mood;body=scale5('mood');}
   else if(k==='energy'){q=t.q_energy;body=scale5('energy');}
-  else if(k==='meds'){q=t.q_meds;hint=t.q_medsHint;body='<div class="card">'+doses(F.d).map(function(x){var on=!!a.meds[x.k];return '<button class="check'+(on?' on':'')+'" data-act="fMed" data-k="'+x.k+'" aria-pressed="'+on+'"><span class="box">'+ic('check')+'</span><span class="ct"><strong>'+esc(x.m.name)+' · '+esc(x.m.dose)+'</strong><span class="small muted">'+esc(slotLabel(x.m,x.s))+'</span></span></button>';}).join('')+'</div>';}
+  else if(k==='meds'){q=t.q_meds;hint=t.q_medsHint;body='<div class="card">'+askDoses(F.d).map(function(x){var on=!!a.meds[x.k];return '<button class="check'+(on?' on':'')+'" data-act="fMed" data-k="'+x.k+'" aria-pressed="'+on+'"><span class="box">'+ic('check')+'</span><span class="ct"><strong>'+esc(x.m.name)+' · '+esc(x.m.dose)+'</strong><span class="small muted">'+esc(slotLabel(x.m,x.s))+'</span></span></button>';}).join('')+'</div>';}
   else if(k==='gi'){q=t.q_gi;hint=t.q_giHint;body=yesNo('gi');}
   else if(k==='kg'){q=t.q_kgWeekly;hint=t.q_kg+' '+t.q_kgHint;opt=true;body='<label class="field"><span>'+esc(t.weightKg)+'</span><input class="input big-in" type="text" inputmode="decimal" name="fkg" value="'+esc(a.kg)+'" placeholder="72'+T().dec+'5"></label><p class="err ferr" hidden>25–300 '+t.kg+'</p>';}
   else if(k==='ein'){q=t.genEin;hint=t.genEinHint;body=yesNo('ein');}
@@ -817,7 +820,7 @@ function ansText(k){var t=T(),a=F.a,v=a[k];
   if(k==='mood'||k==='energy'||k==='aesS'||k==='skin')return v+'/5 · '+t.scale[v-1];
   if(k==='wish')return v.length?v.map(function(w){return t.wishAreas[w];}).join(', '):t.notGiven;
   if(k==='aesC')return {ok:t.aesOk,mild:t.aesMild,bad:t.aesBad}[v]||'–';
-  if(k==='meds'){var ds=doses(F.d),n=ds.filter(function(x){return a.meds[x.k];}).length;return n+' / '+ds.length+' '+t.taken;}
+  if(k==='meds'){var ds=askDoses(F.d),n=ds.filter(function(x){return a.meds[x.k];}).length;return n+' / '+ds.length+' '+t.taken;}
   if(k==='kg')return v?num(pnum(v))+' '+t.kg:t.notGiven; if(k==='note')return v?v:t.notGiven;
   return v==null?'–':(v?t.yes:t.no);}
 function qLabel(k){var t=T();return {h:t.q_h,through:t.q_through,hotN:t.q_hotN,hotD:t.q_hotD,mood:t.q_mood,energy:t.q_energy,meds:t.q_meds,kg:t.q_kg,ein:t.genEin,durch:t.genDurch,note:t.q_note,gi:t.q_gi,aesC:t.aesCheckL,aesS:t.aesSatL,aesR:t.q_aesR,skin:t.skinL,wish:t.wishL}[k];}
@@ -860,7 +863,7 @@ root.addEventListener('click',function(e){
   if(a==='go'){if(b.dataset.v==='data'&&view!=='report')dataTab=null;setView(b.dataset.v);}
   else if(a==='settings')setView('settings');
   else if(a==='codeApply'){var r=parseCode((document.getElementById('codeIn')||{}).value);if(!r){toast(t.codeBad);return;}var ch=applySetup(r.mods,r.glp1);toast(t.codeOk);afterSetup(ch);}
-  else if(a==='setupDone'){var m={};MODS.forEach(function(k){var c=root.querySelector('input[name=mod][value='+k+']');m[k]=!!(c&&c.checked);});if(!MODS.some(function(k){return m[k];})){root.querySelector('#setupErr').hidden=false;return;}var g=root.querySelector('input[name=glp1]');var ch=applySetup(m,g&&g.checked);toast(ch?t.progNew:t.saved);afterSetup(ch);}
+  else if(a==='setupDone'){var m={};MODS.forEach(function(k){var c=root.querySelector('input[name=mod][value='+k+']');m[k]=!!(c&&c.checked);});if(!MODS.some(function(k){return m[k];})){root.querySelector('#setupErr').hidden=false;return;}var g=root.querySelector('input[name=glp1]'),ma=root.querySelector('input[name=medask]');var oldAsk=S.medAsk!==false;S.medAsk=!ma||ma.checked;var ch=applySetup(m,g&&g.checked)||(oldAsk!==S.medAsk&&!!S.mods);toast(ch?t.progNew:t.saved);afterSetup(ch);}
   else if(a==='pmStart')sheetPin();
   else if(a==='pmEnd'){PM=false;view='fill';render();toast(T().pmEnded);}
   else if(a==='pmAppt')sheetAppt();

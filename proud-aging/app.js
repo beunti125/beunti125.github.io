@@ -10,10 +10,10 @@ if(window.innerWidth>=700&&window.name!=='pa-inner'){
 }
 var KEY='proud-aging-app-v1';
 var ICONS={
-  today:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  today:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>',
   sleep:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
   weight:'<path d="M12 4v16M6 20h12M5 8h14M7 8l-3 6a3 3 0 0 0 6 0zM17 8l-3 6a3 3 0 0 0 6 0z"/>',
-  meds:'<rect x="3.5" y="9" width="17" height="7" rx="3.5" transform="rotate(-35 12 12.5)"/><path d="M10 7.8l4.6 6.6"/>',
+  meds:'<g transform="rotate(-35 12 12)"><rect x="3.5" y="8.5" width="17" height="7" rx="3.5"/><path d="M12 8.5v7"/></g>',
   mood:'<circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
   back:'<path d="M15 18l-6-6 6-6"/>',
@@ -26,7 +26,7 @@ var ICONS={
   share:'<path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v7h14v-7"/>',
   chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
   star:'<path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z"/>',
-  aes:'<path d="M10 3l1.6 5.4L17 10l-5.4 1.6L10 17l-1.6-5.4L3 10l5.4-1.6z"/><path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8z"/>',
+  aes:'<path d="M10 3l1.6 5.4L17 10l-5.4 1.6L10 17l-1.6-5.4L3 10l5.4-1.6z"/><path d="M19 15l.7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7z"/>',
   cal:'<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   tel:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>'
 };
@@ -252,12 +252,12 @@ function medForm(m){var n=(m.name+' '+(m.how||'')).toLowerCase(),hit=null;
   if(hit)return hit;
   if(/spritz|inject|iğne|pen/.test(n))return 'inj';if(/gel|creme|cream|krem/.test(n))return 'gel';if(/pflaster|patch|bant/.test(n))return 'patch';
   if(/spray|sprüh|sprey/.test(n))return 'spray';if(/vagin|zäpfchen/.test(n))return 'vag';if(/kapsel|capsul|kapsül/.test(n))return 'caps';return 'oral';}
-var MFORM={inj:['#F6E7E4','#A0526B','<path d="M17 3l4 4M19 5l-9.5 9.5M14 6l4 4M8 12l4 4-5 5H3v-4z"/>'],
+var MFORM={inj:['#F6E7E4','#A0526B','<g transform="rotate(45 12 12)"><rect x="9" y="6" width="6" height="11" rx="1.5"/><path d="M12 2v4M9.5 2h5M12 17v5M9 10h2.5M9 13h2.5"/></g>'],
   gel:['#E3ECF5','#3A6A95','<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>'],
-  spray:['#E3ECF5','#3A6A95','<path d="M9 9h6v12H9zM10 9V6h4v3M12 6V3M17 4h2M17 7h3M17 10h2"/>'],
+  spray:['#E3ECF5','#3A6A95','<rect x="6" y="10.5" width="8" height="10.5" rx="2"/><rect x="7.5" y="4.5" width="5" height="4" rx="1"/><path d="M17 4.5l2-1M17 6.5h2.5M17 8.5l2 1"/>'],
   patch:['#F8EADB','#9A5B1E','<rect x="4" y="7" width="16" height="10" rx="3"/><circle cx="10" cy="12" r=".8"/><circle cx="14" cy="12" r=".8"/>'],
   vag:['#ECE8F4','#5B4A8A','<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>'],
-  caps:['#E4F0E6','#2E7D4F','<rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-35 12 12)"/><path d="M9.2 8.1l5.6 7.8"/>'],
+  caps:['#E4F0E6','#2E7D4F','<g transform="rotate(-35 12 12)"><rect x="3.5" y="8.5" width="17" height="7" rx="3.5"/><path d="M12 8.5v7"/></g>'],
   oral:['#E4F0E6','#2E7D4F','<rect x="3.5" y="8" width="17" height="8" rx="4"/><path d="M12 8v8"/>'],
   fast:['#E4F0E6','#2E7D4F','<rect x="3.5" y="8" width="17" height="8" rx="4"/><path d="M12 8v8"/>']};
 var SLOTIC={morning:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',

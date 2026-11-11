@@ -454,3 +454,23 @@ body.pf-body{margin:0;min-height:100vh;background:radial-gradient(1200px 700px a
 .pnote{position:relative;padding-right:46px}
 .pn-x{all:unset;cursor:pointer;position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#7A5A00;font-size:.95rem;background:rgba(255,255,255,.6)}
 .pn-x:active{background:#fff}
+/* --- Medikation schöner --- */
+.madh{display:flex;align-items:center;gap:16px}
+.mring{width:64px;height:64px;flex:none}
+.madh strong{display:block;font-size:1.6rem;color:#1C2E4A;line-height:1.1}.madh span{display:block;font-weight:700;color:#1C2E4A;font-size:.95rem}.madh small{display:block;color:var(--muted);font-size:.82rem;margin-top:2px}
+.medc{background:#fff;border-radius:22px;padding:16px;margin-bottom:12px}
+.mc-top{display:flex;gap:12px;align-items:flex-start}
+.mc-i{flex:none;width:48px;height:48px;border-radius:15px;display:grid;place-items:center}.mc-i svg{width:24px;height:24px}
+.mc-n{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.mc-n strong{width:100%;font-size:1.1rem;color:#1C2E4A;line-height:1.25}
+.mc-d{display:inline-block;background:#1C2E4A;color:#fff;font-weight:800;font-size:.85rem;padding:3px 10px;border-radius:999px}
+.mc-n .pbadge{margin-left:0;background:#EFE6D6;color:#6B5A3A}
+.mc-how{margin:10px 0 0;color:var(--muted);font-size:.9rem}
+.mslots{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mslot{display:inline-flex;align-items:center;gap:6px;background:#F7F3EC;color:#1C2E4A;font-weight:700;font-size:.88rem;padding:7px 12px;border-radius:999px}.mslot svg{width:16px;height:16px;color:#C9762B}
+.mc-next{display:flex;align-items:center;gap:6px;margin:10px 0 0;font-size:.9rem;color:#1C2E4A}.mc-next svg{width:16px;height:16px;color:#A0526B}.mc-next strong{color:#A0526B}
+.mstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px;padding-top:12px;border-top:1px solid #F0EBE3;text-align:center}
+.md small{display:block;font-size:.68rem;font-weight:700;color:var(--muted);margin-bottom:4px}
+.md i{display:grid;place-items:center;width:26px;height:26px;margin:0 auto;border-radius:50%;background:#F1ECE4}.md i svg{width:13px;height:13px;color:#fff}
+.md.ok i{background:#3E9B6A}.md.part i{background:linear-gradient(90deg,#3E9B6A 50%,#F1ECE4 50%)}.md.miss i{background:#F6E2DE}.md.open i{box-shadow:0 0 0 2px #5B8DB8 inset;background:#fff}.md.na i{background:transparent;border:1.5px dashed #E8E1D5}
+.md.miss i{background:#E9E3D9}

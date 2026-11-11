@@ -247,13 +247,44 @@ function medChecklist(){
   return '<div class="progress" aria-hidden="true"><i style="width:'+Math.round(n/ds.length*100)+'%"></i></div><p class="muted small" style="margin:0 0 4px">'+n+' / '+ds.length+' '+esc(t.taken)+'</p>'+
     ds.map(function(x){var on=takenOn(d,x.k);return '<button class="check'+(on?' on':'')+'" data-act="take" data-k="'+x.k+'" aria-pressed="'+on+'"><span class="box">'+ic('check')+'</span><span class="ct"><strong>'+esc(x.m.name)+' · '+esc(x.m.dose)+'</strong><span class="small muted">'+esc(slotLabel(x.m,x.s))+(x.m.how?' · '+esc(x.m.how):'')+'</span></span></button>';}).join('');
 }
+function medForm(m){var n=(m.name+' '+(m.how||'')).toLowerCase(),hit=null;
+  MEDDB.forEach(function(x){if(!hit&&m.name.toLowerCase().indexOf(x[0].toLowerCase())===0)hit=x[3];});
+  if(hit)return hit;
+  if(/spritz|inject|iğne|pen/.test(n))return 'inj';if(/gel|creme|cream|krem/.test(n))return 'gel';if(/pflaster|patch|bant/.test(n))return 'patch';
+  if(/spray|sprüh|sprey/.test(n))return 'spray';if(/vagin|zäpfchen/.test(n))return 'vag';if(/kapsel|capsul|kapsül/.test(n))return 'caps';return 'oral';}
+var MFORM={inj:['#F6E7E4','#A0526B','<path d="M17 3l4 4M19 5l-9.5 9.5M14 6l4 4M8 12l4 4-5 5H3v-4z"/>'],
+  gel:['#E3ECF5','#3A6A95','<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>'],
+  spray:['#E3ECF5','#3A6A95','<path d="M9 9h6v12H9zM10 9V6h4v3M12 6V3M17 4h2M17 7h3M17 10h2"/>'],
+  patch:['#F8EADB','#9A5B1E','<rect x="4" y="7" width="16" height="10" rx="3"/><circle cx="10" cy="12" r=".8"/><circle cx="14" cy="12" r=".8"/>'],
+  vag:['#ECE8F4','#5B4A8A','<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>'],
+  caps:['#E4F0E6','#2E7D4F','<rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-35 12 12)"/><path d="M9.2 8.1l5.6 7.8"/>'],
+  oral:['#E4F0E6','#2E7D4F','<rect x="3.5" y="8" width="17" height="8" rx="4"/><path d="M12 8v8"/>'],
+  fast:['#E4F0E6','#2E7D4F','<rect x="3.5" y="8" width="17" height="8" rx="4"/><path d="M12 8v8"/>']};
+var SLOTIC={morning:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  noon:'<circle cx="12" cy="12" r="5"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3"/>',
+  evening:'<path d="M3 17h18M6 17a6 6 0 0 1 12 0M12 7V4M5.6 10.6L4 9M18.4 10.6L20 9"/>',
+  night:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  weekly:'<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'};
+function svgI(p){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>';}
+function nextWeekly(m){var d=today();for(var i=0;i<8;i++){var x=addDays(d,i);if(wd(x)===+m.day&&!(i===0&&takenOn(x,m.id+':weekly')))return x;}return null;}
 function vMeds(){
   var t=T(),h='<div class="pagehead"><h1>'+esc(t.medsTitle)+'</h1><p>'+esc(t.medsHint)+'</p></div>';
   if(S.meds.length){
     var tot=0,ok=0;for(var i=0;i<7;i++){var d=addDays(today(),-i);doses(d).forEach(function(x){tot++;if(takenOn(d,x.k))ok++;});}
-    h+='<div class="card"><div class="row"><h2>'+esc(t.adherence)+'</h2><span class="big">'+(tot?Math.round(ok/tot*100):0)+' %</span></div><p class="sub" style="margin:2px 0 0">'+ok+' / '+tot+'</p></div>';
-    h+='<div class="card"><ul class="list">'+S.meds.map(function(m){return '<li><div><div class="t">'+esc(m.name)+' <span class="dose" style="color:var(--blue-d)">'+esc(m.dose)+'</span></div><div class="m">'+esc(m.how||'')+'</div><div class="chips">'+m.when.map(function(s){return '<span class="chip">'+esc(slotLabel(m,s))+'</span>';}).join('')+'</div></div><button class="edit" data-act="editMed" data-id="'+m.id+'" aria-label="'+esc(t.edit)+'">'+ic('pen')+'</button></li>';}).join('')+'</ul></div>';
-  }
+    var pc=tot?ok/tot:0,C=2*Math.PI*22;
+    h+='<div class="card madh"><svg viewBox="0 0 54 54" class="mring" aria-hidden="true"><circle cx="27" cy="27" r="22" fill="none" stroke="#EDE7DD" stroke-width="7"/><circle cx="27" cy="27" r="22" fill="none" stroke="'+(pc>=.9?'#3E9B6A':pc>=.7?'#5B8DB8':'#C9762B')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+(C*(1-pc)).toFixed(1)+'" transform="rotate(-90 27 27)"/></svg><div><strong>'+Math.round(pc*100)+' %</strong><span>'+esc(t.adherence)+'</span><small>'+esc(t.medTakenOf.replace('{a}',ok).replace('{b}',tot))+'</small></div></div>';
+    var days7=[];for(var j=6;j>=0;j--)days7.push(addDays(today(),-j));
+    h+=S.meds.map(function(m){var f=MFORM[medForm(m)]||MFORM.oral,wk=m.when.indexOf('weekly')>=0;
+      var slots=m.when.map(function(s){return '<span class="mslot">'+svgI(SLOTIC[s]||SLOTIC.morning)+esc(slotLabel(m,s))+'</span>';}).join('');
+      var strip=days7.map(function(d){var ks=doses(d).filter(function(x){return x.k.indexOf(m.id+':')===0;});if(!ks.length)return '<span class="md na"><small>'+esc(fd(d,{weekday:'short'}).replace('.','').slice(0,2))+'</small><i></i></span>';
+        var all=ks.every(function(x){return takenOn(d,x.k);}),some=ks.some(function(x){return takenOn(d,x.k);});
+        return '<span class="md '+(all?'ok':some?'part':(d===today()?'open':'miss'))+'"><small>'+esc(fd(d,{weekday:'short'}).replace('.','').slice(0,2))+'</small><i>'+(all?ic('check'):'')+'</i></span>';}).join('');
+      var nx=wk?nextWeekly(m):null;
+      return '<div class="medc"><div class="mc-top"><span class="mc-i" style="background:'+f[0]+';color:'+f[1]+'">'+svgI(f[2])+'</span><div class="mc-n"><strong>'+esc(m.name)+'</strong><span class="mc-d">'+esc(m.dose)+'</span>'+(m.src==='praxis'?'<span class="pbadge">'+esc(t.fromPraxis)+'</span>':'')+'</div><button class="edit" data-act="editMed" data-id="'+m.id+'" aria-label="'+esc(t.edit)+'">'+ic('pen')+'</button></div>'+
+        (m.how?'<p class="mc-how">'+esc(m.how)+'</p>':'')+'<div class="mslots">'+slots+'</div>'+
+        (nx?'<p class="mc-next">'+svgI(SLOTIC.weekly)+esc(t.medNext)+': <strong>'+esc(nx===today()?t.today:fd(nx,{weekday:'short',day:'numeric',month:'short'}))+'</strong></p>':'')+
+        (wk?'':'<div class="mstrip">'+strip+'</div>')+'</div>';}).join('');
+  } else h+='<p class="empty card">'+esc(t.none)+'</p>';
   h+='<button class="btn full" data-act="addMed" style="margin-bottom:12px">'+ic('plus')+esc(t.addMed)+'</button>';
   return h;
 }

@@ -328,6 +328,41 @@ nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stro
 .legend{display:flex;gap:12px;justify-content:center;font-size:12px;color:var(--muted);margin-top:-6px}
 .legend .mi{color:var(--hi);margin-right:-6px}
 @media (prefers-reduced-motion: reduce){.todaybadge .mi{animation:none}}
+
+/* Friedrich Scherz */
+.fsbtn{position:fixed;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));width:62px;height:62px;border-radius:50%;border:0;padding:0;background:radial-gradient(circle at 35% 30%,#2a62e6,#0f2a66);box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 0 3px rgba(90,176,255,.35);z-index:15;cursor:pointer;overflow:hidden}
+.fsbtn .fsav{width:62px;height:62px;transform:translateY(4px)}
+.fsav .fseyes{animation:fsblink 4.5s infinite;transform-origin:60px 60px}
+@keyframes fsblink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.fsbtn .fshead{animation:fsbob 3s ease-in-out infinite;transform-origin:60px 80px}
+@keyframes fsbob{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.fs-talking .fsmouth{animation:fstalk .18s ease-in-out infinite alternate;transform-origin:60px 78px}
+@keyframes fstalk{from{transform:scaleY(.5)}to{transform:scaleY(1.4)}}
+.fssheet{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);border-radius:22px 22px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.6);max-width:560px;margin:0 auto;height:min(78vh,640px);display:flex;flex-direction:column;transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.9,.3,1);padding-bottom:env(safe-area-inset-bottom)}
+.fssheet.open{transform:translateY(0)}
+.fshead2{display:flex;align-items:center;gap:12px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.fsavbig .fsav{width:52px;height:52px;background:radial-gradient(circle at 35% 30%,#2a62e6,#0f2a66);border-radius:50%}
+.fstitle{flex:1;display:flex;flex-direction:column}
+.fstitle b{font-family:var(--display);font-size:18px}
+.fstitle span{font-size:12px;color:var(--muted)}
+.fsx{border:0;background:var(--tile);color:var(--ink);width:36px;height:36px;border-radius:50%;font-size:22px;line-height:1}
+.fscookbar{font-size:12px;font-weight:700;color:var(--hi);padding:0 16px}
+.fscookbar:empty{display:none}
+.fsmsgs{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.fsm{max-width:86%;padding:10px 13px;border-radius:16px;font-size:15px;line-height:1.45;display:flex;flex-direction:column;gap:6px}
+.fsm.fs{background:var(--tile);align-self:flex-start;border-bottom-left-radius:5px}
+.fsm.me{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:5px}
+.fslink{align-self:flex-start;border:0;background:none;color:var(--accent);font-weight:700;padding:0}
+.fschips{display:flex;gap:6px;overflow-x:auto;padding:8px 16px;scrollbar-width:none}
+.fschip{flex:0 0 auto;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:7px 12px;font:inherit;font-size:13px;white-space:nowrap}
+.fsform{display:flex;gap:8px;padding:6px 16px 6px}
+.fsform input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:999px;padding:11px 16px}
+.fsmic{width:46px;height:46px;border-radius:50%;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;flex:0 0 auto}
+.fsmic svg{width:22px;height:22px}
+.fsmic.on{background:#e2453a;animation:fspulse 1s ease-in-out infinite}
+@keyframes fspulse{0%,100%{box-shadow:0 0 0 0 rgba(226,69,58,.6)}50%{box-shadow:0 0 0 10px rgba(226,69,58,0)}}
+.fsmute{align-self:center;border:0;background:none;color:var(--muted);font:inherit;font-size:12px;padding:4px 0 8px}
+@media (prefers-reduced-motion: reduce){.fsav .fseyes,.fsbtn .fshead,.fs-talking .fsmouth,.fsmic.on{animation:none}}
 </style>
 </head>
 <body>
@@ -1048,6 +1083,166 @@ document.addEventListener("change", function(e){
 document.addEventListener("keydown", function(e){ if(e.key==="Escape" && document.getElementById("sheet").classList.contains("open")){ closeRecipe(); location.hash=lastView||"heute"; } });
 
 show();
+/* ---------- Friedrich Scherz – Koch-Assistent (lokal, ohne Cloud) ---------- */
+var FS_AV='<svg viewBox="0 0 120 120" class="fsav" aria-hidden="true"><defs><radialGradient id="fsSkin" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#ffd9bd"/><stop offset="1" stop-color="#e9a77f"/></radialGradient><linearGradient id="fsHat" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfd9ea"/></linearGradient></defs>'+
+ '<ellipse cx="60" cy="112" rx="34" ry="6" fill="#000" opacity=".3"/>'+
+ '<path d="M30 112c0-20 13-30 30-30s30 10 30 30z" fill="#3b82f6" stroke="#14100d" stroke-width="3"/><path d="M52 84l8 10 8-10" fill="#fff" stroke="#14100d" stroke-width="2.5" stroke-linejoin="round"/><circle cx="60" cy="100" r="2.6" fill="#fff"/>'+
+ '<g class="fshead"><ellipse cx="60" cy="62" rx="27" ry="25" fill="url(#fsSkin)" stroke="#14100d" stroke-width="3"/>'+
+ '<ellipse cx="34" cy="64" rx="5" ry="7" fill="#f1b48e" stroke="#14100d" stroke-width="2.5"/><ellipse cx="86" cy="64" rx="5" ry="7" fill="#f1b48e" stroke="#14100d" stroke-width="2.5"/>'+
+ '<path d="M36 44c-8-4-8-16 2-19 2-10 16-13 22-6 6-7 20-4 22 6 10 3 10 15 2 19z" fill="url(#fsHat)" stroke="#14100d" stroke-width="3" stroke-linejoin="round"/><rect x="36" y="40" width="48" height="9" rx="3" fill="#e6edf7" stroke="#14100d" stroke-width="3"/><path d="M46 28q4-6 10-4" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>'+
+ '<g class="fseyes"><ellipse cx="50" cy="60" rx="4" ry="5" fill="#14100d"/><ellipse cx="70" cy="60" rx="4" ry="5" fill="#14100d"/><circle cx="51.5" cy="58" r="1.5" fill="#fff"/><circle cx="71.5" cy="58" r="1.5" fill="#fff"/></g>'+
+ '<path d="M44 52q6-4 11 0M65 52q6-4 11 0" stroke="#5b3a22" stroke-width="2.6" fill="none" stroke-linecap="round"/>'+
+ '<ellipse cx="42" cy="70" rx="5" ry="3" fill="#ff8f8f" opacity=".55"/><ellipse cx="78" cy="70" rx="5" ry="3" fill="#ff8f8f" opacity=".55"/>'+
+ '<path d="M60 66c-3 0-4 3-2 5" stroke="#b9764f" stroke-width="2" fill="none" stroke-linecap="round"/>'+
+ '<g class="fsmouth"><path d="M52 77q8 6 16 0" stroke="#14100d" stroke-width="2.6" fill="#7a2e22" stroke-linecap="round"/></g>'+
+ '<path d="M60 73c-6-4-14-4-20 2 4 0 7-1 9 1 4-2 8-2 11-3zM60 73c6-4 14-4 20 2-4 0-7-1-9 1-4-2-8-2-11-3z" fill="#5b3a22" stroke="#14100d" stroke-width="2" stroke-linejoin="round"/></g></svg>';
+var fs={open:false, msgs:[], cook:null, mute:false, rec:null, listening:false, timers:[]};
+try{ fs.mute = load("fs:mute", false); }catch(e){}
+var FS_DAYS={montag:1,dienstag:2,mittwoch:3,donnerstag:4,freitag:5,samstag:6,sonntag:0};
+var FS_NUM={ein:1,eine:1,einen:1,zwei:2,drei:3,vier:4,"fünf":5,sechs:6,sieben:7,acht:8,neun:9,zehn:10,elf:11,"zwölf":12,"fünfzehn":15,zwanzig:20,"dreißig":30,"vierzig":40,"fünfundvierzig":45};
+var FS_JOKES=["Warum ist die Tomate rot geworden? Sie hat die Salatsoße gesehen.","Was ist ein Keks unter einem Baum? Ein schattiges Plätzchen.","Was macht ein Schnitzel im Fitnessstudio? Es lässt sich panieren – äh, trainieren.","Wie nennt man ein Ei, das Witze erzählt? Ein Scherz-Ei. Wie ich, nur runder."];
+function fsNorm(t){ return (" "+String(t||"").toLowerCase().replace(/[?!.,;:]/g," ").replace(/\s+/g," ")+" "); }
+function fsHas(t,arr){ for(var i=0;i<arr.length;i++) if(t.indexOf(arr[i])>=0) return true; return false; }
+function fsDayFrom(t){
+  var base=today();
+  if(fsHas(t,[" übermorgen "])) return addDays(base,2);
+  if(fsHas(t,[" gestern "])) return addDays(base,-1);
+  var tt=t.replace(" guten morgen "," ");
+  if(fsHas(tt,[" morgen "," morgens? "])) { if(!fsHas(tt,[" morgens "])) return addDays(base,1); }
+  for(var k in FS_DAYS){ if(t.indexOf(" "+k)>=0){ var diff=(FS_DAYS[k]-base.getDay()+7)%7; return addDays(base,diff); } }
+  return base;
+}
+function fsDayName(d){ var r=daysBetween(today(),d); return r===0?"Heute":(r===1?"Morgen":(r===2?"Übermorgen":(r===-1?"Gestern":"Am "+DOW_LONG[d.getDay()]))); }
+function fsFindRecipe(t){
+  var alias={bolo:"bolognese",bratkartoffel:"bratkartoffeln",burger:"smash",smash:"smash",schnitzel:"schnitzel",steak:"steak",teriyaki:"teriyaki",sesam:"sesam",carbonara:"carbonara",kaiserschmarrn:"kaiserschmarrn",pfannkuchen:"pfannkuchen",milchreis:"milchreis",lasagne:"lasagne",cajun:"cajun","sahne-pasta":"sahne",sahnepasta:"sahne",burrito:"burrito",caesar:"caesar",drumstick:"drumsticks",wings:"drumsticks",frikadelle:"frikadellen",bulette:"frikadellen","butter chicken":"butterchicken",butterchicken:"butterchicken","gebratene nudeln":"gebratenenudeln","fried rice":"friedrice","gebratener reis":"friedrice",spätzle:"spaetzle",gnocchi:"gnocchi",geschnetzelt:"geschnetzeltes",crispy:"crispy",müsli:"oats","nougat":"nougat",brötchen:"broetchen"};
+  for(var k in alias) if(t.indexOf(k)>=0) return alias[k];
+  return null;
+}
+function fsMealLine(label, m){ if(!m||!m[0]) return ""; var n=NUT[m[1]]; return label+": "+m[0]+(n?" ("+n.kcal+" kcal)":""); }
+function fsAnswer(raw){
+  var t=fsNorm(raw), d, p, r, out=[], act=null;
+  // Kochmodus
+  if(fs.cook){
+    var rc=R[fs.cook.id];
+    if(fsHas(t,[" stopp "," stop "," fertig "," beenden "," abbrechen "])){ fs.cook=null; return {text:"Kochmodus beendet. Guten Appetit!"}; }
+    if(fsHas(t,[" weiter "," nächst"," dann "," okay "," ok "," ja "])){ fs.cook.step++; if(fs.cook.step>=rc.steps.length){ var tip=rc.tip; fs.cook=null; return {text:"Das war der letzte Schritt. Tipp zum Schluss: "+tip+" Guten Appetit!"}; } return {text:"Schritt "+(fs.cook.step+1)+" von "+rc.steps.length+": "+rc.steps[fs.cook.step]+" – sag „weiter“, wenn du so weit bist."}; }
+    if(fsHas(t,[" zurück"," nochmal"," wiederhol"])){ if(/zurück/.test(t)&&fs.cook.step>0) fs.cook.step--; return {text:"Schritt "+(fs.cook.step+1)+": "+rc.steps[fs.cook.step]}; }
+    if(fsHas(t,[" zutaten "])) return {text:"Zutaten für "+rc.name+": "+rc.ing.join(", ")+"."};
+  }
+  // Timer
+  var m=t.match(/(\d+|[a-zäöüß]+)\s*(min|minute|minuten|sekunde|sekunden)\b/);
+  if(fsHas(t,[" timer "," wecker "," stell "," erinner"]) && m){
+    var n=parseInt(m[1],10); if(isNaN(n)) n=FS_NUM[m[1]]||0;
+    if(n>0){ var sec=/sek/.test(m[2])?n:n*60; fsTimer(sec); return {text:"Alles klar, Timer läuft: "+n+(/sek/.test(m[2])?" Sekunden":" Minuten")+". Ich sag Bescheid – lass die App dafür offen."}; }
+  }
+  if(fsHas(t,[" hallo "," hi "," hey "," servus "," moin "," guten tag "," guten abend "]) && t.split(" ").length<6) return {text:"Moin Yunus! Friedrich Scherz hier, dein Koch-Assistent. Frag mich, was du heute kochst, was du einkaufen musst oder wie ein Rezept geht."};
+  if(fsHas(t,[" wer bist du "," wie heißt du "," was kannst du "," hilfe "])) return {text:"Ich bin Friedrich Scherz – halb Koch, halb Comedian, ganz auf deiner Seite. Ich weiß, was heute dran ist, was auf deiner Einkaufsliste fehlt, was im Gefrierfach liegt, wie viele Kalorien dein Tag hat, und ich führe dich Schritt für Schritt durch jedes Rezept. Und ich stelle Timer."};
+  if(fsHas(t,[" danke "," dankeschön "," merci "])) return {text:"Immer gern. Und denk dran: Jedes selbst gekochte Essen ist ein Lieferando-Euro weniger."};
+  if(fsHas(t,[" witz "," scherz "," lustig "])) return {text:FS_JOKES[Math.floor(Math.random()*FS_JOKES.length)]};
+  // Keine Lust / bestellen
+  if(fsHas(t,[" keine lust "," bestellen "," lieferando "," mcdonald"," wolt "," uber eats "])) return {text:"Halt, halt! Bevor du 15 Euro ausgibst: Notfall-Carbonara dauert 15 Minuten und kostet etwa 2 Euro. Eier, Speck und Parmesan hast du da. Soll ich dich durchführen? Sag „Carbonara kochen“.", go:"carbonara"};
+  // Rezept / Kochen
+  var rid=fsFindRecipe(t);
+  if(rid && fsHas(t,[" kalorien "," kcal "," eiweiß "," protein "," kostet "," preis "," wie viel "," teuer "])){ var nn=NUT[rid]; if(nn) return {text:R[rid].name+": etwa "+nn.kcal+" kcal, "+nn.p+" g Eiweiß, "+nn.c+" g Kohlenhydrate, "+nn.f+" g Fett – rund "+eur2(nn.eur)+" pro Portion."}; }
+  if(rid && fsHas(t,[" koch"," mach"," wie "," rezept"," anleitung"," schritt"," zubereit"," brat"])){
+    var rc2=R[rid];
+    if(fsHas(t,[" kochen "," kochmodus "," schritt "," mach mit "," führ "," lass uns "]) || /^ (wir )?(koch|mach)/.test(t)){ fs.cook={id:rid,step:0}; return {text:"Kochmodus: "+rc2.name+". Du brauchst: "+rc2.ing.join(", ")+". Schritt 1: "+rc2.steps[0]+" – sag „weiter“ für den nächsten Schritt.", go:rid}; }
+    return {text:rc2.name+" – "+rc2.time+", "+rc2.por+". So geht's: "+rc2.steps.map(function(s,i){return (i+1)+". "+s;}).join(" ")+" Tipp: "+rc2.tip+" Sag „"+rc2.name.split(" ")[0]+" kochen“, dann führe ich dich Schritt für Schritt.", go:rid};
+  }
+  // Gefrierfach
+  if(fsHas(t,[" gefrier"," eingefroren"," vorrat "," tiefkühl"])){ var b=load("stock:bolo",0), s2=load("stock:schnitzel",0); return {text:"Im Gefrierfach: "+b+" Portionen Bolognese und "+s2+" Schnitzel."+(b===0?" Keine Bolognese mehr – die nächste große Ladung gibt es in Woche 1.":"")}; }
+  // Einkauf
+  if(fsHas(t,[" einkauf"," einkaufen "," kaufen "," liste "," fehlt "," besorgen "])){
+    r=(listRot!==null?listRot:defaultRot()); var items=BASE.concat(WEEK_ITEMS[r]), chk=load("chk:"+shopAbs(r),{}), open=[], sum=0;
+    items.forEach(function(it,i){ if(!chk[i]){ open.push(it[0]+" ("+it[1]+")"); sum+=it[2]; } });
+    if(!open.length) return {text:"Deine Liste für "+(r===0?"die Startwoche":"Woche "+r)+" ist komplett abgehakt. Stark!"};
+    return {text:"Auf deiner Liste für "+(r===0?"die Startwoche":"Woche "+r)+" fehlen noch "+open.length+" Sachen, zusammen etwa "+eur2(sum)+": "+open.slice(0,8).join(", ")+(open.length>8?" und "+(open.length-8)+" weitere.":"."), view:"einkauf"};
+  }
+  // Kalorien Tag
+  if(fsHas(t,[" kalorien "," kcal "," eiweiß "," protein "," nährwert"])){
+    d=fsDayFrom(t); p=dayPlan(planRot(d), d.getDay()); var tot={k:0,p:0}; [p.breakfast[1],p.lunch[1],"_snack",p.dinner[1]].forEach(function(k){var x=NUT[k]; if(x){tot.k+=x.kcal; tot.p+=x.p;}});
+    return {text:fsDayName(d)+" kommst du auf etwa "+tot.k+" kcal und "+tot.p+" g Eiweiß."+(tot.k<2700?" Das ist knapp – nimm eine extra Portion oder einen zweiten Snack.":" Passt zu deinen rund 3000 kcal.")};
+  }
+  // Geld
+  if(fsHas(t,[" geld "," kosten "," spar"," teuer "," budget "])){ var rr=defaultRot(), wk=BASE.concat(WEEK_ITEMS[rr]).reduce(function(a,b){return a+b[2];},0); return {text:"Diese Woche kostet dein Einkauf etwa "+eur2(wk)+". Pro Mahlzeit sind das rund 2,50 Euro – bestellt zahlst du 12 bis 15. Wenn du durchziehst, sparst du grob 150 Euro im Monat."}; }
+  // Woche
+  if(fsHas(t,[" woche "," wochenplan "," diese woche "])){ d=today(); r=planRot(d); var w=W[r]; return {text:(r===0?"Startwoche":"Woche "+r+" von 6")+": "+(w.bowl?"Bowl am Montag: "+w.bowl[0]+". ":"")+"Wrap für die Uni: "+w.wrap[0]+". Warmes Gericht: "+w.pasta[0]+". Samstag Fakeaway: "+w.fake[0]+"."}; }
+  // Tag / Mahlzeit
+  if(fsHas(t,[" koch"," essen "," ess "," gibt "," heute "," morgen "," abend"," mittag"," frühstück"," hunger "," plan "," dran "]) || fsDayFrom(t).getTime()!==today().getTime()){
+    d=fsDayFrom(t); r=planRot(d); p=dayPlan(r,d.getDay());
+    var dn=fsDayName(d);
+    if(fsHas(t,[" frühstück "])) return {text:dn+" zum Frühstück: "+p.breakfast[0]+".", go:p.breakfast[1]};
+    if(fsHas(t,[" mittag"])) return {text:dn+" mittags: "+(p.lunch[0]||"nichts geplant")+(p.lunchLabel.indexOf("Uni")>=0?" – kommt in die Uni-Box.":"."), go:p.lunch[1]};
+    var line=dn+" abends gibt's "+p.dinner[0]+"."+(p.cook?" Das ist ein Kochtag.":"")+" Mittags: "+(p.lunch[0]||"–")+". Frühstück: "+p.breakfast[0]+".";
+    if(p.tasks&&p.tasks.length) line+=" Wichtig: "+p.tasks[0];
+    return {text:line, go:p.dinner[1], day:fmtISO(d)};
+  }
+  return {text:"Das hab ich nicht ganz verstanden. Probier zum Beispiel: „Was koche ich heute?“, „Was muss ich einkaufen?“, „Wie mache ich Bratkartoffeln?“, „Timer 10 Minuten“ oder „Was ist im Gefrierfach?“."};
+}
+function fsTimer(sec){
+  var id=setTimeout(function(){ fsPush("fs","⏰ Timer abgelaufen! ("+Math.round(sec/60)+" Min.)"); fsSay("Timer abgelaufen!"); try{ navigator.vibrate&&navigator.vibrate([300,150,300,150,600]); }catch(e){} }, sec*1000);
+  fs.timers.push(id);
+}
+function fsSay(text){
+  if(fs.mute || !window.speechSynthesis) return;
+  try{ speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(text.replace(/[„“]/g,"")); u.lang="de-DE"; u.rate=1.02; var v=speechSynthesis.getVoices().filter(function(x){return /^de/i.test(x.lang);}); if(v.length) u.voice=v[0];
+    var av=document.getElementById("fsbtn"); u.onstart=function(){ document.body.classList.add("fs-talking"); }; u.onend=u.onerror=function(){ document.body.classList.remove("fs-talking"); };
+    speechSynthesis.speak(u); }catch(e){}
+}
+function fsPush(who,text,go){ fs.msgs.push({who:who,text:text,go:go}); if(fs.msgs.length>40) fs.msgs.shift(); fsRender(); }
+function fsAsk(q){
+  q=String(q||"").trim(); if(!q) return; fsPush("me",q);
+  var a=fsAnswer(q); fsPush("fs",a.text,a.go); fsSay(a.text);
+  if(a.view){ /* Ansicht nur auf Wunsch wechseln */ }
+}
+function fsRender(){
+  var box=document.getElementById("fsmsgs"); if(!box) return;
+  box.innerHTML=fs.msgs.map(function(m){ return '<div class="fsm '+m.who+'"><span>'+esc(m.text)+'</span>'+(m.go&&R[m.go]?'<button class="fslink" data-r="'+m.go+'">Rezept öffnen ›</button>':'')+'</div>'; }).join("");
+  box.scrollTop=box.scrollHeight;
+  var mb=document.getElementById("fsmic"); if(mb){ mb.classList.toggle("on",fs.listening); mb.setAttribute("aria-label",fs.listening?"Zuhören beenden":"Sprechen"); }
+  var mu=document.getElementById("fsmute"); if(mu) mu.textContent=fs.mute?"Ton aus":"Ton an";
+  var ck=document.getElementById("fscook"); if(ck) ck.textContent=fs.cook?("Kochmodus: "+R[fs.cook.id].name+" · Schritt "+(fs.cook.step+1)+"/"+R[fs.cook.id].steps.length):"";
+}
+function fsOpen(){
+  fs.open=true; document.getElementById("fssheet").classList.add("open");
+  if(!fs.msgs.length){ var d=today(), p=dayPlan(planRot(d), d.getDay()); fsPush("fs","Na, Hunger? Ich bin Friedrich Scherz. Heute abends gibt's "+p.dinner[0]+". Frag mich einfach – tippen oder aufs Mikro drücken."); }
+  fsRender();
+}
+function fsClose(){ fs.open=false; document.getElementById("fssheet").classList.remove("open"); fsStop(); try{ speechSynthesis.cancel(); }catch(e){} }
+function fsListen(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ fsPush("fs","Spracheingabe kann dein Browser hier leider nicht. Tipp ins Feld und nutz das Mikrofon auf deiner Tastatur – das klappt genauso."); var inp=document.getElementById("fsinput"); if(inp) inp.focus(); return; }
+  if(fs.listening){ fsStop(); return; }
+  try{ speechSynthesis.cancel(); }catch(e){}
+  var rec=new SR(); rec.lang="de-DE"; rec.interimResults=true; rec.maxAlternatives=1;
+  var inp2=document.getElementById("fsinput");
+  rec.onresult=function(e){ var txt=""; for(var i=0;i<e.results.length;i++) txt+=e.results[i][0].transcript; inp2.value=txt; if(e.results[e.results.length-1].isFinal){ fsStop(); inp2.value=""; fsAsk(txt); } };
+  rec.onerror=function(ev){ fsStop(); if(ev.error==="not-allowed") fsPush("fs","Ich darf das Mikrofon nicht benutzen. Erlaube es in den Browser-Einstellungen – oder tipp einfach."); };
+  rec.onend=function(){ fs.listening=false; fsRender(); };
+  fs.rec=rec; fs.listening=true; fsRender(); try{ rec.start(); }catch(e){ fs.listening=false; fsRender(); }
+}
+function fsStop(){ if(fs.rec){ try{ fs.rec.stop(); }catch(e){} } fs.listening=false; fsRender(); }
+function fsMount(){
+  var b=document.createElement("button"); b.id="fsbtn"; b.className="fsbtn"; b.setAttribute("aria-label","Friedrich Scherz fragen"); b.innerHTML=FS_AV; document.body.appendChild(b);
+  var sh=document.createElement("div"); sh.id="fssheet"; sh.className="fssheet"; sh.setAttribute("role","dialog"); sh.setAttribute("aria-label","Friedrich Scherz");
+  sh.innerHTML='<div class="fshead2"><span class="fsavbig">'+FS_AV+'</span><span class="fstitle"><b>Friedrich Scherz</b><span>Dein Koch-Assistent · offline</span></span><button class="fsx" id="fsclose" aria-label="Schließen">×</button></div>'+
+   '<div class="fscookbar" id="fscook"></div><div class="fsmsgs" id="fsmsgs"></div>'+
+   '<div class="fschips">'+["Was koche ich heute?","Was gibt's morgen?","Was muss ich einkaufen?","Bratkartoffeln kochen","Timer 10 Minuten","Was ist im Gefrierfach?","Erzähl einen Witz"].map(function(c){return '<button class="fschip" data-fsq="'+c+'">'+c+'</button>';}).join("")+'</div>'+
+   '<form class="fsform" id="fsform"><input id="fsinput" type="text" autocomplete="off" placeholder="Frag Friedrich …" aria-label="Frage an Friedrich"><button type="button" class="fsmic" id="fsmic" aria-label="Sprechen"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button></form>'+
+   '<button class="fsmute" id="fsmute"></button>';
+  document.body.appendChild(sh);
+  b.addEventListener("click", function(){ fs.open?fsClose():fsOpen(); });
+  sh.addEventListener("click", function(e){
+    var x=e.target.closest("button"); if(!x) return;
+    if(x.id==="fsclose"){ fsClose(); return; }
+    if(x.id==="fsmic"){ fsListen(); return; }
+    if(x.id==="fsmute"){ fs.mute=!fs.mute; save("fs:mute",fs.mute); if(fs.mute) try{speechSynthesis.cancel();}catch(e2){} fsRender(); return; }
+    if(x.dataset.fsq){ fsAsk(x.dataset.fsq); return; }
+  });
+  document.getElementById("fsform").addEventListener("submit", function(e){ e.preventDefault(); var i=document.getElementById("fsinput"); var v=i.value; i.value=""; fsAsk(v); });
+}
+fsMount();
+
 if("serviceWorker" in navigator){ window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); }); }
 </script>
 </body>

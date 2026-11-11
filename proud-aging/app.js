@@ -60,7 +60,7 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 
 /* ---------- Grundgerüst ---------- */
 var root=document.getElementById('app');
-var view='fill', sub=null, dataTab='over', F=null;
+var view='fill', sub=null, dataTab=null, F=null;
 function setView(v,s){view=v;sub=s||null;render();window.scrollTo(0,0);}
 function header(){
   return '<header class="top"><div class="brand"><span class="st">'+ic('star',true)+'</span>Proud <b>Aging</b></div>'+
@@ -653,6 +653,32 @@ function sheetCal(){var t=T(),tot=Object.keys(S.filled||{}).filter(function(d){r
   openSheet('<h2>'+esc(t.calTitle)+'</h2><div class="cal-k"><div><b>'+tot+'</b><span>'+esc(t.calTotal)+'</span></div><div><b>'+n+'</b><span>'+esc(t.calCur)+'</span></div><div><b>'+best+'</b><span>'+esc(t.calBest)+'</span></div></div><div id="calbox">'+calHTML()+'</div><p class="cal-ms-t">'+esc(t.ms)+'</p><div class="cal-ms">'+ms+'</div><div class="actions"><button type="button" class="btn full" data-close>'+esc(t.calClose)+'</button></div>',
   function(){},function(a){if(a==='calPrev')calOff--;if(a==='calNext'&&calOff<0)calOff++;var box=sheet.querySelector('#calbox');if(box)box.innerHTML=calHTML();});}
 
+
+/* ---------- Meine Daten: Kachel-Übersicht ---------- */
+function asc(a){return a.slice().sort(function(x,y){return x.d<y.d?-1:1;});}
+function avgOf(a,k){return a.length?a.reduce(function(s,x){return s+x[k];},0)/a.length:null;}
+function hubTiles(){var t=T(),M=mods(),out=[],td=today(),wk=addDays(td,-6);
+  if(M.sleep){var s=asc(S.sleep),l7=s.filter(function(x){return x.d>=wk;}),a7=avgOf(l7,'h'),f7=s.length>=14?avgOf(s.slice(0,7),'h'):null;
+    out.push(['sleep','sleep','c1',t.tabs.sleep,a7!=null?'Ø '+num(a7)+' '+t.h:'–',f7!=null&&a7!=null&&a7-f7>=.2?'+'+num(a7-f7)+' '+t.h+' '+t.hubSince:(l7.length?l7.filter(function(x){return x.through;}).length+'/'+l7.length+' '+t.legendThrough:t.hubNone),f7!=null&&a7-f7>=.2]);}
+  if(M.mood){var m=asc(S.mood).filter(function(x){return x.mood!=null;}),l=m.filter(function(x){return x.d>=wk;}),mo=avgOf(l,'mood'),h1=m.length>=14?avgOf(m.slice(0,7),'hot'):null,h2=avgOf(l,'hot');
+    var better=h1&&h2!=null&&(h1-h2)/h1>=.2;
+    out.push(['mood','mood','c4',t.tabs.mood,mo!=null?'<span class="fc fc'+Math.round(mo)+' sm">'+face(Math.round(mo))+'</span>'+num(mo):'–',better?'−'+Math.round((h1-h2)/h1*100)+' % '+t.hubHot:(h2!=null?'Ø '+num(h2)+' '+t.hotDayShort:t.hubNone),better,true]);}
+  if(M.meds){var tot=0,ok=0;for(var i=0;i<7;i++){var d=addDays(td,-i);doses(d).forEach(function(x){tot++;if(takenOn(d,x.k))ok++;});}
+    out.push(['meds','meds','c3',t.tabs.meds,tot?Math.round(ok/tot*100)+' %':S.meds.length+'',tot?t.hubTaken:t.pmMedN,tot&&ok/tot>=.9]);}
+  if(M.weight){var w=asc(S.weight),lw=w[w.length-1],fw=w[0];
+    out.push(['weight','weight','c2',t.tabs.weight,lw?num(lw.kg)+' '+t.kg:'–',w.length>1?(lw.kg-fw.kg>0?'+':'−')+num(Math.abs(lw.kg-fw.kg))+' '+t.kg+' '+t.hubSince:t.hubNone,w.length>1&&lw.kg<fw.kg]);}
+  if(M.aes){var la=S.aes.slice().sort(byDate)[0],due=la?aesDue(la):null;
+    out.push(['aes','aes','c5',t.tabs.aes,la?aesName(la):'–',due?t.aesNext+' '+fd(due,{day:'numeric',month:'short'}):(la?fd(la.d,{day:'numeric',month:'short'}):t.hubNone),false]);}
+  return out;}
+function vHub(){var t=T();
+  var h='<div class="pagehead"><h1>'+esc(t.data)+'</h1><p>'+esc(t.hubSub)+'</p></div><div class="hub">';
+  h+=hubTiles().map(function(x){var act=x[0]==='cal'?'data-act="cal"':'data-act="dtab" data-t="'+x[0]+'"';
+    return '<button class="hubt '+x[2]+'" '+act+'><span class="hb-i">'+ic(x[1],x[1]==='star')+'</span><span class="hb-n">'+esc(x[3])+'</span><strong>'+(x[7]?x[4]:esc(x[4]))+'</strong><small class="'+(x[6]?'up':'')+'">'+esc(x[5])+'</small></button>';}).join('');
+  var n=streak();h+='</div>'+(n?'<button class="hubst" data-act="cal">'+FLAME+'<span>'+esc(t.stDays.replace('{n}',n))+'</span><em>'+esc(t.hubCal)+' →</em></button>':'')+journeyCard();
+  h+='<button class="btn light full" data-act="go" data-v="report" style="margin-top:4px">'+ic('doc')+esc(t.report)+'</button>';
+  h+='<button class="linkbtn" data-act="otherDay">'+ic('cal')+esc(t.otherDay)+'</button>';
+  return h;}
+
 /* ---------- Smileys ---------- */
 var FACE=['M8 16.5c1.2-2 2.5-2.6 4-2.6s2.8.6 4 2.6','M8.5 15.8c1-1.1 2.2-1.6 3.5-1.6s2.5.5 3.5 1.6','M8.5 15h7','M8.5 14.2c1 1.1 2.2 1.6 3.5 1.6s2.5-.5 3.5-1.6','M7.8 13.6c1.2 2 2.6 2.8 4.2 2.8s3-.8 4.2-2.8'];
 function face(i){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><circle cx="9" cy="10" r=".9" fill="currentColor"/><circle cx="15" cy="10" r=".9" fill="currentColor"/>'+(i===1?'<path d="M7.6 8.2l2 .8M16.4 8.2l-2 .8"/>':'')+'<path d="'+FACE[i-1]+'"/></svg>';}
@@ -773,19 +799,20 @@ function formSave(){
 
 /* ---------- Meine Daten ---------- */
 function vData(){
-  var t=T(),M=mods(),tabs=[['over',t.tabs.over],['sleep',t.tabs.sleep],['mood',t.tabs.mood],['meds',t.tabs.meds],['weight',t.tabs.weight],['aes',t.tabs.aes]].filter(function(x){return x[0]==='over'||M[x[0]];});
-  if(!tabs.some(function(x){return x[0]===dataTab;}))dataTab=tabs[0][0];
-  var h='<div class="pagehead"><h1>'+esc(t.data)+'</h1></div><div class="dtabs'+(tabs.length>4?' many':'')+'" role="tablist" style="grid-template-columns:repeat('+tabs.length+',1fr)">'+tabs.map(function(x){return '<button role="tab" data-act="dtab" data-t="'+x[0]+'" aria-selected="'+(dataTab===x[0])+'">'+esc(x[1])+'</button>';}).join('')+'</div>'+(dataTab==='meds'||dataTab==='aes'||dataTab==='over'?'':rangeBar());
-  var inner=({over:vOver,sleep:vSleep,weight:vWeight,meds:vMeds,mood:vMood,aes:vAes}[dataTab])();
+  var t=T(),M=mods();
+  if(!dataTab||dataTab==='over'||!(M[dataTab]))return vHub();
+  var name=t.tabs[dataTab];
+  var h='<button class="backlink" data-act="dtab" data-t="">'+ic('back')+esc(t.data)+'</button>';
+  h+='<div class="pagehead"><h1>'+esc(name)+'</h1></div>'+(dataTab==='meds'||dataTab==='aes'?'':rangeBar());
+  var inner=({sleep:vSleep,weight:vWeight,meds:vMeds,mood:vMood,aes:vAes}[dataTab])();
   inner=inner.replace(/^<div class="pagehead"><h1>[^<]*<\/h1>(<p>[^<]*<\/p>)?<\/div>/,function(m,p1){return p1?'<p class="muted" style="margin:0 2px 12px">'+p1.replace(/<\/?p>/g,'')+'</p>':'';});
-  h+=inner+'<button class="btn light full" data-act="go" data-v="report" style="margin-top:4px">'+ic('doc')+esc(t.report)+'</button>';
-  return h;
+  return h+inner;
 }
 
 /* ---------- Ereignisse ---------- */
 root.addEventListener('click',function(e){
   var b=e.target.closest('[data-act]');if(!b)return;var a=b.dataset.act,t=T();
-  if(a==='go')setView(b.dataset.v);
+  if(a==='go'){if(b.dataset.v==='data'&&view!=='report')dataTab=null;setView(b.dataset.v);}
   else if(a==='settings')setView('settings');
   else if(a==='codeApply'){var r=parseCode((document.getElementById('codeIn')||{}).value);if(!r){toast(t.codeBad);return;}var ch=applySetup(r.mods,r.glp1);toast(t.codeOk);afterSetup(ch);}
   else if(a==='setupDone'){var m={};MODS.forEach(function(k){var c=root.querySelector('input[name=mod][value='+k+']');m[k]=!!(c&&c.checked);});if(!MODS.some(function(k){return m[k];})){root.querySelector('#setupErr').hidden=false;return;}var g=root.querySelector('input[name=glp1]');var ch=applySetup(m,g&&g.checked);toast(ch?t.progNew:t.saved);afterSetup(ch);}
@@ -797,7 +824,7 @@ root.addEventListener('click',function(e){
   else if(a==='fWish'){var w=b.dataset.w,ix=F.a.wish.indexOf(w);if(ix>=0)F.a.wish.splice(ix,1);else F.a.wish.push(w);render();}
   else if(a==='rng'){RANGE=+b.dataset.v;render();}
   else if(a==='cal')sheetCal();
-  else if(a==='over'){dataTab='over';setView('data');window.scrollTo(0,0);}
+  else if(a==='over'){dataTab=null;setView('data');window.scrollTo(0,0);}
   else if(a==='jMore'){jOpen=!jOpen;render();}
   else if(a==='big'){S.big=b.dataset.b==='1';save();render();}
   else if(a==='ics')downloadIcs((document.getElementById('remT')||{}).value||'20:00');
@@ -806,7 +833,7 @@ root.addEventListener('click',function(e){
   else if(a==='book'){window.open(PRAXIS.book,'_blank','noopener');}
   else if(a==='startForm')startForm(b.dataset.d||today());
   else if(a==='otherDay')sheetDay();
-  else if(a==='dtab'){dataTab=b.dataset.t;render();}
+  else if(a==='dtab'){dataTab=b.dataset.t||null;render();window.scrollTo(0,0);}
   else if(a==='fNext')formNext();
   else if(a==='fPrev')formPrev();
   else if(a==='fSkip')formSkip();

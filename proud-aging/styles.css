@@ -437,3 +437,17 @@ body.pf-body{margin:0;min-height:100vh;background:radial-gradient(1200px 700px a
 .overlink strong{display:block;font-size:1.05rem;color:#1C2E4A}.overlink small{display:block;color:var(--muted);font-size:.88rem;margin-top:2px}
 .overlink span:nth-child(2){flex:1}.overlink .arr{font-size:1.3rem;color:#5B8DB8;font-weight:700}
 .rngdelta{margin:8px 2px 0;color:var(--muted);font-size:.9rem}.rngdelta strong{color:#1C2E4A}
+/* --- Meine Daten: Kacheln --- */
+.hub{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.hubt{all:unset;box-sizing:border-box;cursor:pointer;border-radius:22px;padding:16px 14px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:150px;background:#fff;transition:transform .12s}
+.hubt:active{transform:scale(.98)}
+.hubt .hb-i{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.75);color:#1C2E4A;margin-bottom:8px}.hubt .hb-i svg{width:20px;height:20px}
+.hubt .hb-n{font-weight:700;color:#1C2E4A;font-size:.95rem}
+.hubt strong{font-size:1.45rem;line-height:1.15;color:#1C2E4A;letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+.hubt small{font-size:.8rem;color:var(--muted);line-height:1.3}.hubt small.up{color:#2E7D4F;font-weight:700}
+.hubt.c1{background:#E3ECF5}.hubt.c2{background:#E4F0E6}.hubt.c3{background:#EEF1F6}.hubt.c4{background:#ECE8F4}.hubt.c5{background:#F6E7E4}
+.hubt.c5 strong{font-size:1.05rem}
+.hubst{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;padding:12px 16px;border-radius:16px;background:#fff;margin-bottom:14px;font-weight:700;color:#1C2E4A;font-size:.92rem}
+.hubst svg{width:16px;height:16px;color:#5B8DB8;flex:none}.hubst span{flex:1}.hubst em{font-style:normal;color:#3A6A95;font-size:.88rem}
+.backlink{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;color:#3A6A95;font-weight:700;padding:6px 2px 2px;margin-bottom:2px}.backlink svg{width:18px;height:18px}
+.hubt:last-child:nth-child(odd){grid-column:1/-1;min-height:0}

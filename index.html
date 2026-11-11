@@ -146,6 +146,18 @@ nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stro
 .nut b{font-family:var(--display);font-size:15px;font-variant-numeric:tabular-nums}
 .nut span{font-size:11px;color:var(--muted)}
 .nut .price{background:var(--accent-soft);outline:1px solid var(--accent)}
+.bockline{display:flex;flex-direction:column;gap:6px;padding:0 16px 12px}
+.bockline .link{font-size:13px;align-self:flex-start}
+.bockbtn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;border:1.5px dashed var(--accent);background:var(--accent-soft);color:var(--ink);border-radius:12px;padding:10px 12px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.bockbtn span:first-child{display:flex;align-items:center;gap:6px;text-align:left}
+.tag.wish{background:var(--accent);color:var(--accent-ink)}
+.bockmoods{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 8px}
+.bockmoods .awaybtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.bockq{width:100%;box-sizing:border-box;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:10px 12px;font:inherit;font-size:16px;margin-bottom:6px}
+.bockitem{width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;margin-bottom:8px}
+.bockitem .p{font-weight:800;white-space:nowrap}
+.bockitem.free .p{color:var(--accent)}
+.bockex{margin-bottom:8px}
 /* Technik */
 .tstage svg .ol{stroke:#1b130e;stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round;paint-order:stroke}
 .tstage svg .slice,.tstage svg .chick,.tstage svg .schnbody,.tstage svg .pattybody,.tstage svg .stkbody,.tstage svg .brown{stroke:#1b130e;stroke-width:1.8;paint-order:stroke}
@@ -862,13 +874,92 @@ var AWAY_OPTS={papa:["Bei Papa – Lammkotelett oder Fleisch","_papa"],out:["Aus
 function awayGet(d){ return load("away:"+fmtISO(d), null); }
 function awaySet(d, slot, kind){ var a=awayGet(d)||{}; if(kind) a[slot]=kind; else delete a[slot]; save("away:"+fmtISO(d), Object.keys(a).length?a:null); }
 function planFor(d){
-  var p=dayPlan(planRot(d), vdow(d), d.getDay()), a=awayGet(d);
+  var p=dayPlan(planRot(d), vdow(d), d.getDay()), a=awayGet(d), b=bockGet(d);
+  if(b){ ["l","d"].forEach(function(sl){ var o=b[sl]; if(!o||!o.m) return; if(sl==="d"){ p.dinner=o.m; p.fake=false; } else { p.lunch=o.m; } p["bock"+sl]=o.src; p.tasks=[o.task,o.task2].filter(Boolean).concat(p.tasks||[]); }); }
   if(a){
     if(a.d){ p.leftover=p.dinner; p.dinner=AWAY_OPTS[a.d]; p.cook=false; p.fake=false; p.away=a.d; }
     if(a.l){ p.leftoverL=p.lunch; p.lunch=AWAY_OPTS[a.l]; p.lunchLabel="Mittags"; p.awayL=a.l; }
     if(p.leftover && p.leftover[1]) p.tasks=["Deine Portion „"+p.leftover[0]+"“ bleibt übrig: morgen mittags essen oder einfrieren."].concat(p.tasks||[]);
   }
   return p;
+}
+/* ---------- Worauf hast du Bock? – Plan nach Lust anpassen ----------
+   Reihenfolge nach Kosten: 1) schon gekocht/gekauft diese Woche (Tag tauschen, 0 €)
+   2) Gefrierfach (0 €) 3) Vorrat (Carbonara) 4) kurz einkaufen (4 Portionen, Rest einfrieren). */
+var BOCK_MOODS=[["fastfood","Fastfood",["fastfood"]],["pasta","Pasta",["pasta"]],["cremig","Was Cremiges",["cremig"]],["deftig","Deftig & Fleisch",["deftig","rind"]],["asia","Asiatisch",["asiatisch"]],["scharf","Scharf & Mexikanisch",["scharf","mexikanisch","indisch"]],["suess","Was Süßes",["suess"]],["leicht","Was Leichtes",["salat","veggie"]]];
+var BOCK_SKIP={oats:1,nougat:1,broetchen:1};
+var BOCK_ORDER=13; // ungefähre Kosten einer Bestellung
+function bockGet(d){ return load("bock:"+fmtISO(d), null); }
+function bockPut(d,sl,o){ var b=bockGet(d)||{}; if(o) b[sl]=o; else delete b[sl]; save("bock:"+fmtISO(d), Object.keys(b).length?b:null); }
+function planNoBock(d){ return dayPlan(planRot(d), vdow(d), d.getDay()); }
+function slotMeal(p,sl){ return sl==="l"?p.lunch:p.dinner; }
+function isFresh(p,sl,key){ var tg=REC_TAGS[key]||[]; return (sl==="d"&&!!p.fake)||key==="bratkartoffeln"||tg.indexOf("suess")>=0; }
+function bockCands(d,sl){
+  var out={have:[],freezer:[],pantry:[],buy:[]}, cur=slotMeal(planFor(d),sl), seen={};
+  if(cur&&cur[1]) seen[cur[1]]=1;
+  var ws=weekStartOf(d), end=addDays(ws,6), cooked={}, shopped=false;
+  for(var i=0;i<=daysBetween(ws,d);i++){ var pp=planNoBock(addDays(ws,i)); if(pp.shop) shopped=true; ["l","d"].forEach(function(s2){ var m=slotMeal(pp,s2); if(m&&m[1]) cooked[m[1]]=1; }); }
+  for(var j=0;j<=daysBetween(d,end);j++){
+    var x=addDays(d,j), px=planNoBock(x), bx=bockGet(x)||{}, ax=awayGet(x)||{};
+    ["l","d"].forEach(function(s2){
+      if(j===0) return; if(bx[s2]||ax[s2]) return;
+      var m=slotMeal(px,s2); if(!m||!m[1]||!R[m[1]]||seen[m[1]]||BOCK_SKIP[m[1]]) return;
+      var fr=isFresh(px,s2,m[1]); if(fr? !shopped : !cooked[m[1]]) return;
+      seen[m[1]]=1; out.have.push({key:m[1],m:m,from:fmtISO(x),fs:s2,fresh:fr,fake:s2==="d"&&!!px.fake,days:j});
+    });
+  }
+  if(ISY){ [["bolo","bolognese","Bolognese aus dem Gefrierfach"],["schnitzel","schnitzel","Rahmschnitzel aus dem Gefrierfach"]].forEach(function(f){ var n=load("stock:"+f[0],0); if(n>0&&!seen[f[1]]){ seen[f[1]]=1; out.freezer.push({key:f[1],m:[f[2],f[1]],n:n}); } }); }
+  if(recOk("carbonara")&&!seen.carbonara){ seen.carbonara=1; out.pantry.push({key:"carbonara",m:[R.carbonara.name,"carbonara"]}); }
+  Object.keys(R).forEach(function(k){ if(seen[k]||BOCK_SKIP[k]||!NUT[k]||!REC_SHOP[k]||!recOk(k)) return; out.buy.push({key:k,m:[R[k].name,k],eur:NUT[k].eur*4}); });
+  out.buy.sort(function(a,b){ return a.eur-b.eur; });
+  return out;
+}
+function bockMatch(key,f){
+  if(!f) return true;
+  if(f.key) return key===f.key;
+  var tg=REC_TAGS[key]||[], nm=(R[key]?R[key].name:"").toLowerCase();
+  if(f.mood){ var mo=BOCK_MOODS.filter(function(x){return x[0]===f.mood;})[0]; if(mo && !mo[2].some(function(t){return tg.indexOf(t)>=0;})) return false; }
+  if(f.q){ var q=f.q.toLowerCase().trim(); if(q && nm.indexOf(q)<0 && !tg.some(function(t){return t.indexOf(q)===0;})) return false; }
+  return true;
+}
+function bockUndo(d,sl){
+  var b=bockGet(d); if(!b||!b[sl]) return; var o=b[sl];
+  if(o.from) bockPut(parseD(o.from),o.fs,null);
+  if(o.stock) save("stock:"+o.stock, load("stock:"+o.stock,0)+1);
+  bockPut(d,sl,null);
+}
+function bockPick(iso,sl,src,key,from,fs2){
+  var d=parseD(iso); bockUndo(d,sl);
+  var base=planNoBock(d), orig=slotMeal(base,sl), o={src:src,m:[R[key]?R[key].name:key,key]}, left=true;
+  if(src==="have"){
+    var x=parseD(from); bockUndo(x,fs2);
+    var px=planNoBock(x), mx=slotMeal(px,fs2), fake=fs2==="d"&&!!px.fake;
+    o.m=mx; o.from=from; o.fs=fs2; left=false;
+    o.task=fake?"Wunsch: Fakeaway vorgezogen – Fleisch jetzt auftauen (Mikrowelle, Auftaustufe) und frisch machen.":(isFresh(px,fs2,mx[1])?"Wunsch: heute „"+mx[0]+"“ frisch machen.":"Wunsch: „"+mx[0]+"“ ist schon gekocht – Portion aus dem Kühlschrank nur aufwärmen.");
+    var back={src:"swap",m:orig,from:iso,fs:sl};
+    if(orig&&orig[1]) back.task = isFresh(base,sl,orig[1]) ? "Getauscht: heute „"+orig[0]+"“ frisch machen (war für "+DOW_LONG[d.getDay()]+" geplant)." : "Getauscht: Portion „"+orig[0]+"“ von "+DOW_LONG[d.getDay()]+(daysBetween(d,x)>=4?" – heute einfrieren und am Vortag auftauen (hält im Kühlschrank nur 3–4 Tage).":" – bis dahin im Kühlschrank lassen, dann aufwärmen.");
+    bockPut(x,fs2,back);
+  } else if(src==="freezer"){
+    var sk=key==="bolognese"?"bolo":"schnitzel"; save("stock:"+sk, Math.max(0,load("stock:"+sk,0)-1)); o.stock=sk;
+    o.m=[key==="bolognese"?"Bolognese aus dem Gefrierfach":"Rahmschnitzel aus dem Gefrierfach",key];
+    o.task="Wunsch: 1 Portion aus dem Gefrierfach – in der Mikrowelle auftauen (Auftaustufe, ca. 8 Min.), dann heiß machen.";
+  } else if(src==="pantry"){
+    o.task="Wunsch: aus dem Vorrat kochen – kein Einkauf nötig.";
+  } else {
+    o.eur=Math.round(NUT[key].eur*4*100)/100;
+    o.task="Wunsch: kurz einkaufen (ca. "+eur(o.eur)+" für 4 Portionen, Zutaten stehen in der Einkaufsliste). 3 Portionen einfrieren – das ersetzt später eine Bestellung.";
+  }
+  if(left && orig && orig[1]) o.task2 = isFresh(base,sl,orig[1]) ? "„"+orig[0]+"“ fällt heute aus – Zutaten aufheben (Fleisch bleibt eingefroren) und an einem anderen Abend machen." : "Die geplante Portion „"+orig[0]+"“ heute einfrieren – nicht wegwerfen, das ist dein nächstes Essen statt Bestellen.";
+  bockPut(d,sl,o);
+  return o;
+}
+function bockLine(c,src){
+  var sub, price;
+  if(src==="have"){ var x=parseD(c.from); sub=(c.fresh?"Zutaten sind da":"schon gekocht")+" · geplant "+(c.days===0?(c.fs==="l"?"heute mittags":"heute abends"):(c.days===1?"morgen":DOW_LONG[x.getDay()]))+" → wird getauscht"; price="0 €"; }
+  else if(src==="freezer"){ sub="Gefrierfach · noch "+c.n+" übrig"; price="0 €"; }
+  else if(src==="pantry"){ sub="aus dem Vorrat, 15 Min."; price=eur2(NUT.carbonara?NUT.carbonara.eur:1.5); }
+  else { sub="neu einkaufen · 4 Portionen, 3 einfrieren · "+eur2(NUT[c.key].eur)+"/Portion"; price="+"+eur(c.eur); }
+  return [sub,price];
 }
 function planRot(d){ var s=startDate(); if(!ISY) return d<s?-1:rot(absWeek(d)); if(d<s && daysBetween(d,s)<=7) return 0; return rot(absWeek(d)); }
 var SHOPDB={"brust": {"n": "Hähnchenbrust", "s": "Fleisch", "u": ["g"], "p": 8.0}, "schenkel": {"n": "Hähnchenschenkel ohne Knochen", "s": "Fleisch", "u": ["g"], "p": 8.0}, "drum": {"n": "Hähnchenunterschenkel", "s": "Fleisch", "u": ["g"], "p": 4.2}, "hack": {"n": "Hackfleisch", "s": "Fleisch", "u": ["g"], "p": 7.0}, "steak": {"n": "Rumpsteak oder Hüftsteak", "s": "Fleisch", "u": ["g"], "p": 25.7}, "speck": {"n": "Speckwürfel", "s": "Kühlregal", "u": ["pck", 100, "Packung à 100 g"], "p": 9.0}, "reis": {"n": "Rundkornreis (Milch- oder Sushireis)", "s": "Trocken & Konserven", "u": ["pck", 1000, "kg-Packung"], "p": 1.5}, "pasta": {"n": "Nudeln (Spaghetti/Penne)", "s": "Trocken & Konserven", "u": ["pck", 500, "Packung à 500 g"], "p": 2.0}, "mie": {"n": "Mie-Nudeln", "s": "Trocken & Konserven", "u": ["pck", 250, "Packung à 250 g"], "p": 3.0}, "spaetzle": {"n": "Spätzle", "s": "Kühlregal", "u": ["pck", 500, "Packung à 500 g"], "p": 3.0}, "gnocchi": {"n": "Gnocchi", "s": "Kühlregal", "u": ["pck", 500, "Packung à 500 g"], "p": 2.0}, "kartoffel": {"n": "Kartoffeln", "s": "Obst & Gemüse", "u": ["pck", 1500, "Netz à 1,5 kg"], "p": 1.33}, "pommes": {"n": "TK-Pommes", "s": "Tiefkühl", "u": ["pck", 1000, "Beutel à 1 kg"], "p": 1.5}, "sahne": {"n": "Sahne", "s": "Kühlregal", "u": ["pck", 200, "Becher"], "p": 3.5}, "skyr": {"n": "Skyr oder Joghurt", "s": "Kühlregal", "u": ["pck", 500, "Becher à 500 g"], "p": 2.0}, "joghurt": {"n": "Joghurt", "s": "Kühlregal", "u": ["pck", 500, "Becher à 500 g"], "p": 1.5}, "milch": {"n": "Milch", "s": "Kühlregal", "u": ["pck", 1000, "Liter"], "p": 1.1}, "ei": {"n": "Eier", "s": "Kühlregal", "u": ["stk", 60, "Stück"], "p": 4.2}, "reibekaese": {"n": "Reibekäse", "s": "Kühlregal", "u": ["pck", 200, "Beutel à 200 g"], "p": 7.5}, "bergkaese": {"n": "Bergkäse oder Emmentaler, gerieben", "s": "Kühlregal", "u": ["pck", 150, "Packung à 150 g"], "p": 10}, "parmesan": {"n": "Parmesan", "s": "Kühlregal", "u": ["pck", 100, "Stück à 100 g"], "p": 20}, "cheddar": {"n": "Cheddarscheiben", "s": "Kühlregal", "u": ["pck", 150, "Packung"], "p": 7.5}, "passata": {"n": "Passierte Tomaten", "s": "Trocken & Konserven", "u": ["pck", 500, "Packung à 500 g"], "p": 1.2}, "mais": {"n": "Mais", "s": "Trocken & Konserven", "u": ["pck", 285, "Dose"], "p": 2.9}, "kidney": {"n": "Kidneybohnen", "s": "Trocken & Konserven", "u": ["pck", 250, "Dose"], "p": 3.2}, "bbohnen": {"n": "Weiße Bohnen in Tomatensoße", "s": "Trocken & Konserven", "u": ["pck", 400, "Dose"], "p": 1.9}, "wrap": {"n": "Wraps", "s": "Brot", "u": ["pck", 360, "Packung (6 Stück)"], "p": 6.0}, "bun": {"n": "Burgerbrötchen", "s": "Brot", "u": ["pck", 240, "Packung (4 Stück)"], "p": 6.25}, "broetchen": {"n": "Aufbackbrötchen", "s": "Brot", "u": ["pck", 600, "Packung (10 Stück)"], "p": 2.2}, "champ": {"n": "Champignons", "s": "Obst & Gemüse", "u": ["pck", 250, "Schale à 250 g"], "p": 6.0}, "spinat": {"n": "TK-Spinat", "s": "Tiefkühl", "u": ["pck", 450, "Packung à 450 g"], "p": 2.9}, "erbsen": {"n": "TK-Erbsen & Möhren", "s": "Tiefkühl", "u": ["pck", 1000, "Beutel à 1 kg"], "p": 1.8}, "gbohnen": {"n": "TK-Grüne Bohnen", "s": "Tiefkühl", "u": ["pck", 450, "Beutel à 450 g"], "p": 2.9}, "gurke": {"n": "Gurke", "s": "Obst & Gemüse", "u": ["stk", 350, "Stück"], "p": 2.0}, "tomate": {"n": "Tomaten", "s": "Obst & Gemüse", "u": ["pck", 500, "Packung à 500 g"], "p": 3.0}, "salat": {"n": "Salat", "s": "Obst & Gemüse", "u": ["stk", 300, "Kopf"], "p": 3.0}, "zwiebel": {"n": "Zwiebeln", "s": "Obst & Gemüse", "u": ["pck", 1000, "Netz – reicht Wochen"], "p": 1.0}, "lasagneplatten": {"n": "Lasagneplatten", "s": "Trocken & Konserven", "u": ["pck", 500, "Packung"], "p": 2.6}, "bechamel": {"n": "Bechamelsoße", "s": "Trocken & Konserven", "u": ["pck", 250, "Packung"], "p": 3.2}, "butter": {"n": "Butter", "s": "Kühlregal", "u": ["pck", 250, "Stück à 250 g"], "p": 9.0}, "apfelmus": {"n": "Apfelmus", "s": "Trocken & Konserven", "u": ["pck", 700, "Glas"], "p": 2.0}, "nutella": {"n": "Nuss-Nougat-Creme", "s": "Trocken & Konserven", "u": ["pck", 450, "Glas – reicht Wochen"], "p": 8.0}, "bschmalz": {"n": "Butterschmalz", "s": "Kühlregal", "u": ["pck", 250, "Packung – reicht Wochen"], "p": 10}, "banane": {"n": "Bananen", "s": "Obst & Gemüse", "u": ["g"], "p": 1.4}, "aufschnitt": {"n": "Aufschnitt", "s": "Kühlregal", "u": ["pck", 100, "Packung"], "p": 10}, "kaese": {"n": "Käsescheiben", "s": "Kühlregal", "u": ["pck", 200, "Packung"], "p": 7.5}, "frischkaese": {"n": "Frischkäse", "s": "Kühlregal", "u": ["pck", 200, "Becher"], "p": 5.0}, "muesli": {"n": "Müsli", "s": "Trocken & Konserven", "u": ["pck", 750, "Packung"], "p": 2.4}, "nougat": {"n": "Nougat Bits", "s": "Trocken & Konserven", "u": ["pck", 375, "Packung"], "p": 6.7}};
@@ -1165,6 +1256,42 @@ function mealRow(label, meal, pill){
   if(!meal[1]||!R[meal[1]]) return '<div class="mrow">'+head+'</div>';
   return '<div class="mitem"><button class="mrow acchead2" data-tog="'+esc(key)+'" aria-expanded="'+open+'">'+head+'</button>'+(open?'<div class="mbody">'+recipeBody(meal[1])+'</div>':'')+'</div>';
 }
+/* ---------- Bock-Auswahl (Sheet) ---------- */
+var bockUI=null;
+function openBock(iso,sl,f){
+  bockUI={iso:iso,sl:sl||"d",mood:f&&f.mood||null,q:f&&f.q||"",key:f&&f.key||null};
+  var b=document.getElementById("sheet-body"), d=parseD(iso), p=planFor(d), diff=daysBetween(today(),d);
+  var dn=diff===0?"heute":(diff===1?"morgen":"am "+DOW_LONG[d.getDay()]);
+  b.innerHTML='<button class="back" id="close">Zurück</button><h1 id="r-title">Worauf hast du '+dn+' Bock?</h1>'+
+    '<p class="note">Erst kommt, was schon da ist (0 €), dann Gefrierfach, dann Neues. Bestellen kostet ca. '+eur(BOCK_ORDER)+'.</p>'+
+    '<div class="seg" role="group" aria-label="Mahlzeit"><button data-bocksl="l" aria-pressed="'+(bockUI.sl==="l")+'">Mittags · '+esc(p.lunch&&p.lunch[0]||"–")+'</button><button data-bocksl="d" aria-pressed="'+(bockUI.sl==="d")+'">Abends · '+esc(p.dinner&&p.dinner[0]||"–")+'</button></div>'+
+    '<div class="bockmoods" role="group" aria-label="Lust auf">'+BOCK_MOODS.map(function(m){ return '<button class="awaybtn" data-bockmood="'+m[0]+'" aria-pressed="'+(bockUI.mood===m[0])+'">'+m[1]+'</button>'; }).join("")+'</div>'+
+    '<input id="bockq" class="bockq" type="search" placeholder="Oder tippen: Burger, Nudeln, Hähnchen …" value="'+esc(bockUI.q)+'" aria-label="Wunschessen suchen">'+
+    '<div id="bocklist"></div>';
+  renderBockList();
+  var sh=document.getElementById("sheet"); sh.classList.add("open"); sh.scrollTop=0;
+}
+function renderBockList(){
+  var el=document.getElementById("bocklist"); if(!el||!bockUI) return;
+  var d=parseD(bockUI.iso), c=bockCands(d,bockUI.sl), f={mood:bockUI.mood,q:bockUI.q,key:bockUI.key}, html="", freeN=0;
+  [["have","Schon da – kostet nichts extra"],["freezer","Aus dem Gefrierfach"],["pantry","Aus dem Vorrat"],["buy","Neu einkaufen"]].forEach(function(g){
+    var list=c[g[0]].filter(function(x){ return bockMatch(x.key,f); });
+    if(g[0]==="buy"){ if(!f.mood&&!f.q&&!f.key){ html+='<p class="note bockhint">Neue Gerichte (mit Einkauf) zeige ich dir, sobald du oben eine Richtung wählst oder etwas eintippst.</p>'; return; } list=list.slice(0,8); } else freeN+=list.length;
+    if(!list.length) return;
+    html+='<div class="section"><h3 class="sech">'+g[1]+'</h3>'+list.map(function(x){ var ln=bockLine(x,g[0]);
+      return '<button class="item bockitem'+(g[0]==="buy"?'':' free')+'" data-bockpick="'+[bockUI.iso,bockUI.sl,g[0],x.key,x.from||"",x.fs||""].join("|")+'">'+ico(R_ICON[x.key]||"bowl","s")+'<span class="txt"><span class="n">'+esc(x.m[0])+'</span><span class="q">'+esc(ln[0])+'</span></span><span class="p">'+ln[1]+'</span></button>'; }).join("")+'</div>';
+  });
+  if(!html) html='<p class="note">Dazu habe ich nichts im Plan. Probier eine andere Richtung oder lösch den Suchbegriff.</p>';
+  else if(!freeN) html='<p class="note">Davon ist diese Woche nichts schon da – unten die günstigsten Optionen. Immer noch billiger als bestellen.</p>'+html;
+  var b=bockGet(d); if(b&&b[bockUI.sl]) html='<button class="btn ghost small" data-bockundo="'+bockUI.iso+'|'+bockUI.sl+'">Wieder wie geplant</button>'+html;
+  el.innerHTML=html;
+}
+function bockExtras(){
+  var out=[], t=today();
+  for(var i=0;i<14;i++){ var d=addDays(t,i), b=bockGet(d); if(!b) continue; ["l","d"].forEach(function(sl){ var o=b[sl]; if(o&&o.src==="buy"&&o.m&&REC_SHOP[o.m[1]]) out.push({d:d,key:o.m[1],eur:o.eur||0}); }); }
+  return out;
+}
+function shopQty(id,q){ var x=SHOPDB[id]; if(!x) return [id,q+" g"]; var u=x.u||["g"]; if(u[0]==="pck") return [x.n,Math.max(1,Math.ceil(q/u[1]))+" × "+u[2]]; if(u[0]==="stk") return [x.n,Math.max(1,Math.ceil(q/u[1]))+" "+u[2]]; return [x.n,q>=1000?(q/1000).toString().replace(".",",")+" k"+u[0]:q+" "+u[0]]; }
 function renderHeute(){
   var t=today(), s=startDate(), el=document.getElementById("v-heute");
   var pre = t < s, preStart=ISY?addDays(s,-5):t;
@@ -1197,9 +1324,10 @@ function renderHeute(){
   var tot={eur:0,kcal:0,p:0}; [p.breakfast[1],p.lunch[1],"_snack",p.dinner[1]].forEach(function(k){ var n=NUT[k]; if(n){ tot.eur+=n.eur; tot.kcal+=n.kcal; tot.p+=n.p; } });
   html += '<section class="card meals">';
   html += mealRow("Frühstück", p.breakfast);
-  html += mealRow(p.lunchLabel, p.lunch);
-  html += mealRow("Abends", p.dinner, p.cook?' <span class="tag">Kochtag</span>':(p.fake?' <span class="tag">Fakeaway</span>':(p.away?' <span class="tag away">Woanders</span>':'')));
+  html += mealRow(p.lunchLabel, p.lunch, p.bockl?' <span class="tag wish">'+(p.bockl==="swap"?'Getauscht':'Dein Wunsch')+'</span>':'');
+  html += mealRow("Abends", p.dinner, p.bockd?' <span class="tag wish">'+(p.bockd==="swap"?'Getauscht':'Dein Wunsch')+'</span>':p.cook?' <span class="tag">Kochtag</span>':(p.fake?' <span class="tag">Fakeaway</span>':(p.away?' <span class="tag away">Woanders</span>':'')));
   html += '<div class="awayline">'+(p.away?'<button class="link" data-away="'+fmtISO(d)+'|d|">Doch zu Hause essen</button>':'<span>Abends nicht zu Hause?</span><button class="awaybtn" data-away="'+fmtISO(d)+'|d|papa">'+MINI.star.replace('class="mi"','class="mi"')+' '+(ISY?'Bei Papa':'Familie/Freunde')+'</button><button class="awaybtn" data-away="'+fmtISO(d)+'|d|out">Woanders</button>')+'</div>';
+  if(!p.away && daysBetween(t,d)>=0) html += '<div class="bockline">'+((p.bockd||p.bockl)?'<button class="link" data-bockundo="'+fmtISO(d)+'">Wieder wie geplant</button>':'')+'<button class="bockbtn" data-bockopen="'+fmtISO(d)+'|d"><span>'+MINI.spark+' Worauf hast du '+(diff===0?'heute':'da')+' Bock?</span><span class="hintgo">Plan anpassen ›</span></button></div>';
   html += '<div class="snackline">+ Snack: '+esc(p.snack)+'</div>';
   html += '<div class="totals"><span><b>'+tot.kcal+'</b> kcal</span><span><b>'+tot.p+' g</b> Eiweiß</span><span><b>'+eur2(tot.eur)+'</b></span></div>';
   html += '</section>';
@@ -1251,6 +1379,10 @@ function renderEinkauf(){
     });
     html+='</div>';
   });
+  var ex=bockExtras();
+  if(ex.length){ html+='<div class="section"><h3 class="sech">'+MINI.spark+' Extra für deine Wünsche</h3>';
+    ex.forEach(function(e){ html+='<div class="card bockex"><span class="label">'+DOW[e.d.getDay()]+' '+fmtShort(e.d)+' · '+esc(R[e.key].name)+' · ca. '+eur(e.eur)+'</span><ul class="ing">'+REC_SHOP[e.key].map(function(z){ var q=shopQty(z[0],z[1]); return '<li>'+esc(q[0])+' · '+esc(q[1])+'</li>'; }).join("")+'</ul><span class="note">Gewürze, Öl, Mehl hast du im Grundvorrat. Erst schauen, was schon da ist.</span></div>'; });
+    html+='</div>'; }
   html+='<p class="note">'+(ISY?'Preise sind ungefähre Aldi-/Lidl-Preise.':'Preise sind ungefähre Discounter-Preise. Mengen sind an deinen Bedarf angepasst.')+' Preise und Nährwerte pro Portion in den Rezepten sind Schätzwerte. Die Haken gelten nur für diese Woche und werden auf diesem Gerät gespeichert.</p>';
   html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn ghost small" data-reset="'+key+'">Alle Haken entfernen</button></div>';
   el.innerHTML=html;
@@ -1446,6 +1578,13 @@ document.addEventListener("click", function(e){
   if(t.dataset.tnext){ setTechStep(t.dataset.tnext,(techState[t.dataset.tnext]||0)+1); return; }
   if(t.dataset.tprev){ setTechStep(t.dataset.tprev,(techState[t.dataset.tprev]||0)-1); return; }
   if(t.dataset.tplay){ var u=t.dataset.tplay; techPaused[u]=!techPaused[u]; t.textContent=techPaused[u]?"▶":"❚❚"; setTechStep(u, techState[u]||0); return; }
+  if(t.dataset.bockopen){ var bo=t.dataset.bockopen.split("|"); if(typeof fs!=="undefined"&&fs.open) fsClose(); openBock(bo[0],bo[1],bo[2]?{key:bo[2]}:null); return; }
+  if(t.dataset.bocksl){ bockUI.sl=t.dataset.bocksl; bockUI.key=null; openBock(bockUI.iso,bockUI.sl,bockUI); return; }
+  if(t.dataset.bockmood){ bockUI.mood=bockUI.mood===t.dataset.bockmood?null:t.dataset.bockmood; bockUI.key=null; document.querySelectorAll("[data-bockmood]").forEach(function(x){ x.setAttribute("aria-pressed", String(x.dataset.bockmood===bockUI.mood)); }); renderBockList(); return; }
+  if(t.dataset.bockpick){ var bp=t.dataset.bockpick.split("|"), o=bockPick(bp[0],bp[1],bp[2],bp[3],bp[4],bp[5]); selDay=daysBetween(today(),parseD(bp[0]))===0?null:parseD(bp[0]); closeRecipe(); location.hash="heute"; renderHeute();
+    if(typeof fs!=="undefined"&&fs.open){ var tx=o.task.replace(/^Wunsch: /,""); fs.quick=["Was koche ich heute?","Wieder wie geplant"]; fsPush({who:"fs",text:"Erledigt – "+o.m[0]+" steht jetzt im Plan. "+tx.charAt(0).toUpperCase()+tx.slice(1)}); }
+    return; }
+  if(t.dataset.bockundo){ var bu=t.dataset.bockundo.split("|"), bd=parseD(bu[0]); if(bu[1]) bockUndo(bd,bu[1]); else { bockUndo(bd,"l"); bockUndo(bd,"d"); } if(bockUI&&document.getElementById("sheet").classList.contains("open")) openBock(bockUI.iso,bockUI.sl,bockUI); renderHeute(); return; }
   if(t.dataset.away){ var aw=t.dataset.away.split('|'); awaySet(parseD(aw[0]), aw[1], aw[2]||null); renderHeute(); return; }
   if(t.dataset.todo){ var tp2=t.dataset.todo.split('|'), dd=load(tp2[0],{}); dd[tp2[1]]=!dd[tp2[1]]; save(tp2[0],dd); renderHeute(); return; }
   if(t.dataset.tog){ openCards[t.dataset.tog]=!openCards[t.dataset.tog]; renderHeute(); return; }
@@ -1459,6 +1598,7 @@ document.addEventListener("click", function(e){
   if(t.dataset.st){ var k="stock:"+t.dataset.st; save(k, Math.max(0, load(k,0)+(+t.dataset.d))); renderVorrat(); return; }
   if(t.dataset.act){ var sk="stock:"+t.dataset.k; save(sk, Math.max(0, load(sk,0)+(+t.dataset.d))); save(t.dataset.act,true); renderHeute(); return; }
 });
+document.addEventListener("input", function(e){ if(e.target.id==="bockq"&&bockUI){ bockUI.q=e.target.value; bockUI.key=null; renderBockList(); } });
 document.addEventListener("change", function(e){
   if(e.target.id==="startin" && e.target.value){
     var d=weekStartOf(parseD(e.target.value)); save("start2", fmtISO(d)); selDay=null; listRot=null; renderVorrat();
@@ -1520,6 +1660,16 @@ function fsAnswer(raw){
   if(fsHas(t,[" wer bist du "," wie heißt du "," was kannst du "," hilfe "])) return {text:"Ich bin Friedrich Scherz – halb Koch, halb Comedian. Ich kenne deinen Plan, deine Einkaufsliste und dein Gefrierfach, führe dich Schritt für Schritt durch Rezepte und stelle Timer.", quick:["Was koche ich heute?","Bratkartoffeln kochen","Timer 10 Minuten"]};
   if(fsHas(t,[" danke "," dankeschön "," merci "])) return {text:"Immer gern. Jedes selbst gekochte Essen ist ein Lieferando-Euro weniger.", quick:["Was gibt's morgen?"]};
   if(fsHas(t,[" witz "," scherz "," lustig "])) return {text:FS_JOKES[Math.floor(Math.random()*FS_JOKES.length)], quick:["Noch einen Witz","Was koche ich heute?"]};
+  if(fsHas(t,[" wieder wie geplant "," wie geplant "])){ var ud=fsDayFrom(t); bockUndo(ud,"l"); bockUndo(ud,"d"); if(typeof renderHeute==="function") renderHeute(); return {text:"Alles zurück – "+fsDayName(ud).toLowerCase()+" gilt wieder der normale Plan.", card:{type:"day",day:fmtISO(ud)}}; }
+  if(fsHas(t,[" bock "," lust auf "," appetit "," hunger auf "," heute lieber "," lieber was "," craving "]) && !fsHas(t,[" keine lust "," kein bock "])){
+    var bd=fsDayFrom(t), bsl=fsHas(t,[" mittag"])?"l":"d", bk=fsFindRecipe(t), bm=null;
+    [["fastfood",[" burger"," pizza"," pommes"," fastfood"," fast food"," mc"," nuggets"," chicken wings"]],["pasta",[" nudel"," pasta"," spaghetti"]],["cremig",[" sahne"," cremig"," rahm"]],["deftig",[" fleisch"," deftig"," herzhaft"," steak"," schnitzel"," fett"]],["asia",[" asia"," chinesisch"," japanisch"," sushi"," gebratene"," teriyaki"]],["scharf",[" scharf"," mexikanisch"," burrito"," indisch"," curry"]],["suess",[" süß"," süss"," suess"," dessert"," kuchen"," schoko"]],["leicht",[" leicht"," salat"," gesund"]]].some(function(x){ if(fsHas(t,x[1])){ bm=x[0]; return true; } return false; });
+    var bf=bk?{key:bk}:(bm?{mood:bm}:null);
+    var bc=bockCands(bd,bsl), top=[]; ["have","freezer","pantry","buy"].forEach(function(g){ bc[g].filter(function(x){return bockMatch(x.key,bf);}).slice(0,g==="buy"?2:3).forEach(function(x){ if(top.length<4) top.push([g,x]); }); });
+    if(!top.length) return {text:"Dazu hab ich gerade nichts Passendes. Schau mal in die volle Auswahl:", card:{type:"bockopen",day:fmtISO(bd),sl:bsl}};
+    var free=top[0][0]!=="buy";
+    return {text:(free?(top[0][0]==="pantry"?"Geht ohne Einkauf – tipp an, ich passe den Plan an:":"Gute Nachricht – geht ohne extra Geld. Tipp an, ich passe den Plan an:"):"Diese Woche ist dazu nichts schon da. Günstigste Optionen – trotzdem billiger als bestellen ("+eur(BOCK_ORDER)+"):"), card:{type:"bock",day:fmtISO(bd),sl:bsl,top:top.map(function(y){return [y[0],y[1].key,y[1].from||"",y[1].fs||""];})}};
+  }
   if(fsHas(t,[" keine lust "," bestellen "," bestell "," lieferando "," mcdonald"," wolt "," uber eats "])) return {text:"Moment! Bevor du 15 € ausgibst: Die Notfall-Carbonara dauert 15 Minuten und kostet etwa 2 €.", card:{type:"recipe",id:"carbonara"}, quick:["Carbonara kochen","Na gut, was gibt's sonst?"]};
   if(fsHas(t,[" papa "," vater "," papas "," woanders "," auswärts "," nicht zu hause "," nicht daheim "," eingeladen "," essen gehen "," gehe essen "," restaurant "])){
     if(fsHas(t,[" doch "," rückgängig "," nicht mehr "])){ var dd2=fsDayFrom(t); awaySet(dd2,"d",null); awaySet(dd2,"l",null); if(typeof renderHeute==="function") renderHeute(); var p3=planFor(dd2); return {text:"Alles klar, "+fsDayName(dd2).toLowerCase()+" isst du doch zu Hause: "+p3.dinner[0]+".", quick:["Was koche ich heute?"]}; }
@@ -1548,7 +1698,7 @@ function fsAnswer(raw){
     p=planFor(d);
     return {text:fsDayName(d)+(only==="b"?" zum Frühstück:":(only==="l"?" mittags:":(only==="d"?" abends:":" gibt's:"))), card:{type:"day",day:fmtISO(d),only:only}, quick:[ (p.dinner[1]?p.dinner[0].split(" ")[0]+" kochen":"Was gibt's morgen?"), fsDayName(d)==="Heute"?"Was gibt's morgen?":"Was koche ich heute?", "Einkaufsliste"]};
   }
-  return {text:"Das hab ich nicht ganz verstanden. Probier's mal hiermit:", quick:["Was koche ich heute?","Was muss ich einkaufen?","Bratkartoffeln kochen","Timer 10 Minuten","Was ist im Gefrierfach?"]};
+  return {text:"Das hab ich nicht ganz verstanden. Probier's mal hiermit:", quick:["Was koche ich heute?","Ich hab Bock auf was anderes","Was muss ich einkaufen?","Bratkartoffeln kochen","Timer 10 Minuten","Was ist im Gefrierfach?"]};
 }
 function fsTimer(sec){
   var id="t"+(++fs.tid); fs.timers[id]={end:Date.now()+sec*1000,sec:sec,done:false};
@@ -1561,6 +1711,9 @@ function fsCard(c){
   if(!c) return "";
   if(c.type==="day"){ var d=parseD(c.day), p=planFor(d), rows=[["b","Frühstück",p.breakfast],["l",p.lunchLabel,p.lunch],["d","Abends",p.dinner]].filter(function(x){return !c.only||x[0]===c.only;});
     return '<div class="fc"><div class="fchead">'+DOW_LONG[d.getDay()]+', '+fmtShort(d)+(p.cook?' <span class="tag">Kochtag</span>':(p.fake?' <span class="tag">Fakeaway</span>':''))+'</div>'+rows.map(function(x){ var n=NUT[x[2][1]]; return '<button class="fcrow" '+(x[2][1]&&R[x[2][1]]?'data-r="'+x[2][1]+'"':'disabled')+'>'+ico(R_ICON[x[2][1]]||"bowl","s")+'<span class="fct"><small>'+x[1]+'</small><b>'+esc(x[2][0])+'</b></span>'+(n?'<span class="fcm">'+n.kcal+' kcal</span>':'')+'</button>'; }).join("")+(p.tasks&&p.tasks.length&&!c.only?'<div class="fcnote">'+MINI.spark+' '+esc(p.tasks[0])+'</div>':'')+'</div>'; }
+  if(c.type==="bock"||c.type==="bockopen"){ var bd2=parseD(c.day), bc2=c.type==="bock"?bockCands(bd2,c.sl):null;
+    var rows2=(c.top||[]).map(function(y){ var x=(bc2[y[0]]||[]).filter(function(z){return z.key===y[1];})[0]; if(!x) return ""; var ln=bockLine(x,y[0]); return '<button class="fcrow" data-bockpick="'+[c.day,c.sl,y[0],y[1],y[2],y[3]].join("|")+'">'+ico(R_ICON[y[1]]||"bowl","s")+'<span class="fct"><b>'+esc(x.m[0])+' · '+ln[1]+'</b><small>'+esc(ln[0])+'</small></span></button>'; }).join("");
+    return '<div class="fc"><div class="fchead">'+DOW_LONG[bd2.getDay()]+', '+(c.sl==="l"?"mittags":"abends")+'</div>'+rows2+'<button class="fcrow" data-bockopen="'+c.day+'|'+c.sl+'"><span class="fct"><b>Alle Optionen ansehen ›</b></span></button></div>'; }
   if(c.type==="recipe"){ var x=R[c.id], n=NUT[c.id]; return '<div class="fc"><div class="fcrec">'+ico(R_ICON[c.id]||"bowl")+'<span class="fct"><b>'+esc(x.name)+'</b><small>'+esc(x.time)+' · '+esc(x.por)+'</small></span></div>'+(n?'<div class="fcstats"><span><b>'+n.kcal+'</b>kcal</span><span><b>'+n.p+' g</b>Eiweiß</span><span><b>'+eur2(n.eur)+'</b>Portion</span></div>':'')+'<div class="fcbtns"><button class="fcb pri" data-fsq="'+esc(x.name.split(" ")[0])+' kochen">Kochmodus starten</button><button class="fcb" data-r="'+c.id+'">Rezept ansehen</button></div></div>'; }
   if(c.type==="step"){ if(!fs.cook) return ""; var rc=R[fs.cook.id], st=fs.cook.step, tot=rc.steps.length; return '<div class="fc step"><div class="fchead">'+esc(rc.name)+'<span class="fcsn">Schritt '+(st+1)+' / '+tot+'</span></div><div class="stbar"><i style="width:'+((st+1)/tot*100)+'%"></i></div><p class="sttext">'+esc(rc.steps[st])+'</p><div class="fcbtns"><button class="fcb" data-fsq="Zurück"'+(st===0?' disabled':'')+'>‹ Zurück</button><button class="fcb pri" data-fsq="Weiter">'+(st===tot-1?'Fertig ✓':'Weiter ›')+'</button></div></div>'; }
   if(c.type==="ing"){ var y=R[c.id]; return '<div class="fc"><ul class="fcing">'+y.ing.map(function(i){return '<li>'+esc(i)+'</li>';}).join("")+'</ul></div>'; }

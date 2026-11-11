@@ -436,3 +436,4 @@ body.pf-body{margin:0;min-height:100vh;background:radial-gradient(1200px 700px a
 .overlink .hc-i{flex:none;width:46px;height:46px;border-radius:15px;background:#E3ECF5;color:#1C2E4A;display:grid;place-items:center}.overlink .hc-i svg{width:22px;height:22px}
 .overlink strong{display:block;font-size:1.05rem;color:#1C2E4A}.overlink small{display:block;color:var(--muted);font-size:.88rem;margin-top:2px}
 .overlink span:nth-child(2){flex:1}.overlink .arr{font-size:1.3rem;color:#5B8DB8;font-weight:700}
+.rngdelta{margin:8px 2px 0;color:var(--muted);font-size:.9rem}.rngdelta strong{color:#1C2E4A}

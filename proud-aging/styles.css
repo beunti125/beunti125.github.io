@@ -512,3 +512,59 @@ body.pf-body{margin:0;min-height:100vh;background:radial-gradient(1200px 700px a
 html,body,*{touch-action:manipulation!important}
 .chart svg{touch-action:pan-y!important}
 @media (max-width:900px){input,select,textarea{font-size:max(16px,1em)}}
+
+/* ===== v26: Touch-Bedienung wie eine native App ===== */
+html{overflow-x:clip}
+body{overflow-x:clip;overscroll-behavior:none}
+/* Bedienelemente: kein Markieren, kein Lange-Drücken-Menü – Text und Eingabefelder bleiben markierbar */
+button,[data-act],[data-sact],[data-step],.tab,.choice,.seg label,.check,.chart svg,.sheet .grab,.cal-h,.dtabs,.rng,.tabbar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+/* Sofortige, dezente Rückmeldung beim Antippen (ohne Verzögerung) */
+#app [data-act],.sheet button,.sheet [data-sact],.seg label{transition:transform .12s cubic-bezier(.2,.8,.2,1),background-color .15s,border-color .15s,opacity .15s}
+#app [data-act]:active:not([disabled]),.sheet button:active:not([disabled]),.seg label:active{transform:scale(.97)}
+#app .data-card:active,#app .hubt:active,#app .ptl:active,#app .choice:active,#app .stline:active,#app .btn.full:active{transform:scale(.985)}
+#app .tab:active{transform:none}#app .tab:active .ti{background:var(--c1);transform:scale(.92)}
+#app .tab .ti{transition:background .15s,transform .12s cubic-bezier(.2,.8,.2,1)}
+.rng button:active,.dtabs button:active,.edit:active,.linkbtn:active,.cal-n:active,.btn.light:active{background-color:var(--c1)}
+.choice:not(.on):active{background:var(--c1);border-color:var(--blue)}
+/* Tippziele mind. 44 px hoch – unsichtbar vergrößert, Optik bleibt gleich */
+.rng button,.dtabs button,.edit,.linkbtn,.cal-n,.btn.sm,.stline{position:relative}
+.rng button::after,.dtabs button::after,.btn.sm::after,.linkbtn::after{content:"";position:absolute;left:0;right:0;top:-5px;bottom:-5px}
+.edit::after,.cal-n::after,.pn-x::after{content:"";position:absolute;inset:-5px}
+/* Ansichts- und Fragebogen-Übergänge: kurz, nur transform/opacity */
+@keyframes paIn{from{opacity:0;transform:translate3d(0,8px,0)}to{opacity:1;transform:none}}
+@keyframes paFwd{from{opacity:0;transform:translate3d(28px,0,0)}to{opacity:1;transform:none}}
+@keyframes paBack{from{opacity:0;transform:translate3d(-28px,0,0)}to{opacity:1;transform:none}}
+.app.pa-in>:not(.tabbar):not(.top):not(.fnav):not(.pmbar){animation:paIn .2s cubic-bezier(.2,.8,.2,1) backwards}
+.app.pa-fwd .fq{animation:paFwd .2s cubic-bezier(.2,.8,.2,1) backwards}
+.app.pa-back .fq{animation:paBack .2s cubic-bezier(.2,.8,.2,1) backwards}
+/* Bottom-Sheet: Hintergrund gesperrt, Wischen nach unten schließt, Tastatur schiebt das Sheet hoch */
+html.pa-lock,html.pa-lock body{overflow:hidden}
+dialog.sheet{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;margin-bottom:var(--kb,0px);max-height:calc(92dvh - var(--kb,0px));will-change:transform}
+dialog.sheet::backdrop{transition:opacity .2s}
+dialog.sheet.pa-drag{transition:none!important;animation:none!important}
+dialog.sheet.pa-spring{transition:transform .26s cubic-bezier(.2,.9,.25,1)}
+dialog.sheet.pa-out{transition:transform .2s cubic-bezier(.4,0,1,1),opacity .2s;transform:translate3d(0,100%,0)!important}
+@media (min-width:600px){dialog.sheet.pa-out{transform:translate3d(0,24px,0)!important;opacity:0}}
+.sheet .grab{position:relative;cursor:grab;touch-action:none!important}
+.sheet .grab::after{content:"";position:absolute;left:-40px;right:-40px;top:-16px;bottom:-12px}
+@media (prefers-reduced-motion:reduce){
+  .app.pa-in>*,.app.pa-fwd .fq,.app.pa-back .fq{animation:none!important}
+  dialog.sheet.pa-spring,dialog.sheet.pa-out{transition:none}
+  #app [data-act]:active,.sheet button:active{transform:none!important}
+}
+.stline::after{content:"";position:absolute;left:0;right:0;top:-11px;bottom:-11px}
+#calbox.pa-l>*{animation:paFwd .18s cubic-bezier(.2,.8,.2,1) backwards}
+#calbox.pa-r>*{animation:paBack .18s cubic-bezier(.2,.8,.2,1) backwards}
+dialog.sheet.pa-out::backdrop{opacity:0}
+.backlink,.jmore{position:relative}
+.backlink::after{content:"";position:absolute;left:-8px;right:-8px;top:-6px;bottom:-6px}
+
+/* Detail-Feinschliff */
+h1,h2,h3{text-wrap:balance}
+p,small{text-wrap:pretty}
+.modc.sub{margin:-4px 0 10px 22px;position:relative}
+.modc.sub:before{content:"";position:absolute;left:-12px;top:-6px;bottom:50%;width:10px;border-left:2px solid #D5DCE5;border-bottom:2px solid #D5DCE5;border-bottom-left-radius:10px}
+.modc.sub .mc{grid-template-columns:1fr 28px;padding:12px 14px}
+.modc.sub .mc>span:first-child{display:none}
+.modc:has(input:not(:checked))+.modc.sub{opacity:.45;pointer-events:none}

@@ -88,9 +88,16 @@ function render(){document.documentElement.classList.toggle('bigtext',!!S.big);
   else if(view==='data')html=header()+vData();
   else html=header()+vFill();
   if(PM&&view!=='praxis')html='<div class="pmbar"><span>'+ic('star',true)+esc(T().pmActive)+'</span><button data-act="go" data-v="praxis">'+esc(T().pmBack)+'</button></div>'+html;
+  var y0=window.scrollY,key=view+'|'+(dataTab||'')+'|'+(PM?1:0),fi=F?F.i:-1,anim='';
+  if(!REDUCED){if(view==='form'&&lastKey===key&&lastFi>=0&&fi!==lastFi)anim=fi>lastFi?' pa-fwd':' pa-back';else if(lastKey&&key!==lastKey)anim=' pa-in';}
+  lastKey=key;lastFi=fi;root.className+=anim;
   root.innerHTML=html+(view==='report'||view==='settings'||view==='form'||view==='setup'||view==='praxis'?'':tabbar());
+  if(window.scrollY!==y0)window.scrollTo(0,y0);
   bindCharts();
 }
+var lastKey='',lastFi=-1,REDUCED=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+/* iOS zeigt :active nur mit einem Touch-Listener */
+document.addEventListener('touchstart',function(){},{passive:true});
 
 /* ---------- Toast ---------- */
 var toastT;
@@ -99,6 +106,7 @@ function toast(msg){var el=document.getElementById('toast');el.innerHTML='<span 
 /* ---------- Sheet (Eingabefenster) ---------- */
 var sheet=document.getElementById('sheet');
 function openSheet(html,onSubmit,onAction){
+  if(sheetClosing)finishClose();
   sheet.innerHTML='<form novalidate><div class="grab"></div>'+html+'</form>';
   var f=sheet.querySelector('form');
   f.addEventListener('submit',function(e){e.preventDefault();var r=onSubmit(f);if(r!==false){sheet.close();}});
@@ -110,8 +118,54 @@ function openSheet(html,onSubmit,onAction){
     var a=e.target.closest('[data-sact]');if(a&&onAction){e.preventDefault();onAction(a.dataset.sact,f);}
   });
   if(sheet.showModal)sheet.showModal();else sheet.setAttribute('open','');
+  document.documentElement.classList.add('pa-lock');sheet.scrollTop=0;
 }
 sheet.addEventListener('click',function(e){if(e.target===sheet)sheet.close();});
+/* v26: Sheet wie eine native App – Hintergrund gesperrt, sanft schließen, nach unten wischen, Tastatur */
+var sheetClosing=0,nativeClose=window.HTMLDialogElement&&HTMLDialogElement.prototype.close;
+function finishClose(){clearTimeout(sheetClosing);sheetClosing=0;sheet.classList.remove('pa-out','pa-drag','pa-spring');sheet.style.transform='';
+  if(nativeClose&&sheet.open)nativeClose.call(sheet);else sheet.removeAttribute('open');}
+if(nativeClose){
+  sheet.close=function(){if(!sheet.open||sheetClosing)return;if(REDUCED){finishClose();return;}
+    sheet.classList.remove('pa-drag','pa-spring');sheet.classList.add('pa-out');sheetClosing=setTimeout(finishClose,200);};
+  sheet.addEventListener('cancel',function(e){e.preventDefault();sheet.close();});
+}
+sheet.addEventListener('close',function(){document.documentElement.classList.remove('pa-lock');document.documentElement.style.removeProperty('--kb');});
+var dr=null;
+function scrolledInside(el){while(el&&el!==sheet){if(el.scrollTop>0)return true;el=el.parentElement;}return false;}
+sheet.addEventListener('touchstart',function(e){
+  if(e.touches.length!==1||sheetClosing){dr=null;return;}var t=e.touches[0],tg=e.target;
+  dr={x:t.clientX,y:t.clientY,on:false,h:false,d:0,v:0,ly:t.clientY,lt:Date.now(),grab:!!tg.closest('.grab'),cal:!!tg.closest('#calbox'),field:!!tg.closest('input,textarea,select')};
+},{passive:true});
+sheet.addEventListener('touchmove',function(e){
+  if(e.target===sheet&&e.cancelable)e.preventDefault();
+  if(!dr)return;var t=e.touches[0],dx=t.clientX-dr.x,dy=t.clientY-dr.y;
+  if(!dr.on&&!dr.h){if(Math.abs(dx)<8&&Math.abs(dy)<8)return;
+    if(Math.abs(dx)>Math.abs(dy)){dr.h=true;return;}
+    if(dy>0&&!dr.field&&(dr.grab||(sheet.scrollTop<=0&&!scrolledInside(e.target)))){dr.on=true;dr.y=t.clientY;sheet.classList.remove('pa-spring');sheet.classList.add('pa-drag');}
+    else{dr=null;return;}}
+  if(dr.h)return;
+  if(e.cancelable)e.preventDefault();
+  var d=t.clientY-dr.y;d=d<0?-Math.pow(-d,.7):d;dr.d=d;
+  var now=Date.now();if(now>dr.lt){dr.v=(t.clientY-dr.ly)/(now-dr.lt);dr.ly=t.clientY;dr.lt=now;}
+  sheet.style.transform='translate3d(0,'+d.toFixed(1)+'px,0)';
+},{passive:false});
+function dragEnd(e){if(!dr)return;var g=dr;dr=null;
+  if(g.h&&g.cal&&e.changedTouches&&e.changedTouches[0]){var c=e.changedTouches[0],dx=c.clientX-g.x,dy=c.clientY-g.y;
+    if(Math.abs(dx)>50&&Math.abs(dx)>1.5*Math.abs(dy)){var b=sheet.querySelector('[data-sact='+(dx<0?'calNext':'calPrev')+']');if(b&&!b.disabled)b.click();}return;}
+  if(!g.on)return;sheet.classList.remove('pa-drag');
+  var h=sheet.getBoundingClientRect().height;
+  if(g.d>Math.min(140,h*.3)||(g.v>.5&&g.d>30)){sheet.close();return;}
+  sheet.classList.add('pa-spring');sheet.style.transform='';setTimeout(function(){sheet.classList.remove('pa-spring');},280);}
+sheet.addEventListener('touchend',dragEnd);sheet.addEventListener('touchcancel',dragEnd);
+sheet.addEventListener('click',function(e){var b=e.target.closest('[data-sact=calPrev],[data-sact=calNext]'),box=sheet.querySelector('#calbox');
+  if(b&&box&&!REDUCED){box.classList.toggle('pa-l',b.dataset.sact==='calNext');box.classList.toggle('pa-r',b.dataset.sact==='calPrev');}},true);
+if(window.visualViewport){var kbFit=function(){if(!sheet.open)return;var vv=window.visualViewport,k=Math.round(window.innerHeight-vv.height-vv.offsetTop);
+    document.documentElement.style.setProperty('--kb',(k>80?k:0)+'px');};
+  window.visualViewport.addEventListener('resize',kbFit);window.visualViewport.addEventListener('scroll',kbFit);}
+sheet.addEventListener('focusin',function(e){var el=e.target;if(!el.matches('input,textarea,select'))return;
+  setTimeout(function(){if(!sheet.open)return;var r=el.getBoundingClientRect(),sr=sheet.getBoundingClientRect(),vb=window.visualViewport?window.visualViewport.height+window.visualViewport.offsetTop:window.innerHeight,lim=Math.min(sr.bottom,vb)-16;
+    if(r.bottom>lim)sheet.scrollTop+=r.bottom-lim;},320);});
 function fDate(v){return '<label class="field"><span>'+esc(T().date)+'</span><input class="input" type="date" name="d" value="'+esc(v)+'" max="'+today()+'" required></label>';}
 function fStepper(name,label,val,min,max,step,unit,dec){
   return '<div class="field"><span>'+esc(label)+'</span><div class="stepper"><button type="button" data-step="-'+step+'" data-for="'+name+'" data-u="'+esc(unit)+'" data-dec="'+dec+'" aria-label="−">−</button><output name="'+name+'" aria-live="polite">'+num(val,dec)+esc(unit)+'</output><button type="button" data-step="'+step+'" data-for="'+name+'" data-u="'+esc(unit)+'" data-dec="'+dec+'" aria-label="+">+</button></div><input type="hidden" name="'+name+'" value="'+val+'" min="'+min+'" max="'+max+'"></div>';
@@ -205,7 +259,7 @@ function bindCharts(){
     function pick(e){var h=e.target.closest('.hit');if(!h)return;var i=+h.dataset.i;out.textContent=info[i];out.classList.remove('muted');
       [].forEach.call(svg.querySelectorAll('.sel'),function(s){s.classList.remove('sel');});
       var bars=svg.querySelectorAll('.dot');if(bars.length&&bars[i])bars[i].classList.add('sel');}
-    svg.addEventListener('click',pick);svg.addEventListener('pointermove',function(e){if(e.pointerType==='mouse')pick(e);});
+    svg.addEventListener('click',pick);svg.addEventListener('pointermove',function(e){var el=e.pointerType==='mouse'?e.target:document.elementFromPoint(e.clientX,e.clientY);if(el&&svg.contains(el))pick({target:el});});
   });
 }
 
@@ -846,7 +900,7 @@ function formSave(){
   if(F.steps.indexOf('meds')>=0){S.medLog[d]=S.medLog[d]||{};for(var k in a.meds)S.medLog[d][k]=!!a.meds[k];}
   if(has('kg')){var kg=pnum(a.kg);S.weight=S.weight.filter(function(x){return x.d!==d;});if(kg>=25&&kg<=300)S.weight.push(PM?{d:d,kg:Math.round(kg*10)/10,src:'praxis'}:{d:d,kg:Math.round(kg*10)/10});}
   if(F.steps.indexOf('ein')>=0&&a.ein!=null&&a.durch!=null)S.gen={at:d,ein:!!a.ein,durch:!!a.durch};
-  save();var dd=d;F=null;view='done';root.className='app formmode';
+  save();var dd=d;F=null;view='done';root.className='app formmode'+(REDUCED?'':' pa-in');lastKey='done';lastFi=-1;
   root.innerHTML='<section class="donep"><span class="hc-i big">'+ic('check')+'</span><h1>'+esc(t.doneTitle)+'</h1><p>'+esc(t.doneText.replace('{d}',fdl(dd)))+'</p>'+streakBadge()+'<button class="btn full" data-act="go" data-v="data">'+esc(t.toData)+'</button><button class="btn light full" data-act="go" data-v="fill">'+esc(t.toStart)+'</button>'+(S.remAt?'':'<button class="btn ghost full" data-act="settings">'+ic('bell')+esc(t.remTitle)+'</button>')+'</section>';
   window.scrollTo(0,0);
 }
@@ -892,7 +946,7 @@ root.addEventListener('click',function(e){
   else if(a==='fNext')formNext();
   else if(a==='fPrev')formPrev();
   else if(a==='fSkip')formSkip();
-  else if(a==='fAns'){if(Date.now()<navLock)return;formAnswer(b.dataset.k,b.dataset.val);}
+  else if(a==='fAns'){if(Date.now()<navLock)return;if(navigator.vibrate){try{navigator.vibrate(8);}catch(err){}}formAnswer(b.dataset.k,b.dataset.val);}
   else if(a==='fMed'){var mk=b.dataset.k;F.a.meds[mk]=!F.a.meds[mk];render();}
   else if(a==='fJump'){F.i=+b.dataset.i;render();window.scrollTo(0,0);}
   else if(a==='fSave')formSave();
@@ -918,6 +972,18 @@ root.addEventListener('click',function(e){
   else if(a==='install'&&deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;render();});}
   else if(a==='hideInstall'){installHidden=true;try{sessionStorage.setItem('pa-ih','1');}catch(err){}render();}
 });
+/* v26: Im Fragebogen nach rechts wischen = zurück (folgt dem Finger) */
+var fsw=null;
+root.addEventListener('touchstart',function(e){fsw=null;if(view!=='form'||!F||e.touches.length!==1)return;var t=e.touches[0];
+  if(t.clientX<24||e.target.closest('input,textarea,select,.chart'))return;fsw={x:t.clientX,y:t.clientY,on:false,dx:0,v:0,lx:t.clientX,lt:Date.now()};},{passive:true});
+root.addEventListener('touchmove',function(e){if(!fsw)return;var t=e.touches[0],dx=t.clientX-fsw.x,dy=t.clientY-fsw.y;
+  if(!fsw.on){if(Math.abs(dx)<10&&Math.abs(dy)<10)return;if(dx>0&&Math.abs(dx)>1.3*Math.abs(dy)&&Date.now()>=navLock){fsw.on=true;fsw.x=t.clientX;}else{fsw=null;return;}}
+  if(e.cancelable)e.preventDefault();var d=Math.max(0,t.clientX-fsw.x);fsw.dx=d;var now=Date.now();if(now>fsw.lt){fsw.v=(t.clientX-fsw.lx)/(now-fsw.lt);fsw.lx=t.clientX;fsw.lt=now;}
+  var q=root.querySelector('.fq');if(q){q.style.transition='none';q.style.transform='translate3d('+(d*.6).toFixed(1)+'px,0,0)';q.style.opacity=String(Math.max(.5,1-d/600));}},{passive:false});
+function fswEnd(){if(!fsw)return;var g=fsw;fsw=null;if(!g.on)return;var q=root.querySelector('.fq');
+  if((g.dx>80||(g.v>.45&&g.dx>35))&&Date.now()>=navLock){formPrev();return;}
+  if(q){q.style.transition='transform .22s cubic-bezier(.2,.9,.25,1),opacity .22s';q.style.transform='';q.style.opacity='';setTimeout(function(){q.style.transition='';},240);}}
+root.addEventListener('touchend',fswEnd);root.addEventListener('touchcancel',fswEnd);
 root.addEventListener('input',function(e){if(!F)return;if(e.target.name==='fkg')F.a.kg=e.target.value;if(e.target.name==='fnote')F.a.note=e.target.value;});
 root.addEventListener('change',function(e){
   if(e.target.id==='importIn'&&e.target.files[0])importData(e.target.files[0]);

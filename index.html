@@ -1209,9 +1209,9 @@ function dayPlanC(r, vd, dow){
   if(vd===2){ p.lunch=w.bowl; p.dinner=w.bowl; p.tasks=["Kein Kochen heute – nur aufwärmen."+(box?" Box mitnehmen.":"")]; if(w.extra&&w.extra[3]) p.tasks.push(w.extra[3]); }
   if(vd===3){ p.lunch=w.bowl; p.dinner=w.pasta; p.cook=true;
     p.tasks=["Großer Kochtag.","Kochen: "+w.wrap[0]+" – 4 Portionen ("+DSx(4)+" + "+DSx(5)+" mittags, 1 Snack, 1 Reserve).","Kochen: "+w.pasta[0]+(w.pasta[1]==="bolognese"?" – 4 Portionen essen, 8 einfrieren.":" – 4 Portionen ("+DSx(3)+" bis "+DSx(5)+" abends, "+DSx(6)+" mittags).")]; }
-  if(vd===4){ p.lunch=w.wrap; p.dinner=w.pasta; p.snack="Brötchen oder Skyr einpacken";
+  if(vd===4){ p.lunch=w.wrap; p.dinner=w.pasta; p.snack=bfNames(P).bread+(hasAlg("milch")?" oder Obst einpacken":" oder Skyr einpacken");
     p.tasks=[(box?"Box einpacken. ":"")+"Abends nur aufwärmen – kein Kochen."]; }
-  if(vd===5){ p.lunch=w.wrap; p.dinner=w.pasta; p.snack="Reserve-Wrap oder Brötchen";
+  if(vd===5){ p.lunch=w.wrap; p.dinner=w.pasta; p.snack="Reserve-Portion oder "+bfNames(P).bread;
     p.tasks=[(box?"Box + Snack einpacken. ":"")+"Abends nur aufwärmen.",(fz?"Abends: "+fz+" für morgen aus dem Gefrierfach in den Kühlschrank legen.":"Morgen ist Fakeaway – alles da?")]; }
   if(vd===6){ p.lunch=w.pasta; p.dinner=w.fake; p.fake=true; p.tasks=["Fakeaway-Abend: frisch machen – günstiger und besser als jeder Lieferdienst."]; }
   if(vd===0){ p.lunch=w.sun||["Reste der Woche oder "+bfNames(P).bread,"broetchen"]; p.dinner=bk;

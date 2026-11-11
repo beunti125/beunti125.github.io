@@ -621,6 +621,31 @@ function demoData(){
   RANGE=182;save();setView('fill');toast(t.demoOk);
 }
 
+
+/* ---------- Serie & Ausfüll-Kalender ---------- */
+var FLAME='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 3.5 4.5 5.5 4.5 10a4.5 4.5 0 0 1-9 0c0-2 1-3.4 2-4.4.2 1.5.9 2.6 2 3.1C11 8.5 11 5 12 2z" fill="currentColor"/><path d="M12 13c.8 1.2 1.8 1.9 1.8 3.2a1.8 1.8 0 0 1-3.6 0c0-1.2.9-2 1.8-3.2z" fill="#FFE7A3"/></svg>';
+function bestStreak(){var ds=Object.keys(S.filled||{}).filter(function(d){return S.filled[d];}).sort(),b=0,c=0,prev=null;
+  ds.forEach(function(d){c=(prev&&dDiff(prev,d)===1)?c+1:1;if(c>b)b=c;prev=d;});return b;}
+function weekDays(){var d=today(),w=(wd(d)+6)%7,a=[];for(var i=0;i<7;i++)a.push(addDays(d,i-w));return a;}
+function streakCard(){var t=T(),n=streak(),best=Math.max(bestStreak(),n),done=dayDone(today()),td=today();
+  var h='<div class="stc'+(n?'':' zero')+'"><div class="st-top"><span class="st-fl">'+FLAME+'<b>'+n+'</b></span><div class="st-txt"><strong>'+esc(n?(n===1?t.st1:t.stDays.replace('{n}',n)):t.stStart)+'</strong><span>'+esc(done?t.stDone:t.stTodo)+'</span>'+(best>1?'<small>'+esc(t.stBest.replace('{n}',best))+'</small>':'')+'</div></div>';
+  h+='<div class="st-week">'+weekDays().map(function(d){var f=dayDone(d),c=d===td?(f?'on today':'today'):d>td?'fut':(f?'on':'off');return '<span class="st-d '+c+'"><small>'+esc(fd(d,{weekday:'short'}).replace('.','').slice(0,2))+'</small><i>'+(f?ic('check'):'')+'</i></span>';}).join('')+'</div>';
+  h+='<button class="linkbtn" data-act="cal">'+ic('cal')+esc(t.calOpen)+'</button></div>';
+  return h;}
+var calOff=0;
+function calHTML(){var t=T(),base=parse(today());var y=base.getFullYear(),m=base.getMonth()+calOff;var first=new Date(y,m,1),yy=first.getFullYear(),mm=first.getMonth(),dim=new Date(yy,mm+1,0).getDate(),lead=(first.getDay()+6)%7,td=today(),cnt=0,past=0;
+  var g='<div class="cal-h"><button type="button" class="cal-n" data-sact="calPrev" aria-label="‹">‹</button><strong>'+esc(first.toLocaleDateString(t.locale,{month:'long',year:'numeric'}))+'</strong><button type="button" class="cal-n" data-sact="calNext" aria-label="›" '+(calOff>=0?'disabled':'')+'>›</button></div><div class="cal-g">';
+  ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(function(x,i){g+='<span class="cal-wd">'+esc(fd(addDays(weekDays()[0],i),{weekday:'short'}).replace('.','').slice(0,2))+'</span>';});
+  for(var i=0;i<lead;i++)g+='<span></span>';
+  for(var dd=1;dd<=dim;dd++){var d=yy+'-'+String(mm+1).padStart(2,'0')+'-'+String(dd).padStart(2,'0'),f=dayDone(d);if(d<=td){past++;if(f)cnt++;}
+    g+='<span class="cal-d'+(f?' on':'')+(d===td?' today':'')+(d>td?' fut':'')+'">'+dd+'</span>';}
+  g+='</div><p class="cal-sum">'+esc(t.calMonth.replace('{n}',cnt).replace('{m}',past))+'</p>';
+  return g;}
+function sheetCal(){var t=T(),tot=Object.keys(S.filled||{}).filter(function(d){return S.filled[d];}).length,n=streak(),best=Math.max(bestStreak(),n);calOff=0;
+  var ms=[7,14,30,60,100,180].map(function(x){return '<span class="ms'+(best>=x?' got':'')+'">'+(best>=x?FLAME:'')+x+'</span>';}).join('');
+  openSheet('<h2>'+esc(t.calTitle)+'</h2><div class="cal-k"><div><b>'+tot+'</b><span>'+esc(t.calTotal)+'</span></div><div><b>'+n+'</b><span>'+esc(t.calCur)+'</span></div><div><b>'+best+'</b><span>'+esc(t.calBest)+'</span></div></div><div id="calbox">'+calHTML()+'</div><p class="cal-ms-t">'+esc(t.ms)+'</p><div class="cal-ms">'+ms+'</div><div class="actions"><button type="button" class="btn full" data-close>'+esc(t.calClose)+'</button></div>',
+  function(){},function(a){if(a==='calPrev')calOff--;if(a==='calNext'&&calOff<0)calOff++;var box=sheet.querySelector('#calbox');if(box)box.innerHTML=calHTML();});}
+
 /* ---------- Smileys ---------- */
 var FACE=['M8 16.5c1.2-2 2.5-2.6 4-2.6s2.8.6 4 2.6','M8.5 15.8c1-1.1 2.2-1.6 3.5-1.6s2.5.5 3.5 1.6','M8.5 15h7','M8.5 14.2c1 1.1 2.2 1.6 3.5 1.6s2.5-.5 3.5-1.6','M7.8 13.6c1.2 2 2.6 2.8 4.2 2.8s3-.8 4.2-2.8'];
 function face(i){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><circle cx="9" cy="10" r=".9" fill="currentColor"/><circle cx="15" cy="10" r=".9" fill="currentColor"/>'+(i===1?'<path d="M7.6 8.2l2 .8M16.4 8.2l-2 .8"/>':'')+'<path d="'+FACE[i-1]+'"/></svg>';}
@@ -633,13 +658,14 @@ function giFor(d){for(var i=0;i<S.gi.length;i++)if(S.gi[i].d===d)return S.gi[i];
 function weightDue(d){var has=false,last=null;S.weight.forEach(function(x){if(x.d===d)has=true;if(x.d<d&&(!last||x.d>last))last=x.d;});return has||!last||last<=addDays(d,-7);}
 function vFill(){
   var t=T(),hr=new Date().getHours(),greet=t.hello[(hr>=5&&hr<11)?0:(hr>=11&&hr<18)?1:2]+(S.name?', '+S.name:''),n=streak();
-  var h='<div class="homehead"><div><h1>'+esc(greet)+'</h1><p>'+esc(fd(today(),{weekday:'long',day:'numeric',month:'long'}))+'</p></div>'+(n>=2?'<span class="chip" title="'+esc(t.streak.replace('{n}',n))+'">'+ic('star',true)+n+'</span>':'')+'</div>';
+  var h='<div class="homehead"><div><h1>'+esc(greet)+'</h1><p>'+esc(fd(today(),{weekday:'long',day:'numeric',month:'long'}))+'</p></div>'+(n>=1?'<button class="chip" data-act="cal" aria-label="'+esc(t.stDays.replace('{n}',n))+'">'+FLAME+n+'</button>':'')+'</div>';
   h+=installHint()+apptCard()+pnoteCard();
   var empty=!S.sleep.length&&!S.weight.length&&!S.meds.length&&!S.mood.length&&!S.aes.length;
   if(empty)h+='<div class="welcome">'+esc(t.emptyStart)+'</div>';
   var done=dayDone(today());
   if(done)h+='<div class="donebar"><span class="hc-i">'+ic('check')+'</span><div><strong>'+esc(t.fillDone)+'</strong><small>'+esc(daySummary(today()))+'</small></div><button class="btn ghost sm" data-act="startForm">'+esc(t.change)+'</button></div>';
   else h+='<div class="hero-card"><span class="hc-i">'+ic('pen')+'</span><h2>'+esc(t.fillToday)+'</h2><p>'+esc(t.fillMin)+(genDue()?' '+esc(t.extraGen):'')+'</p><button class="btn big full" data-act="startForm">'+esc(t.fillStart)+' →</button></div>';
+  h+=streakCard();
   h+=aesRecallCard();
   if(mods().weight&&S.glp1&&!S.meds.some(function(m){return m.when.indexOf('weekly')>=0;}))h+='<div class="welcome">'+esc(t.glp1Tip)+'</div>';
   h+=progressCard()+journeyCard();
@@ -761,6 +787,7 @@ root.addEventListener('click',function(e){
   else if(a==='delAppt'){S.appts=S.appts.filter(function(x){return x.id!==b.dataset.id;});save();render();}
   else if(a==='fWish'){var w=b.dataset.w,ix=F.a.wish.indexOf(w);if(ix>=0)F.a.wish.splice(ix,1);else F.a.wish.push(w);render();}
   else if(a==='rng'){RANGE=+b.dataset.v;render();}
+  else if(a==='cal')sheetCal();
   else if(a==='jMore'){jOpen=!jOpen;render();}
   else if(a==='big'){S.big=b.dataset.b==='1';save();render();}
   else if(a==='ics')downloadIcs((document.getElementById('remT')||{}).value||'20:00');

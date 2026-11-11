@@ -599,7 +599,7 @@ var R = {
     tip:"Eingefroren hält sie 3 Monate. Zum Auftauen am Vortag in den Kühlschrank legen."},
   bratkartoffeln:{name:"Bratkartoffeln mit Speck, Spiegeleiern & Bohnen", time:"12 Min. (+ Kartoffeln vorher kochen und auskühlen lassen)", por:"1 große Portion",
     ing:["ca. 400 g vorgekochte, kalte Kartoffeln","2 EL Butterschmalz","Salz, Pfeffer, Paprikapulver","100 g Speckwürfel","optional: etwas Schnittlauch","1 Dose grüne Bohnen (Brechbohnen)","3 Eier"],
-    steps:["Sonntag: 1,5 kg festkochende Kartoffeln mit Schale 20 Min. kochen, bis sie fast gar sind. Komplett auskühlen lassen, ab in den Kühlschrank.","Kalte Kartoffeln in 5 mm dicke Scheiben schneiden.","Butterschmalz in die Pfanne, richtig heiß werden lassen. Scheiben in einer einzigen Lage einlegen.","5 Minuten NICHT anfassen. Dann wenden und weitere 4–5 Min. braten.","Erst jetzt salzen, pfeffern, Paprika drüber. Speck in den letzten 3 Min. dazu.","Grüne Bohnen mit etwas Sud aus der Dose im kleinen Topf 3 Min. erwärmen – nicht braten, dann bleiben sie schön weich. Mit Butter, Salz und Pfeffer abschmecken.","In einer zweiten Pfanne 3 Spiegeleier braten. Alles zusammen auf den Teller."],
+    steps:["Vorher: 1,5 kg festkochende Kartoffeln mit Schale 20 Min. kochen, bis sie fast gar sind. Komplett auskühlen lassen, ab in den Kühlschrank.","Kalte Kartoffeln in 5 mm dicke Scheiben schneiden.","Butterschmalz in die Pfanne, richtig heiß werden lassen. Scheiben in einer einzigen Lage einlegen.","5 Minuten NICHT anfassen. Dann wenden und weitere 4–5 Min. braten.","Erst jetzt salzen, pfeffern, Paprika drüber. Speck in den letzten 3 Min. dazu.","Grüne Bohnen mit etwas Sud aus der Dose im kleinen Topf 3 Min. erwärmen – nicht braten, dann bleiben sie schön weich. Mit Butter, Salz und Pfeffer abschmecken.","In einer zweiten Pfanne 3 Spiegeleier braten. Alles zusammen auf den Teller."],
     tip:"Die Pfanne nie zu voll machen – sonst dämpfen sie statt zu braten. Lieber zwei Runden."},
   smash:{name:"Smash-Burger mit Ofenpommes", time:"30 Min.", por:"2 Burger",
     ing:["500 g Hackfleisch","4 Scheiben Cheddar","2 Burgerbrötchen","500 g TK-Pommes","Mayo, Ketchup, 1 TL Gurkenwasser","Salz, Pfeffer"],
@@ -765,7 +765,7 @@ function rw(r){ return r; }
 var BASE = [
   ["Müsli (Knusper- oder Früchtemüsli)","750 g",1.80,"Trocken & Konserven","Frühstück"],
   ["Nougat Bits (Frühstückscerealien)","1 Packung",2.50,"Trocken & Konserven","Frühstück Samstag (reicht ca. 2 Wochen)"],
-  ["Aufbackbrötchen (Brotregal, ungekühlt)","1 Packung (6–10 Stück)",1.30,"Brot","Sonntagsfrühstück, Uni-Backup"],
+  ["Aufbackbrötchen (Brotregal, ungekühlt)","1 Packung (6–10 Stück)",1.30,"Brot","Frühstück am Wochenende, Uni-Backup"],
   ["Aufschnitt (z. B. Putenbrust, Salami, Kochschinken)","2 Packungen",3.00,"Kühlregal","Brötchen"],
   ["Käsescheiben (Gouda oder Butterkäse)","1 Packung",1.50,"Kühlregal","Brötchen"],
   ["Frischkäse (Doppelrahm, natur)","1 Becher",1.00,"Kühlregal","Brötchen"],
@@ -1326,7 +1326,7 @@ function dayPlanC(r, vd, dow){
 }
 applyProfileTexts(); buildCustom();
 /* ---------- Wochenplanung: selbst aussuchen, Vorschläge, Einkaufsliste passt sich an ---------- */
-var WP_SLOTS=[["bowl","Bowl","Einkaufstag abends + Tag 2"],["wrap","Box / Wrap","Mittags an den langen Tagen"],["pasta","Warmes Hauptgericht","Kochtag bis Fakeaway-Mittag"],["fake","Fakeaway","Statt Bestellen"],["sun","Süßes","Sonntag mittags"],["so","Sonntag abends","Ausklang der Woche"]];
+var WP_SLOTS=[["bowl","Bowl","Einkaufstag abends + Tag 2"],["wrap","Box / Wrap","Mittags an den langen Tagen"],["pasta","Warmes Hauptgericht","Kochtag bis Fakeaway-Mittag"],["fake","Fakeaway","Statt Bestellen"],["sun","Süßes","Letzter Tag der Woche, mittags"],["so","Abschluss-Abend","Letzter Tag der Woche, abends"]];
 var Y_TASTE={likes:["huhn","fastfood","cremig","pasta","deftig","hack","tuerkisch"],dis:["brokkoli","paprika","kohl"],budget:"mid"};
 function wpTaste(){ return ISY?Y_TASTE:PROF; }
 function wpGet(abs){ return load("wp:"+abs,null); }

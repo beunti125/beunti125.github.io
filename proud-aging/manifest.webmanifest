@@ -10,6 +10,9 @@
   "background_color": "#F7F3EC",
   "theme_color": "#F7F3EC",
   "lang": "de",
+  "shortcuts": [
+    {"name": "Heute ausfüllen", "short_name": "Ausfüllen", "description": "Fragebogen für heute starten", "url": "./?start=form", "icons": [{"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"}]}
+  ],
   "icons": [
     {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
     {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},

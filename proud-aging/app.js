@@ -446,6 +446,7 @@ function vSettings(){
   var h='<div class="card setrow"><h2>'+esc(t.language)+'</h2><div class="lang">'+['de','en','tr'].map(function(l){return '<button data-act="lang" data-l="'+l+'" aria-pressed="'+(S.lang===l)+'">'+l.toUpperCase()+'</button>';}).join('')+'</div></div>';
   h+='<div class="card setrow"><label class="field"><span>'+esc(t.yourName)+'</span><input class="input" id="nameIn" type="text" maxlength="40" value="'+esc(S.name)+'" autocomplete="given-name"></label><small class="muted">'+esc(t.yourNameHint)+'</small></div>';
   h+='<div class="card setrow"><h2>'+esc(t.textSize)+'</h2><div class="lang"><button data-act="big" data-b="0" aria-pressed="'+!S.big+'">'+esc(t.textNormal)+'</button><button data-act="big" data-b="1" aria-pressed="'+!!S.big+'" style="font-size:1.2em">'+esc(t.textBig)+'</button></div></div>';
+  h+='<div class="card setrow"><h2>'+esc(t.autoF)+'</h2><p class="sub">'+esc(t.autoFD)+'</p><div class="lang"><button data-act="autoF" data-b="1" aria-pressed="'+(S.autoForm!==false)+'">'+esc(t.autoOn)+'</button><button data-act="autoF" data-b="0" aria-pressed="'+(S.autoForm===false)+'">'+esc(t.autoOff)+'</button></div></div>';
   h+=reminderCard();
   h+='<div class="card setrow"><h2>'+esc(t.pmTitle)+'</h2><p class="sub">'+esc(t.pmHint)+'</p><button class="btn light" data-act="pmStart">'+ic('pen')+esc(t.pmOpen)+'</button></div>';
   h+='<div class="card setrow"><h2>'+esc(t.program)+'</h2><p class="sub">'+esc(t.programHint)+'</p><p style="margin:0;font-weight:600;color:var(--navy)">'+esc(modsText())+'</p><button class="btn light" data-act="go" data-v="setup">'+esc(t.programEdit)+'</button></div>';
@@ -936,6 +937,7 @@ root.addEventListener('click',function(e){
   else if(a==='over'){dataTab=null;setView('data');window.scrollTo(0,0);}
   else if(a==='jMore'){jOpen=!jOpen;render();}
   else if(a==='big'){S.big=b.dataset.b==='1';save();render();}
+  else if(a==='autoF'){S.autoForm=b.dataset.b==='1';save();render();}
   else if(a==='ics')downloadIcs((document.getElementById('remT')||{}).value||'20:00');
   else if(a==='addAes')sheetAes();
   else if(a==='editAes')sheetAes(b.dataset.id);
@@ -991,7 +993,17 @@ root.addEventListener('change',function(e){
 });
 
 /* ---------- Start ---------- */
-render();
+/* Schnellstart wie ein Widget: Tipp aufs App-Symbol oeffnet direkt den heutigen Fragebogen */
+function canAutoForm(){return !!(S.mods&&S.lang&&!PM&&!F&&!dayDone(today()));}
+var wantForm=/[?&]start=form\b/.test(location.search)||location.hash==='#fragebogen',wasUpd=false;
+try{wasUpd=!!sessionStorage.getItem('pa-upd');}catch(e){}
+if(wantForm&&history.replaceState)history.replaceState(null,'',location.pathname);
+if(canAutoForm()&&!wasUpd&&(wantForm||S.autoForm!==false))startForm(today());else render();
+var hiddenAt=0;
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='hidden'){hiddenAt=Date.now();return;}
+  if(hiddenAt&&Date.now()-hiddenAt>20*60000&&S.autoForm!==false&&view!=='form'&&!document.querySelector('.sheet[open],dialog[open]')&&canAutoForm())startForm(today());
+});
 if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').then(function(reg){
     var chk=function(){if(document.visibilityState==='visible')reg.update().catch(function(){});};
     setInterval(chk,15000);document.addEventListener('visibilitychange',chk);window.addEventListener('focus',chk);

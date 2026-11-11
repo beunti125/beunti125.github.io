@@ -347,3 +347,9 @@ html{font-size:17px}html.bigtext{font-size:19.5px}
 .pbadge{display:inline-block;vertical-align:middle;background:#1C2E4A;color:#fff;font-size:.68rem;font-weight:800;padding:2px 7px;border-radius:999px;margin-left:4px;letter-spacing:.02em}
 .sugg{max-height:min(52vh,420px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .sugg .sdose{display:inline-block;margin-left:6px;background:#E3ECF5;color:#1C2E4A;border-radius:999px;padding:1px 9px;font-size:.85rem;font-weight:800}
+/* --- Zeitraum & Verlauf --- */
+.rng{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#fff;border-radius:14px;padding:4px;margin:0 0 12px}
+.rng button{all:unset;cursor:pointer;text-align:center;padding:9px 4px;border-radius:10px;font-weight:700;font-size:.88rem;color:var(--muted)}
+.rng button[aria-pressed=true]{background:#1C2E4A;color:#fff}
+.chart .mk{stroke:#7E3A55;stroke-width:1.2;stroke-dasharray:3 3;opacity:.7}
+.chart .mkt{font-size:9px;font-weight:800;fill:#7E3A55}

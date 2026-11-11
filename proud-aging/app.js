@@ -531,9 +531,13 @@ function progressCard(){var t=T(),M=mods(),tiles=[];var asc=function(a){return a
   if(!tiles.length)return '';
   return '<section class="prog"><h2>'+esc(t.prTitle)+'</h2><p class="muted">'+esc(t.prSub)+'</p><div class="ptiles">'+tiles.slice(0,4).map(function(x){return '<div class="ptile '+x[0]+'"><strong>'+x[1]+'</strong><span>'+esc(x[2])+'</span>'+x[3]+'</div>';}).join('')+'</div></section>';}
 function streak(){var n=0,d=today();if(!dayDone(d))d=addDays(d,-1);while(dayDone(d)){n++;d=addDays(d,-1);}return n;}
+var MSTONES=[7,14,30,60,100,180];
 function streakBadge(){var t=T(),n=streak(),tot=Object.keys(S.filled||{}).length;if(n<2&&tot<2)return '';
-  var msg=n>=2?t.streak.replace('{n}',n):t.totalDays.replace('{n}',tot);var big=[7,14,30,60,100].indexOf(n)>=0;
-  return '<div class="streak'+(big?' big':'')+'"><span class="sb">'+ic('star',true)+'</span><div><strong>'+esc(msg)+'</strong>'+(big?'<p>'+esc(t.streakBig)+'</p>':'')+'</div></div>';}
+  var big=MSTONES.indexOf(n)>=0;
+  if(big){var sp='';for(var k=0;k<10;k++){var a=k*36,dist=78+(k%2)*22;sp+='<i style="--a:'+a+'deg;--d:'+dist+'px;--dl:'+(.25+(k%3)*.06)+'s">'+FLAME+'</i>';}
+    return '<div class="msburst" role="status"><div class="msb-star">'+sp+'<span class="msb-core">'+FLAME+'</span></div><strong>'+esc(t.msReached.replace('{n}',n))+'</strong><p>'+esc(t.streakBig)+'</p></div>';}
+  var msg=n>=2?t.streak.replace('{n}',n):t.totalDays.replace('{n}',tot);
+  return '<div class="streak"><span class="sb">'+ic('star',true)+'</span><div><strong>'+esc(msg)+'</strong></div></div>';}
 function journeyCard(){var t=T(),ev=[],M=mods();
   var fl=Object.keys(S.filled||{}).sort();if(fl.length)ev.push({d:fl[0],i:'pen',x:t.jStart});
   [7,30,100].forEach(function(n){if(fl.length>=n)ev.push({d:fl[n-1],i:'star',x:t.jDays.replace('{n}',n),c:'gold'});});
@@ -696,7 +700,7 @@ function calHTML(){var t=T(),base=parse(today());var y=base.getFullYear(),m=base
   g+='</div><p class="cal-sum">'+esc(t.calMonth.replace('{n}',cnt).replace('{m}',past))+'</p>';
   return g;}
 function sheetCal(){var t=T(),tot=Object.keys(S.filled||{}).filter(function(d){return S.filled[d];}).length,n=streak(),best=Math.max(bestStreak(),n);calOff=0;
-  var ms=[7,14,30,60,100,180].map(function(x){return '<span class="ms'+(best>=x?' got':'')+'">'+(best>=x?FLAME:'')+x+'</span>';}).join('');
+  var lastGot=MSTONES.filter(function(x){return best>=x;}).pop(),gi=0;var ms=MSTONES.map(function(x){var got=best>=x;return '<span class="ms'+(got?' got':'')+(x===lastGot?' glow':'')+'"'+(got?' style="--i:'+(gi++)+'"':'')+'>'+(got?FLAME:'')+x+'</span>';}).join('');
   openSheet('<h2>'+esc(t.calTitle)+'</h2><div class="cal-k"><div><b>'+tot+'</b><span>'+esc(t.calTotal)+'</span></div><div><b>'+n+'</b><span>'+esc(t.calCur)+'</span></div><div><b>'+best+'</b><span>'+esc(t.calBest)+'</span></div></div><div id="calbox">'+calHTML()+'</div><p class="cal-ms-t">'+esc(t.ms)+'</p><div class="cal-ms">'+ms+'</div><div class="actions"><button type="button" class="btn full" data-close>'+esc(t.calClose)+'</button></div>',
   function(){},function(a){if(a==='calPrev')calOff--;if(a==='calNext'&&calOff<0)calOff++;var box=sheet.querySelector('#calbox');if(box)box.innerHTML=calHTML();});}
 

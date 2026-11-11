@@ -345,3 +345,5 @@ html{font-size:17px}html.bigtext{font-size:19.5px}
 .pnote{background:#FFF8E6;border-left:4px solid #F2C94C;border-radius:14px;padding:12px 14px;margin-bottom:12px}
 .pnote small{display:block;color:#7A5A00;font-weight:800;font-size:.78rem}.pnote p{margin:4px 0 0;color:#3D3214;line-height:1.45}
 .pbadge{display:inline-block;vertical-align:middle;background:#1C2E4A;color:#fff;font-size:.68rem;font-weight:800;padding:2px 7px;border-radius:999px;margin-left:4px;letter-spacing:.02em}
+.sugg{max-height:min(52vh,420px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sugg .sdose{display:inline-block;margin-left:6px;background:#E3ECF5;color:#1C2E4A;border-radius:999px;padding:1px 9px;font-size:.85rem;font-weight:800}

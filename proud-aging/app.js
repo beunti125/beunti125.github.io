@@ -5,7 +5,7 @@ if(window.innerWidth>=700&&window.name!=='pa-inner'){
   document.body.className='pf-body';
   document.body.innerHTML='<div class="pf-wrap"><div class="pf-phone" id="pfPhone"><div class="pf-screen"><div class="pf-status"><span id="pfTime"></span><span class="pf-island"></span><span class="pf-icons"><i></i><i></i><i></i><b></b></span></div><iframe name="pa-inner" title="Proud Aging App" src="'+location.href.split('#')[0]+'"></iframe><span class="pf-home"></span></div></div></div>';
   var tick=function(){var d=new Date(),e=document.getElementById('pfTime');if(e)e.textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');};tick();setInterval(tick,30000);
-  var fit=function(){var ph=document.getElementById('pfPhone');if(!ph)return;var sc=Math.min(1,(window.innerHeight-32)/880);ph.style.transform='scale('+sc+')';};fit();window.addEventListener('resize',fit);
+  var fit=function(){var ph=document.getElementById('pfPhone');if(!ph)return;var sc=Math.min(1,(window.innerHeight-40)/872,(window.innerWidth-40)/418);ph.style.transform='translate(-50%,-50%) scale('+sc+')';};fit();window.addEventListener('resize',fit);
   return;
 }
 var KEY='proud-aging-app-v1';

@@ -1402,9 +1402,11 @@ function renderVorrat(){
   var el=document.getElementById("v-vorrat"), s=startDate();
   var bolo=load("stock:bolo",0), sch=load("stock:schnitzel",0);
   var html='<div class="head"><h3>Gefrierfach</h3><h1>Vorrat</h1></div><div class="stack">';
-  html+='<div class="card"><div class="stock"><span style="display:flex;flex-direction:column"><span class="dish">Bolognese</span><span class="note">Portionen</span></span><span class="ctr"><button data-st="bolo" data-d="-1" aria-label="Bolognese minus 1">−</button><output>'+bolo+'</output><button data-st="bolo" data-d="1" aria-label="Bolognese plus 1">+</button></span></div></div>';
-  html+='<div class="card"><div class="stock"><span style="display:flex;flex-direction:column"><span class="dish">Hähnchenschnitzel</span><span class="note">Stück</span></span><span class="ctr"><button data-st="schnitzel" data-d="-1" aria-label="Schnitzel minus 1">−</button><output>'+sch+'</output><button data-st="schnitzel" data-d="1" aria-label="Schnitzel plus 1">+</button></span></div></div>';
-  html+='<p class="note">Regel: Mindestens 1 Portion Bolognese sollte immer im Gefrierfach liegen. Das ist dein Ersatz fürs Bestellen.</p>';
+  var useB=ISY, useS=ISY; if(!ISY) for(var _r=1;_r<=NW;_r++){ if(W[_r].pasta&&W[_r].pasta[1]==="bolognese") useB=true; if(W[_r].act&&W[_r].act[6]&&W[_r].act[6].key==="schnitzel") useS=true; }
+  if(!useB&&!useS) html+='<div class="card"><span class="label">Gefrierfach</span><span class="note">In deinem Plan wird nichts auf Vorrat eingefroren. Reste kannst du trotzdem jederzeit portionsweise einfrieren.</span></div>';
+  if(useB) html+='<div class="card"><div class="stock"><span style="display:flex;flex-direction:column"><span class="dish">Bolognese</span><span class="note">Portionen</span></span><span class="ctr"><button data-st="bolo" data-d="-1" aria-label="Bolognese minus 1">−</button><output>'+bolo+'</output><button data-st="bolo" data-d="1" aria-label="Bolognese plus 1">+</button></span></div></div>';
+  if(useS) html+='<div class="card"><div class="stock"><span style="display:flex;flex-direction:column"><span class="dish">Hähnchenschnitzel</span><span class="note">Stück</span></span><span class="ctr"><button data-st="schnitzel" data-d="-1" aria-label="Schnitzel minus 1">−</button><output>'+sch+'</output><button data-st="schnitzel" data-d="1" aria-label="Schnitzel plus 1">+</button></span></div></div>';
+  if(useB) html+='<p class="note">Regel: Mindestens 1 Portion Bolognese sollte immer im Gefrierfach liegen. Das ist dein Ersatz fürs Bestellen.</p>';
   html+='<div class="card"><span class="label">Plan-Start (ein '+DOW_LONG[SD]+')</span><label for="startin" class="note">Woche 1 beginnt an diesem '+DOW_LONG[SD]+'. Danach läuft die Rotation automatisch weiter.</label><input type="date" id="startin" value="'+fmtISO(s)+'"></div>';
   html+='<div class="card"><span class="label">Profil</span><span class="note">'+(ISY?'Original-Plan (Yunus)':esc(pName())+' · '+kcalTarget()+' kcal/Tag · ca. '+eur(weekCost(1))+' pro Woche')+'</span><button class="btn ghost small" data-ob="1" style="margin-top:8px">Fragebogen neu ausfüllen</button></div>';
   html+='<div class="card"><span class="label">Auf dem Handy wie eine App</span><span class="note">iPhone (Safari): Teilen-Symbol → „Zum Home-Bildschirm“. Android (Chrome): Menü (⋮) → „App installieren“. Danach funktioniert alles auch offline.</span></div>';
@@ -1657,7 +1659,7 @@ function fsAnswer(raw){
     if(n>0){ var sec=/sek/.test(m[2])?n:n*60; var id=fsTimer(sec); return {text:"Timer läuft – ich melde mich hier. Lass die App dafür offen.", card:{type:"timer",id:id}, quick:fs.cook?["Weiter","Stopp"]:["Was koche ich heute?"]}; }
   }
   if(fsHas(t,[" hallo "," hi "," hey "," servus "," moin "," guten tag "," guten abend "]) && t.split(" ").length<6) return {text:"Moin "+pName()+"! Was darf's sein?", quick:["Was koche ich heute?","Was muss ich einkaufen?","Erzähl einen Witz"]};
-  if(fsHas(t,[" wer bist du "," wie heißt du "," was kannst du "," hilfe "])) return {text:"Ich bin Friedrich Scherz – halb Koch, halb Comedian. Ich kenne deinen Plan, deine Einkaufsliste und dein Gefrierfach, führe dich Schritt für Schritt durch Rezepte und stelle Timer.", quick:["Was koche ich heute?","Bratkartoffeln kochen","Timer 10 Minuten"]};
+  if(fsHas(t,[" wer bist du "," wie heißt du "," was kannst du "," hilfe "])) return {text:"Ich bin Friedrich Scherz – halb Koch, halb Comedian. Ich kenne deinen Plan, deine Einkaufsliste und dein Gefrierfach, führe dich Schritt für Schritt durch Rezepte und stelle Timer.", quick:["Was koche ich heute?",(ISY||recOk("bratkartoffeln")?"Bratkartoffeln kochen":"Zeig mir die Woche"),"Timer 10 Minuten"]};
   if(fsHas(t,[" danke "," dankeschön "," merci "])) return {text:"Immer gern. Jedes selbst gekochte Essen ist ein Lieferando-Euro weniger.", quick:["Was gibt's morgen?"]};
   if(fsHas(t,[" witz "," scherz "," lustig "])) return {text:FS_JOKES[Math.floor(Math.random()*FS_JOKES.length)], quick:["Noch einen Witz","Was koche ich heute?"]};
   if(fsHas(t,[" wieder wie geplant "," wie geplant "])){ var ud=fsDayFrom(t); bockUndo(ud,"l"); bockUndo(ud,"d"); if(typeof renderHeute==="function") renderHeute(); return {text:"Alles zurück – "+fsDayName(ud).toLowerCase()+" gilt wieder der normale Plan.", card:{type:"day",day:fmtISO(ud)}}; }
@@ -1670,7 +1672,8 @@ function fsAnswer(raw){
     var free=top[0][0]!=="buy";
     return {text:(free?(top[0][0]==="pantry"?"Geht ohne Einkauf – tipp an, ich passe den Plan an:":"Gute Nachricht – geht ohne extra Geld. Tipp an, ich passe den Plan an:"):"Diese Woche ist dazu nichts schon da. Günstigste Optionen – trotzdem billiger als bestellen ("+eur(BOCK_ORDER)+"):"), card:{type:"bock",day:fmtISO(bd),sl:bsl,top:top.map(function(y){return [y[0],y[1].key,y[1].from||"",y[1].fs||""];})}};
   }
-  if(fsHas(t,[" keine lust "," bestellen "," bestell "," lieferando "," mcdonald"," wolt "," uber eats "])) return {text:"Moment! Bevor du 15 € ausgibst: Die Notfall-Carbonara dauert 15 Minuten und kostet etwa 2 €.", card:{type:"recipe",id:"carbonara"}, quick:["Carbonara kochen","Na gut, was gibt's sonst?"]};
+  if(fsHas(t,[" keine lust "," bestellen "," bestell "," lieferando "," mcdonald"," wolt "," uber eats "])) { var nf=["carbonara","tortellini","thunfischpasta","tomatensahne","menemen","pizza","wedges","kartoffelcurry"].filter(function(k){return R[k]&&recOk(k);})[0];
+    if(nf) return {text:"Moment! Bevor du 15 € ausgibst: "+R[nf].name+" dauert "+R[nf].time+" und kostet etwa "+eur((NUT[nf]?NUT[nf].eur:2)*(nf==="carbonara"?1:2))+".", card:{type:"recipe",id:nf}, quick:[R[nf].name.split(" ")[0]+" kochen","Na gut, was gibt's sonst?"]}; }
   if(fsHas(t,[" papa "," vater "," papas "," woanders "," auswärts "," nicht zu hause "," nicht daheim "," eingeladen "," essen gehen "," gehe essen "," restaurant "])){
     if(fsHas(t,[" doch "," rückgängig "," nicht mehr "])){ var dd2=fsDayFrom(t); awaySet(dd2,"d",null); awaySet(dd2,"l",null); if(typeof renderHeute==="function") renderHeute(); var p3=planFor(dd2); return {text:"Alles klar, "+fsDayName(dd2).toLowerCase()+" isst du doch zu Hause: "+p3.dinner[0]+".", quick:["Was koche ich heute?"]}; }
     var dd=fsDayFrom(t), slot=fsHas(t,[" mittag"])?"l":"d", kind=fsHas(t,[" papa "," vater "," papas "])?"papa":"out";
@@ -1686,6 +1689,7 @@ function fsAnswer(raw){
   if(rid && fsHas(t,[" kalorien "," kcal "," eiweiß "," protein "," kostet "," preis "," wie viel "," teuer "])) return {text:R[rid].name+" pro Portion:", card:{type:"nut",id:rid}, quick:[R[rid].name.split(" ")[0]+" kochen"]};
   if(rid && fsHas(t,[" koch"," mach"," wie "," rezept"," anleitung"," schritt"," zubereit"," brat"," zeig"])){
     if(fsHas(t,[" kochen "," kochmodus "," schritt für schritt "," führ "," lass uns "]) || /^ (wir )?(koch|mach)/.test(t)){ fs.cook={id:rid,step:0}; return {text:"Kochmodus: "+R[rid].name+". Ich führe dich Schritt für Schritt.", card:{type:"step"}, quick:["Weiter","Zutaten","Timer 5 Minuten","Stopp"]}; }
+    if(!recOk(rid)) return {text:"Achtung: "+R[rid].name+" passt nicht zu deinem Profil (Ernährung oder Allergien). Ich zeig es dir trotzdem:", card:{type:"recipe",id:rid}, quick:["Ich hab Bock auf was anderes","Was koche ich heute?"]};
     return {card:{type:"recipe",id:rid}, quick:[R[rid].name.split(" ")[0]+" kochen","Zutaten"]};
   }
   if(fsHas(t,[" gefrier"," eingefroren"," vorrat "," tiefkühl"])) return {text:"Das liegt im Gefrierfach:", card:{type:"freezer"}, quick:["Was koche ich heute?"]};
@@ -1698,7 +1702,7 @@ function fsAnswer(raw){
     p=planFor(d);
     return {text:fsDayName(d)+(only==="b"?" zum Frühstück:":(only==="l"?" mittags:":(only==="d"?" abends:":" gibt's:"))), card:{type:"day",day:fmtISO(d),only:only}, quick:[ (p.dinner[1]?p.dinner[0].split(" ")[0]+" kochen":"Was gibt's morgen?"), fsDayName(d)==="Heute"?"Was gibt's morgen?":"Was koche ich heute?", "Einkaufsliste"]};
   }
-  return {text:"Das hab ich nicht ganz verstanden. Probier's mal hiermit:", quick:["Was koche ich heute?","Ich hab Bock auf was anderes","Was muss ich einkaufen?","Bratkartoffeln kochen","Timer 10 Minuten","Was ist im Gefrierfach?"]};
+  return {text:"Das hab ich nicht ganz verstanden. Probier's mal hiermit:", quick:["Was koche ich heute?","Ich hab Bock auf was anderes","Was muss ich einkaufen?",(ISY||recOk("bratkartoffeln")?"Bratkartoffeln kochen":"Zeig mir die Woche"),"Timer 10 Minuten","Was ist im Gefrierfach?"]};
 }
 function fsTimer(sec){
   var id="t"+(++fs.tid); fs.timers[id]={end:Date.now()+sec*1000,sec:sec,done:false};
@@ -1742,7 +1746,7 @@ function fsRender(scroll){
   });
   if(fs.busy) html+='<div class="fsm fs first new"><span class="fsmini">'+FS_AV+'</span><div class="fsb typing"><i></i><i></i><i></i></div></div>';
   box.innerHTML=html;
-  var qr=document.getElementById("fsquick"); if(qr) qr.innerHTML=(fs.quick&&fs.quick.length?fs.quick:["Was koche ich heute?",ISY?"Heute esse ich bei Papa":"Heute esse ich woanders","Was muss ich einkaufen?","Bratkartoffeln kochen","Timer 10 Minuten","Gefrierfach"]).map(function(c){return '<button class="fschip" data-fsq="'+esc(c)+'">'+esc(c)+'</button>';}).join("");
+  var qr=document.getElementById("fsquick"); if(qr) qr.innerHTML=(fs.quick&&fs.quick.length?fs.quick:["Was koche ich heute?",ISY?"Heute esse ich bei Papa":"Heute esse ich woanders","Was muss ich einkaufen?",(ISY||recOk("bratkartoffeln")?"Bratkartoffeln kochen":"Zeig mir die Woche"),"Timer 10 Minuten","Gefrierfach"]).map(function(c){return '<button class="fschip" data-fsq="'+esc(c)+'">'+esc(c)+'</button>';}).join("");
   if(scroll) box.scrollTop=box.scrollHeight;
   var mb=document.getElementById("fsmic"); if(mb){ mb.classList.toggle("on",fs.listening); }
   var st=document.getElementById("fsstatus"); if(st) st.textContent=fs.busy?"tippt …":(fs.cook?"Kochmodus · "+R[fs.cook.id].name:"bereit · offline");
@@ -1803,7 +1807,7 @@ function obChips(key,opts,multi){
 function obNum(key,label,unit,ph){ return '<label class="obnum"><span>'+label+'</span><span class="obin"><input type="number" inputmode="numeric" data-in="'+key+'" value="'+esc(OB.d[key])+'" placeholder="'+ph+'"><i>'+unit+'</i></span></label>'; }
 var OB_STEPS=[
   function(d){ return {q:"Moin! Ich bin Friedrich Scherz, dein Koch-Assistent. Ich stell dir ein paar kurze Fragen und bau dir daraus deinen Essensplan mit Einkaufsliste. Wie heißt du?",
-    b:'<input class="obtext" type="text" data-in="name" value="'+esc(d.name)+'" placeholder="Dein Vorname" autocomplete="given-name" maxlength="20">'+(OB.again?'':'<button class="oblink" data-yunus="1">Ich bin Yunus – Original-Plan laden</button>')}; },
+    b:'<input class="obtext" type="text" data-in="name" value="'+esc(d.name)+'" placeholder="Dein Vorname" autocomplete="given-name" maxlength="20">'+(OB.again||!/yunus/i.test(location.hash+location.search)?'':'<button class="oblink" data-yunus="1">Ich bin Yunus – Original-Plan laden</button>')}; },
   function(d){ return {q:"Freut mich"+(d.name?", "+d.name:"")+"! Isst du alles oder lieber kein Schweinefleisch?", b:obChips("diet",[["all","Ich esse alles"],["nopork","Kein Schweinefleisch"],["pesce","Vegetarisch + Fisch"],["veggie","Vegetarisch"]],false)+'<p class="obhint">'+({all:"Fleisch, Fisch und Vegetarisches gemischt.",nopork:"Ohne Schwein tausche ich Speck gegen Putenspeck, Hack gegen Rinderhack und Aufschnitt gegen Geflügel.",pesce:"Kein Fleisch – Fisch und vegetarische Gerichte.",veggie:"Kein Fleisch und kein Fisch."}[d.diet])+'</p>'}; },
   function(d){ return {q:"Hast du Allergien oder Unverträglichkeiten? Gerichte damit fliegen komplett raus.", b:obChips("alg",OB_ALG,true)+'<p class="obhint">Nichts davon? Einfach weiter. Wichtig: Prüf bei Allergien trotzdem immer die Zutatenliste auf der Packung – Rezepturen ändern sich und Spuren stehen nur dort.</p>'}; },
   function(d){ return {q:"Worauf hast du richtig Bock? Tipp alles an, was du magst.", b:obChips("likes",OB_LIKES,true)}; },

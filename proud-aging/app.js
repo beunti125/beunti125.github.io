@@ -801,7 +801,7 @@ function hubTiles(){var t=T(),M=mods(),out=[],td=today(),wk=addDays(td,-6);
     out.push(['aes','aes','c5',t.tabs.aes,la?aesName(la):'–',due?t.aesNext+' '+fd(due,{day:'numeric',month:'short'}):(la?fd(la.d,{day:'numeric',month:'short'}):t.hubNone),false]);}
   return out;}
 function vHub(){var t=T();
-  var h='<div class="pagehead"><h1>'+esc(t.data)+'</h1><p>'+esc(t.hubSub)+'</p></div><div class="hub">';
+  var h='<div class="pagehead"><h1>'+esc(t.data)+'</h1><p>'+esc(t.hubSub)+'</p></div>'+balanceCard()+'<div class="hub">';
   h+=hubTiles().map(function(x){var act=x[0]==='cal'?'data-act="cal"':'data-act="dtab" data-t="'+x[0]+'"';
     return '<button class="hubt '+x[2]+'" '+act+'><span class="hb-i">'+ic(x[1],x[1]==='star')+'</span><span class="hb-n">'+esc(x[3])+'</span><strong>'+(x[7]?x[4]:esc(x[4]))+'</strong><small class="'+(x[6]?'up':'')+'">'+esc(x[5])+'</small></button>';}).join('');
   var n=streak();h+='</div>'+(n?'<button class="hubst" data-act="cal">'+FLAME+'<span>'+esc(t.stDays.replace('{n}',n))+'</span><em>'+esc(t.hubCal)+' →</em></button>':'')+journeyCard();
@@ -946,8 +946,8 @@ function formSave(){
   if(has('kg')){var kg=pnum(a.kg);S.weight=S.weight.filter(function(x){return x.d!==d;});if(kg>=25&&kg<=300)S.weight.push(PM?{d:d,kg:Math.round(kg*10)/10,src:'praxis'}:{d:d,kg:Math.round(kg*10)/10});}
   if(F.steps.indexOf('ein')>=0&&a.ein!=null&&a.durch!=null)S.gen={at:d,ein:!!a.ein,durch:!!a.durch};
   save();var dd=d;F=null;view='done';root.className='app formmode'+(REDUCED?'':' pa-in');lastKey='done';lastFi=-1;
-  var isToday=dd===today(),ins=isToday?insight():'';
-  root.innerHTML='<section class="donep">'+(isToday&&MSTONES.indexOf(streak())<0?'<div class="dn-burst" aria-hidden="true">'+[0,1,2,3,4,5,6,7].map(function(k){return '<i style="--a:'+(k*45)+'deg;--dl:'+(k%2?.08:0)+'s">'+FLAME+'</i>';}).join('')+'</div>':'')+'<span class="hc-i big pop">'+ic('check')+'</span><h1>'+esc(isToday?(S.name?t.doneTitleN.replace('{n}',S.name):t.doneTitle):t.doneTitle)+'</h1><p>'+esc(t.doneText.replace('{d}',fdl(dd)))+'</p>'+(ins?'<div class="insight">'+ic('star',true)+'<span>'+esc(ins)+'</span></div>':'')+streakBadge()+(isToday&&streak()>=1?'<div class="dn-week">'+weekDays().map(function(x){var f=dayDone(x),c=x===today()?'on today':x>today()?'fut':(f?'on':'off');return '<span class="st-d '+c+'"><small>'+esc(fd(x,{weekday:'short'}).replace('.','').slice(0,2))+'</small><i>'+(f?ic('check'):'')+'</i></span>';}).join('')+'</div><p class="dn-next">'+esc(t.doneNext.replace('{n}',streak()+1))+'</p>':'')+'<button class="btn full" data-act="go" data-v="data">'+esc(t.toData)+'</button><button class="btn light full" data-act="go" data-v="fill">'+esc(t.toStart)+'</button>'+(S.remAt?'':'<button class="btn ghost full" data-act="settings">'+ic('bell')+esc(t.remTitle)+'</button>')+'</section>';
+  var isToday=dd===today(),ins=isToday?insight():'';var nb=checkBadges();var nbH=nb.length?'<div class="newbdg">'+nb.map(function(id){var B=t.bdg[id];return '<div class="nb"><span class="bi">'+badgeIc(id)+'</span><div><small>'+esc(t.bdgNew)+'</small><strong>'+esc(B[0])+'</strong><p>'+esc(B[1])+'</p></div></div>';}).join('')+'</div>':'';
+  root.innerHTML='<section class="donep">'+(isToday&&MSTONES.indexOf(streak())<0?'<div class="dn-burst" aria-hidden="true">'+[0,1,2,3,4,5,6,7].map(function(k){return '<i style="--a:'+(k*45)+'deg;--dl:'+(k%2?.08:0)+'s">'+FLAME+'</i>';}).join('')+'</div>':'')+'<span class="hc-i big pop">'+ic('check')+'</span><h1>'+esc(isToday?(S.name?t.doneTitleN.replace('{n}',S.name):t.doneTitle):t.doneTitle)+'</h1><p>'+esc(t.doneText.replace('{d}',fdl(dd)))+'</p>'+nbH+(ins?'<div class="insight">'+ic('star',true)+'<span>'+esc(ins)+'</span></div>':'')+streakBadge()+(isToday&&streak()>=1?'<div class="dn-week">'+weekDays().map(function(x){var f=dayDone(x),c=x===today()?'on today':x>today()?'fut':(f?'on':'off');return '<span class="st-d '+c+'"><small>'+esc(fd(x,{weekday:'short'}).replace('.','').slice(0,2))+'</small><i>'+(f?ic('check'):'')+'</i></span>';}).join('')+'</div><p class="dn-next">'+esc(t.doneNext.replace('{n}',streak()+1))+'</p>':'')+'<button class="btn full" data-act="go" data-v="data">'+esc(t.toData)+'</button><button class="btn light full" data-act="go" data-v="fill">'+esc(t.toStart)+'</button>'+(S.remAt?'':'<button class="btn ghost full" data-act="settings">'+ic('bell')+esc(t.remTitle)+'</button>')+'</section>';
   window.scrollTo(0,0);
 }
 
@@ -958,6 +958,44 @@ function insight(){var t=T(),I=t.ins,td=today(),wk=addDays(td,-6);
   var w=asc(S.weight);if(w.length>=2){var dk=w[w.length-1].kg-w[0].kg;if(dk<=-1&&mods().weight)return I.kgDown.replace('{x}',num(Math.abs(dk)));}
   var tot=Object.keys(S.filled||{}).filter(function(d){return S.filled[d];}).length;
   if(tot<=1)return I.first;if(streak()>=3)return I.streak.replace('{n}',streak());return I.gen;}
+
+/* ---------- Waage & Etappen: Weg ins Gleichgewicht ---------- */
+function clamp01(x){return Math.max(0,Math.min(1,x));}
+function inWin(a,from,to){return a.filter(function(x){return x.d>=from&&x.d<=to;});}
+function hotBase(){var mo=asc(S.mood).filter(function(x){return x.hot!=null;});return mo.length>=7?avgOf(mo.slice(0,7),'hot'):null;}
+function balanceAt(end){var M=mods(),from=addDays(end,-6),parts=[];
+  if(M.sleep){var sl=inWin(S.sleep,from,end);if(sl.length>=3){var ah=avgOf(sl,'h'),th=sl.filter(function(x){return x.through;}).length/sl.length;parts.push(clamp01(ah/7)*.6+th*.4);}}
+  var mo=inWin(S.mood,from,end).filter(function(x){return x.mood!=null;});
+  if(M.mood&&mo.length>=3){parts.push((clamp01((avgOf(mo,'mood')-1)/3)+clamp01((avgOf(mo,'energy')-1)/3))/2);
+    if(hotOn()){var hb=hotBase(),hc=avgOf(mo,'hot');if(hb!=null&&hb>0)parts.push(hc<=.5?1:clamp01((hb-hc)/hb/.5));}}
+  return parts.length?parts.reduce(function(a,b){return a+b;},0)/parts.length:null;}
+function balanceStart(){var all=Object.keys(S.filled||{}).filter(function(d){return S.filled[d];}).sort();if(all.length<10)return null;return balanceAt(addDays(all[0],6));}
+function scaleSVG(score){var a=score==null?-9:-(1-score)*16,t=T();
+  var pan=function(x,lbl,cls){return '<g class="sc-pan '+cls+'" style="transform-origin:'+x+'px 52px"><line x1="'+x+'" y1="52" x2="'+(x-26)+'" y2="96"/><line x1="'+x+'" y1="52" x2="'+(x+26)+'" y2="96"/><path d="M'+(x-34)+' 96 h68 a34 14 0 0 1 -68 0z" class="bowl"/><text x="'+x+'" y="128" text-anchor="middle">'+esc(lbl)+'</text></g>';};
+  return '<svg class="scale" viewBox="0 0 300 150" style="--a:'+a.toFixed(1)+'deg" role="img" aria-label="'+esc(t.balTitle)+'"><path d="M150 52 L150 136 M118 140 h64" class="post"/><g class="sc-beam" style="transform-origin:150px 52px"><line x1="56" y1="52" x2="244" y2="52" class="beam"/>'+pan(56,t.balL,'l')+pan(244,t.balR,'r')+'</g><circle cx="150" cy="52" r="7" class="pivot"/><path d="M150 40 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" class="pstar"/></svg>';}
+var BADGES=[
+  {id:'start',m:null,ok:function(){return Object.keys(S.filled||{}).length>=1;}},
+  {id:'week',m:null,ok:function(){return Math.max(bestStreak(),streak())>=7;},pr:function(){return Math.max(bestStreak(),streak())+'/7';}},
+  {id:'month',m:null,ok:function(){return Math.max(bestStreak(),streak())>=30;},pr:function(){return Math.max(bestStreak(),streak())+'/30';}},
+  {id:'sleep7',m:'sleep',ok:function(){var sl=inWin(S.sleep,addDays(today(),-6),today());return sl.length>=5&&avgOf(sl,'h')>=7;}},
+  {id:'calm',m:'sleep',ok:function(){return inWin(S.sleep,addDays(today(),-6),today()).filter(function(x){return x.through;}).length>=5;},pr:function(){return inWin(S.sleep,addDays(today(),-6),today()).filter(function(x){return x.through;}).length+'/5';}},
+  {id:'hot25',m:'mood',hot:1,ok:function(){var hb=hotBase(),mo=inWin(S.mood,addDays(today(),-6),today());return hb>0&&mo.length>=4&&(hb-avgOf(mo,'hot'))/hb>=.25;}},
+  {id:'hot50',m:'mood',hot:1,ok:function(){var hb=hotBase(),mo=inWin(S.mood,addDays(today(),-6),today());return hb>0&&mo.length>=4&&(hb-avgOf(mo,'hot'))/hb>=.5;}},
+  {id:'mood4',m:'mood',ok:function(){var mo=inWin(S.mood,addDays(today(),-6),today()).filter(function(x){return x.mood!=null;});return mo.length>=5&&avgOf(mo,'mood')>=4;}},
+  {id:'energy4',m:'mood',ok:function(){var mo=inWin(S.mood,addDays(today(),-6),today()).filter(function(x){return x.energy!=null;});return mo.length>=5&&avgOf(mo,'energy')>=4;}},
+  {id:'meds90',m:'meds',ok:function(){var tot=0,ok=0;for(var i=0;i<28;i++){var d=addDays(today(),-i);doses(d).forEach(function(x){tot++;if(takenOn(d,x.k))ok++;});}return tot>=20&&ok/tot>=.9;}},
+  {id:'kg5',m:'weight',ok:function(){var w=asc(S.weight);return w.length>=2&&(w[0].kg-w[w.length-1].kg)/w[0].kg>=.05;}},
+  {id:'balance',m:null,top:1,ok:function(){var b=balanceAt(today());return b!=null&&b>=.9;}}];
+function badgeList(){var M=mods();return BADGES.filter(function(b){return (!b.m||M[b.m])&&(!b.hot||hotOn());});}
+function checkBadges(silent){if(!S.mods)return [];var first=!S.badges;S.badges=S.badges||{};var nw=[];
+  badgeList().forEach(function(b){if(!S.badges[b.id]){var ok=false;try{ok=b.ok();}catch(e){}if(ok){S.badges[b.id]=today();nw.push(b.id);}}});
+  if(nw.length)save();return (silent||first)?[]:nw;}
+function badgeIc(id){return id==='balance'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4v16M7 20h10M4 8h16M6 8l-3 6a3 1.6 0 0 0 6 0zM18 8l-3 6a3 1.6 0 0 0 6 0z"/></svg>':FLAME;}
+function balanceCard(){var t=T(),sc=balanceAt(today()),st=balanceStart(),L=badgeList(),got=L.filter(function(b){return S.badges&&S.badges[b.id];}).length;
+  var lvl=sc==null?t.balNo:sc>=.9?t.bal4:sc>=.7?t.bal3:sc>=.4?t.bal2:t.bal1;
+  var h='<div class="card balc"><div class="bal-h"><h2>'+esc(t.balTitle)+'</h2>'+(sc!=null?'<strong>'+Math.round(sc*100)+'&#8202;%</strong>':'')+'</div>'+scaleSVG(sc)+'<p class="bal-l">'+esc(lvl)+(sc!=null&&st!=null&&sc-st>=.05?' <span class="up">+'+Math.round((sc-st)*100)+' '+esc(t.balSince)+'</span>':'')+'</p>';
+  h+='<div class="bal-st"><span>'+esc(t.etappen)+'</span><b>'+got+' / '+L.length+'</b></div><div class="badges">'+L.map(function(b){var g=S.badges&&S.badges[b.id],B=t.bdg[b.id];return '<button class="bdg'+(g?' got':'')+(b.top?' top':'')+'" data-act="bdg" data-id="'+b.id+'" aria-label="'+esc(B[0])+'"><span class="bi">'+badgeIc(b.id)+'</span><small>'+esc(B[0])+'</small></button>';}).join('')+'</div></div>';
+  return h;}
 /* ---------- Meine Daten ---------- */
 function vData(){
   var t=T(),M=mods();
@@ -1006,6 +1044,7 @@ root.addEventListener('click',function(e){
   else if(a==='fSave')formSave();
   else if(a==='fCancel'){F=null;setView('fill');}
   else if(a==='fStep'){var inp=root.querySelector('input[name="'+b.dataset.for+'"]'),v=Math.min(+b.dataset.max,Math.max(+b.dataset.min,Math.round((+inp.value+(+b.dataset.step))*10)/10));inp.value=v;F.a[b.dataset.for]=v;root.querySelector('output[name="'+b.dataset.for+'"]').textContent=num(v,b.dataset.dec==='0'?0:1)+(b.dataset.u||'');}
+  else if(a==='bdg'){var bb=BADGES.filter(function(x){return x.id===b.dataset.id;})[0],BT=T().bdg[bb.id],gd=S.badges&&S.badges[bb.id];toast(BT[0]+' – '+(gd?T().bdgGot.replace('{d}',fd(gd,{day:'numeric',month:'short'})):BT[1]+(bb.pr?' ('+bb.pr()+')':'')));}
   else if(a==='dcNav'){var kk=b.dataset.k;DC[kk]=Math.min(0,(DC[kk]||0)+(+b.dataset.dir));render();}
   else if(a==='addSleep')sheetSleep();
   else if(a==='editSleep')sheetSleep(b.dataset.d);
@@ -1048,6 +1087,7 @@ root.addEventListener('change',function(e){
 });
 
 /* ---------- Start ---------- */
+try{if(!S.badges)checkBadges(true);}catch(e){}
 /* Schnellstart wie ein Widget: Tipp aufs App-Symbol oeffnet direkt den heutigen Fragebogen */
 function canAutoForm(){return !!(S.mods&&S.lang&&!PM&&!F&&!dayDone(today()));}
 var wantForm=/[?&]start=form\b/.test(location.search)||location.hash==='#fragebogen',wasUpd=false;

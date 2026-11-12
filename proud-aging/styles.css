@@ -765,15 +765,9 @@ p,small{text-wrap:pretty}
 /* ===== Steinturm ===== */
 .cairn{display:block;width:100%;max-width:400px;margin:4px auto 0;overflow:visible}
 .cairn .ground{fill:#1C2E4A;opacity:.07}
-.cairn .sb{filter:drop-shadow(0 3px 3px rgba(28,46,74,.16))}
-.cairn .sh{fill:#fff;opacity:.35}
-.cairn .base .sb{fill:#CFC6B8}
-.cairn .s-sleep .sb{fill:#9DB7D2}
-.cairn .s-mood .sb{fill:#A9CDB4}
-.cairn .s-hot .sb{fill:#E9BFA4}
 .cairn .stone{transition:transform .9s cubic-bezier(.3,1.35,.45,1);animation:stoneDrop .7s cubic-bezier(.3,1.4,.5,1) backwards;animation-delay:calc(var(--i) * .12s)}
 .cairn .stone[data-act],.cairn .clbl{cursor:pointer}
-.cairn .stone[data-act]:active .sb{filter:brightness(.95)}
+.cairn .stone[data-act]:active{opacity:.9}
 @keyframes stoneDrop{from{opacity:0;translate:0 -28px}60%{opacity:1}}
 .cairn .clbl line{stroke:#C9D0DA;stroke-width:1.5;stroke-linecap:round}
 .cairn .cn{font:600 13px Manrope,system-ui,sans-serif;fill:#4b5363}
@@ -786,3 +780,12 @@ p,small{text-wrap:pretty}
 .cairn.calm .glow{opacity:1;animation:glowP 2.8s ease-in-out infinite}
 .cairn.live .stone,.cairn.live .ctop{animation:none}
 @media (prefers-reduced-motion:reduce){.cairn .stone,.cairn .ctop,.cairn.calm .glow{animation:none}.cairn .stone{transition:none}}
+
+/* Steine mit Textur */
+.cairn .cshadow{fill:#1C2E4A;opacity:.28}
+.cairn .ground{opacity:.12}
+.cairn .shine{fill:#fff;opacity:.28}
+.cairn .rim{fill:none;stroke:#000;stroke-opacity:.09;stroke-width:3.5}
+.cairn .spk{fill:#2b2b2b;opacity:.22}
+.cairn .spk.lt{fill:#fff;opacity:.45}
+.cairn .cd-sleep{fill:#7F9DBE}.cairn .cd-mood{fill:#8DB898}.cairn .cd-hot{fill:#D59E7B}

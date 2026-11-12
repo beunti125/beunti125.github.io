@@ -992,18 +992,38 @@ function scaleSVG(sc){var a=balAngle(sc),t=T(),nl=sc==null?3:Math.round((1-sc)*5
 function cairnParts(P){var t=T(),L=[['sleep','sleep',t.tabs.sleep],['mood','mood',t.tabs.mood],['hot','mood',t.hotShort]].filter(function(p){return P[p[0]]!=null;});
   if(!L.length){var M=mods();L=[['sleep','sleep',t.tabs.sleep],['mood','mood',t.tabs.mood]].filter(function(p){return M[p[0]];});if(!L.length)L=[['mood','mood',t.tabs.mood]];}
   return L;}
-var CDIM=[[74,20],[60,18],[50,16],[42,14]];
-function cairnGeo(n){var y=[],cy=170;for(var i=0;i<=n;i++){if(i)cy-=CDIM[i-1][1]+CDIM[i][1]+1;y.push(cy);}return y;}
+var CDIM=[[74,24],[60,22],[50,19],[42,17]];
+function cairnGeo(n){var y=[],cy=176;for(var i=0;i<=n;i++){if(i)cy-=CDIM[i-1][1]+CDIM[i][1]-5;y.push(cy);}return y;}
 function stoneTf(i,v){var d=v==null?.65:1-v,dir=i%2?1:-1;return 'translate('+(d*30*dir).toFixed(1)+'px,'+(d*-3).toFixed(1)+'px) rotate('+(d*15*-dir).toFixed(1)+'deg)';}
+var STONEPAL={base:['#EEE9E1','#CFC5B6','#998C7A'],sleep:['#DCE6F1','#93AECA','#566F8E'],mood:['#E2EEE4','#9FC5A9','#5E8A6C'],hot:['#F8E6D8','#E1B293','#A8714F']};
+function blobPath(cx,cy,rx,ry,seed){var r=seed*9301+49297,rnd=function(){r=(r*9301+49297)%233280;return r/233280;},N=10,P=[];
+  for(var k=0;k<N;k++){var a=k/N*Math.PI*2,f=1+(rnd()-.5)*.17,sy=Math.sin(a)>0?.82:1.04;P.push([cx+Math.cos(a)*rx*f,cy+Math.sin(a)*ry*f*sy]);}
+  var d='M'+P[0][0].toFixed(1)+' '+P[0][1].toFixed(1);
+  for(k=0;k<N;k++){var p0=P[(k-1+N)%N],p1=P[k],p2=P[(k+1)%N],p3=P[(k+2)%N];
+    d+=' C'+(p1[0]+(p2[0]-p0[0])/6).toFixed(1)+' '+(p1[1]+(p2[1]-p0[1])/6).toFixed(1)+' '+(p2[0]-(p3[0]-p1[0])/6).toFixed(1)+' '+(p2[1]-(p3[1]-p1[1])/6).toFixed(1)+' '+p2[0].toFixed(1)+' '+p2[1].toFixed(1);}
+  return d+'Z';}
+function stoneSVG(kind,cx,cy,rx,ry,seed){var r=seed*7+3,rnd=function(){r=(r*9301+49297)%233280;return r/233280;},sp='';
+  for(var k=0;k<9;k++){var a=rnd()*Math.PI*2,dd=Math.sqrt(rnd())*.72;sp+='<circle cx="'+(cx+Math.cos(a)*rx*dd).toFixed(1)+'" cy="'+(cy+Math.sin(a)*ry*dd*.8).toFixed(1)+'" r="'+(.5+rnd()*1.1).toFixed(1)+'" class="spk'+(k%3?'':' lt')+'"/>';}
+  var path=blobPath(cx,cy,rx,ry,seed);
+  return '<ellipse cx="'+cx+'" cy="'+(cy+ry*.78)+'" rx="'+(rx*.86)+'" ry="'+(ry*.32)+'" class="cshadow" filter="url(#cBlur)"/>'+
+    '<path d="'+path+'" fill="url(#cg-'+kind+')" filter="url(#cTex)" class="sb"/>'+
+    '<g clip-path="url(#cc-'+kind+seed+')">'+sp+'<ellipse cx="'+(cx-rx*.22)+'" cy="'+(cy-ry*.42)+'" rx="'+(rx*.48)+'" ry="'+(ry*.3)+'" class="shine" filter="url(#cSoft)"/><path d="'+path+'" class="rim"/></g>'+
+    '<clipPath id="cc-'+kind+seed+'"><path d="'+path+'"/></clipPath>';}
+function cairnDefs(){var g='';for(var k in STONEPAL){var c=STONEPAL[k];g+='<radialGradient id="cg-'+k+'" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="'+c[0]+'"/><stop offset=".55" stop-color="'+c[1]+'"/><stop offset="1" stop-color="'+c[2]+'"/></radialGradient>';}
+  return '<defs>'+g+'<filter id="cTex" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="7" result="fine"/><feColorMatrix in="fine" type="saturate" values="0" result="fg"/><feComponentTransfer in="fg" result="fgr"><feFuncR type="linear" slope=".6" intercept=".6"/><feFuncG type="linear" slope=".6" intercept=".6"/><feFuncB type="linear" slope=".6" intercept=".6"/></feComponentTransfer>'+
+    '<feTurbulence type="fractalNoise" baseFrequency=".03 .08" numOctaves="4" seed="11" result="mot"/><feColorMatrix in="mot" type="saturate" values="0" result="mg"/><feComponentTransfer in="mg" result="mgr"><feFuncR type="linear" slope=".85" intercept=".45"/><feFuncG type="linear" slope=".85" intercept=".45"/><feFuncB type="linear" slope=".85" intercept=".45"/></feComponentTransfer>'+
+    '<feBlend in="SourceGraphic" in2="fgr" mode="multiply" result="b1"/><feBlend in="b1" in2="mgr" mode="multiply" result="b2"/><feComposite in="b2" in2="SourceAlpha" operator="in"/></filter>'+
+    '<filter id="cBlur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="3.2"/></filter><filter id="cSoft" x="-40%" y="-80%" width="180%" height="260%"><feGaussianBlur stdDeviation="4"/></filter>'+
+    '<radialGradient id="cglw"><stop offset="0" stop-color="#E8C77B" stop-opacity=".85"/><stop offset="1" stop-color="#E8C77B" stop-opacity="0"/></radialGradient></defs>';}
 function cairnSVG(P){var parts=cairnParts(P),n=parts.length,Y=cairnGeo(n),cx=112,sc=P.s,h='';
-  h+='<ellipse cx="'+cx+'" cy="190" rx="92" ry="6" class="ground"/>';
-  h+='<g class="stone base" style="--i:0"><ellipse cx="'+cx+'" cy="'+Y[0]+'" rx="'+CDIM[0][0]+'" ry="'+CDIM[0][1]+'" class="sb"/><ellipse cx="'+(cx-14)+'" cy="'+(Y[0]-7)+'" rx="'+(CDIM[0][0]*.5)+'" ry="5" class="sh"/></g>';
+  h+='<ellipse cx="'+cx+'" cy="203" rx="96" ry="7" class="ground" filter="url(#cBlur)"/>';
+  h+='<g class="stone base" style="--i:0">'+stoneSVG('base',cx,Y[0],CDIM[0][0],CDIM[0][1],1)+'</g>';
   parts.forEach(function(p,k){var i=k+1,v=P[p[0]];
-    h+='<g class="stone s-'+p[0]+'" data-act="dtab" data-t="'+p[1]+'" data-k="'+p[0]+'" data-i="'+i+'" style="--i:'+i+';transform-origin:'+cx+'px '+Y[i]+'px;transform:'+stoneTf(i,v)+'"><ellipse cx="'+cx+'" cy="'+Y[i]+'" rx="'+CDIM[i][0]+'" ry="'+CDIM[i][1]+'" class="sb"/><ellipse cx="'+(cx-12)+'" cy="'+(Y[i]-6)+'" rx="'+(CDIM[i][0]*.5)+'" ry="4.5" class="sh"/></g>';
+    h+='<g class="stone s-'+p[0]+'" data-act="dtab" data-t="'+p[1]+'" data-k="'+p[0]+'" data-i="'+i+'" style="--i:'+i+';transform-origin:'+cx+'px '+Y[i]+'px;transform:'+stoneTf(i,v)+'">'+stoneSVG(p[0],cx,Y[i],CDIM[i][0],CDIM[i][1],i+2)+'</g>';
     h+='<g class="clbl" data-act="dtab" data-t="'+p[1]+'"><circle cx="214" cy="'+Y[i]+'" r="4" class="cd cd-'+p[0]+'"/><text x="224" y="'+(Y[i]+4.5)+'"><tspan class="cn">'+esc(p[2])+'</tspan><tspan class="cv" dx="6" id="cv-'+p[0]+'">'+(v!=null?Math.round(v*100)+' %':'–')+'</tspan></text></g>';});
   var ty=Y[n]-CDIM[n][1]-16;
   h+='<g class="ctop" style="--i:'+(n+1)+'"><circle cx="'+cx+'" cy="'+ty+'" r="20" class="glow" fill="url(#cglw)"/><path d="M'+cx+' '+(ty-11)+' l3.3 7.7 7.7 3.3 -7.7 3.3 -3.3 7.7 -3.3 -7.7 -7.7 -3.3 7.7 -3.3z" class="cstar"/></g>';
-  return '<svg class="cairn'+(sc!=null&&sc>=.9?' calm':'')+'" viewBox="0 0 360 200" role="img" aria-label="'+esc(T().balTitle)+'"><defs><radialGradient id="cglw"><stop offset="0" stop-color="#E8C77B" stop-opacity=".85"/><stop offset="1" stop-color="#E8C77B" stop-opacity="0"/></radialGradient></defs>'+h+'</svg>';}
+  return '<svg class="cairn'+(sc!=null&&sc>=.9?' calm':'')+'" viewBox="0 0 380 214" role="img" aria-label="'+esc(T().balTitle)+'">'+cairnDefs()+h+'</svg>';}
 var BALSER=[];
 function balSeries(){var all=Object.keys(S.filled||{}).filter(function(d){return S.filled[d];}).sort(),out=[];
   if(all.length>=7){for(var d=addDays(all[0],6);d<today();d=addDays(d,7))out.push(d);}

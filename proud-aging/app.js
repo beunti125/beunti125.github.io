@@ -987,26 +987,40 @@ function stonesSVG(x,n,kind){var P=[[-16,93],[-5,93],[6,93],[17,93],[0,85]],h=''
 function scaleSVG(sc){var a=balAngle(sc),t=T(),nl=sc==null?3:Math.round((1-sc)*5),nr=sc==null?1:Math.round(sc*5);
   var pan=function(x,lbl,cls,n){return '<g class="sc-pan '+cls+'" style="transform-origin:'+x+'px 52px;transform:rotate('+(-a)+'deg)"><line x1="'+x+'" y1="52" x2="'+(x-27)+'" y2="96"/><line x1="'+x+'" y1="52" x2="'+(x+27)+'" y2="96"/><g class="cargo">'+stonesSVG(x,n,cls)+'</g><path d="M'+(x-36)+' 96 h72 a36 15 0 0 1 -72 0z" class="bowl"/><text x="'+x+'" y="130" text-anchor="middle">'+esc(lbl)+'</text></g>';};
   return '<svg class="scale'+(sc!=null&&sc>=.9?' calm':'')+'" viewBox="0 0 300 156" role="img" aria-label="'+esc(t.balTitle)+'"><defs><linearGradient id="bmG" gradientUnits="userSpaceOnUse" x1="54" y1="0" x2="246" y2="0"><stop offset="0" stop-color="#2E4A70"/><stop offset=".5" stop-color="#1C2E4A"/><stop offset="1" stop-color="#2E4A70"/></linearGradient><radialGradient id="glw"><stop offset="0" stop-color="#E8C77B" stop-opacity=".75"/><stop offset="1" stop-color="#E8C77B" stop-opacity="0"/></radialGradient></defs><ellipse cx="150" cy="146" rx="70" ry="5" class="ground"/><path d="M150 54 L150 140 M116 142 h68" class="post"/><g class="sway"><g class="sc-beam" style="transform-origin:150px 52px;transform:rotate('+a+'deg)"><line x1="54" y1="52" x2="246" y2="52" class="beam"/>'+pan(54,t.balL,'l',nl)+pan(246,t.balR,'r',nr)+'</g></g><circle cx="150" cy="52" r="22" class="glow" fill="url(#glw)"/><circle cx="150" cy="52" r="8" class="pivot"/><path d="M150 38 l3.4 8.6 8.6 3.4 -8.6 3.4 -3.4 8.6 -3.4 -8.6 -8.6 -3.4 8.6 -3.4z" class="pstar"/></svg>';}
+
+/* ---------- Steinturm: Weg ins Gleichgewicht ---------- */
+function cairnParts(P){var t=T(),L=[['sleep','sleep',t.tabs.sleep],['mood','mood',t.tabs.mood],['hot','mood',t.hotShort]].filter(function(p){return P[p[0]]!=null;});
+  if(!L.length){var M=mods();L=[['sleep','sleep',t.tabs.sleep],['mood','mood',t.tabs.mood]].filter(function(p){return M[p[0]];});if(!L.length)L=[['mood','mood',t.tabs.mood]];}
+  return L;}
+var CDIM=[[74,20],[60,18],[50,16],[42,14]];
+function cairnGeo(n){var y=[],cy=170;for(var i=0;i<=n;i++){if(i)cy-=CDIM[i-1][1]+CDIM[i][1]+1;y.push(cy);}return y;}
+function stoneTf(i,v){var d=v==null?.65:1-v,dir=i%2?1:-1;return 'translate('+(d*30*dir).toFixed(1)+'px,'+(d*-3).toFixed(1)+'px) rotate('+(d*15*-dir).toFixed(1)+'deg)';}
+function cairnSVG(P){var parts=cairnParts(P),n=parts.length,Y=cairnGeo(n),cx=112,sc=P.s,h='';
+  h+='<ellipse cx="'+cx+'" cy="190" rx="92" ry="6" class="ground"/>';
+  h+='<g class="stone base" style="--i:0"><ellipse cx="'+cx+'" cy="'+Y[0]+'" rx="'+CDIM[0][0]+'" ry="'+CDIM[0][1]+'" class="sb"/><ellipse cx="'+(cx-14)+'" cy="'+(Y[0]-7)+'" rx="'+(CDIM[0][0]*.5)+'" ry="5" class="sh"/></g>';
+  parts.forEach(function(p,k){var i=k+1,v=P[p[0]];
+    h+='<g class="stone s-'+p[0]+'" data-act="dtab" data-t="'+p[1]+'" data-k="'+p[0]+'" data-i="'+i+'" style="--i:'+i+';transform-origin:'+cx+'px '+Y[i]+'px;transform:'+stoneTf(i,v)+'"><ellipse cx="'+cx+'" cy="'+Y[i]+'" rx="'+CDIM[i][0]+'" ry="'+CDIM[i][1]+'" class="sb"/><ellipse cx="'+(cx-12)+'" cy="'+(Y[i]-6)+'" rx="'+(CDIM[i][0]*.5)+'" ry="4.5" class="sh"/></g>';
+    h+='<g class="clbl" data-act="dtab" data-t="'+p[1]+'"><circle cx="214" cy="'+Y[i]+'" r="4" class="cd cd-'+p[0]+'"/><text x="224" y="'+(Y[i]+4.5)+'"><tspan class="cn">'+esc(p[2])+'</tspan><tspan class="cv" dx="6" id="cv-'+p[0]+'">'+(v!=null?Math.round(v*100)+' %':'–')+'</tspan></text></g>';});
+  var ty=Y[n]-CDIM[n][1]-16;
+  h+='<g class="ctop" style="--i:'+(n+1)+'"><circle cx="'+cx+'" cy="'+ty+'" r="20" class="glow" fill="url(#cglw)"/><path d="M'+cx+' '+(ty-11)+' l3.3 7.7 7.7 3.3 -7.7 3.3 -3.3 7.7 -3.3 -7.7 -7.7 -3.3 7.7 -3.3z" class="cstar"/></g>';
+  return '<svg class="cairn'+(sc!=null&&sc>=.9?' calm':'')+'" viewBox="0 0 360 200" role="img" aria-label="'+esc(T().balTitle)+'"><defs><radialGradient id="cglw"><stop offset="0" stop-color="#E8C77B" stop-opacity=".85"/><stop offset="1" stop-color="#E8C77B" stop-opacity="0"/></radialGradient></defs>'+h+'</svg>';}
 var BALSER=[];
 function balSeries(){var all=Object.keys(S.filled||{}).filter(function(d){return S.filled[d];}).sort(),out=[];
   if(all.length>=7){for(var d=addDays(all[0],6);d<today();d=addDays(d,7))out.push(d);}
   out.push(today());out=out.slice(-26);return out.map(function(d){return {d:d,p:balanceParts(d)};});}
 function balLvl(sc){var t=T();return sc==null?t.balNo:sc>=.9?t.bal4:sc>=.7?t.bal3:sc>=.4?t.bal2:t.bal1;}
 function balanceCard(){if(!S.badges)checkBadges(true);var t=T();BALSER=balSeries();var n=BALSER.length,cur=BALSER[n-1].p,sc=cur.s,st=n>1?BALSER[0].p.s:null,L=badgeList(),got=L.filter(function(b){return S.badges&&S.badges[b.id];});
-  var h='<div class="card balc"><div class="bal-h"><h2>'+esc(t.balTitle2)+'</h2><strong id="balPct">'+(sc!=null?Math.round(sc*100)+'&#8202;%':'–')+'</strong></div><div id="balSvg">'+scaleSVG(sc)+'</div>';
+  var h='<div class="card balc"><div class="bal-h"><h2>'+esc(t.balTitle2)+'</h2><strong id="balPct">'+(sc!=null?Math.round(sc*100)+'&#8202;%':'–')+'</strong></div><div id="balSvg">'+cairnSVG(cur)+'</div>';
   h+='<p class="bal-l"><span id="balLvl">'+esc(balLvl(sc))+'</span>'+(sc!=null&&st!=null&&sc-st>=.05?' <span class="up" id="balUp">+'+Math.round((sc-st)*100)+' '+esc(t.balSince)+'</span>':'')+'</p>';
   if(n>2)h+='<div class="bal-time"><input type="range" id="balRange" min="0" max="'+(n-1)+'" step="1" value="'+(n-1)+'" aria-label="'+esc(t.balTime)+'"><div class="bt-l"><span>'+esc(t.balStart)+'</span><b id="balWhen">'+esc(t.today)+'</b><span>'+esc(t.today)+'</span></div></div>';
-  var parts=[['sleep','sleep',t.tabs.sleep],['mood','mood',t.tabs.mood],['hot','mood',t.hotShort]].filter(function(p){return cur[p[0]]!=null;});
-  if(parts.length)h+='<div class="bparts">'+parts.map(function(p){var v=Math.round(cur[p[0]]*100);return '<button class="bpart" data-act="dtab" data-t="'+p[1]+'"><span>'+esc(p[2])+'</span><i><b id="bp-'+p[0]+'" style="width:'+v+'%"></b></i><em id="bpv-'+p[0]+'">'+v+'&#8202;%</em></button>';}).join('')+'</div>';
   h+='<button class="bal-et" data-act="badges"><span class="be-s">'+got.slice(0,4).map(function(b){return '<i>'+badgeIc(b.id)+'</i>';}).join('')+'</span><span>'+esc(t.etappen)+' <b>'+got.length+' / '+L.length+'</b></span><em>→</em></button></div>';
   return h;}
-function balShow(i){var it=BALSER[i];if(!it)return;var p=it.p,sc=p.s,t=T(),a=balAngle(sc),svg=root.querySelector('#balSvg .scale');if(!svg)return;
+function balShow(i){var it=BALSER[i];if(!it)return;var p=it.p,sc=p.s,t=T(),svg=root.querySelector('#balSvg .cairn');if(!svg)return;
   svg.classList.add('live');svg.classList.toggle('calm',sc!=null&&sc>=.9);
-  svg.querySelector('.sc-beam').style.transform='rotate('+a+'deg)';
-  [].forEach.call(svg.querySelectorAll('.sc-pan'),function(g){g.style.transform='rotate('+(-a)+'deg)';var l=g.classList.contains('l'),x=l?54:246;g.querySelector('.cargo').innerHTML=stonesSVG(x,sc==null?(l?3:1):Math.round((l?1-sc:sc)*5),l?'l':'r');});
+  [].forEach.call(svg.querySelectorAll('.stone[data-k]'),function(g){var k=g.dataset.k,v=p[k];g.style.transform=stoneTf(+g.dataset.i,v);var tv=root.querySelector('#cv-'+k);if(tv)tv.textContent=v!=null?Math.round(v*100)+' %':'–';});
   root.querySelector('#balPct').innerHTML=sc!=null?Math.round(sc*100)+'&#8202;%':'–';root.querySelector('#balLvl').textContent=balLvl(sc);
-  var up=root.querySelector('#balUp');if(up)up.style.visibility=i===BALSER.length-1?'visible':'hidden';root.querySelector('#balWhen').textContent=i===BALSER.length-1?t.today:t.balWeek.replace('{d}',fd(it.d,{day:'numeric',month:'short'}));
-  ['sleep','mood','hot'].forEach(function(k){var b=root.querySelector('#bp-'+k),e=root.querySelector('#bpv-'+k);if(b){var v=p[k]!=null?Math.round(p[k]*100):0;b.style.width=v+'%';e.innerHTML=p[k]!=null?v+'&#8202;%':'–';}});}
+  var up=root.querySelector('#balUp');if(up)up.style.visibility=i===BALSER.length-1?'visible':'hidden';
+  root.querySelector('#balWhen').textContent=i===BALSER.length-1?t.today:t.balWeek.replace('{d}',fd(it.d,{day:'numeric',month:'short'}));}
 function sheetBadges(){var t=T(),L=badgeList();
   openSheet('<h2>'+esc(t.etappen)+'</h2><p class="sub">'+esc(t.etHint)+'</p><div class="badges">'+L.map(function(b){var g=S.badges&&S.badges[b.id],B=t.bdg[b.id];return '<button type="button" class="bdg'+(g?' got':'')+(b.top?' top':'')+'" data-sact="b:'+b.id+'"><span class="bi">'+badgeIc(b.id)+'</span><small>'+esc(B[0])+'</small></button>';}).join('')+'</div><p class="bdg-info" id="bdgInfo">'+esc(t.etTap)+'</p><div class="actions"><button type="button" class="btn full" data-close>'+esc(t.close)+'</button></div>',function(){},
   function(a,f){if(a.indexOf('b:')!==0)return;var id=a.slice(2),bb=BADGES.filter(function(x){return x.id===id;})[0],B=t.bdg[id],gd=S.badges&&S.badges[id];
@@ -1029,7 +1043,7 @@ function badgeList(){var M=mods();return BADGES.filter(function(b){return (!b.m|
 function checkBadges(silent){if(!S.mods)return [];var first=!S.badges;S.badges=S.badges||{};var nw=[];
   badgeList().forEach(function(b){if(!S.badges[b.id]){var ok=false;try{ok=b.ok();}catch(e){}if(ok){S.badges[b.id]=today();nw.push(b.id);}}});
   if(nw.length)save();return (silent||first)?[]:nw;}
-function badgeIc(id){return id==='balance'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4v16M7 20h10M4 8h16M6 8l-3 6a3 1.6 0 0 0 6 0zM18 8l-3 6a3 1.6 0 0 0 6 0z"/></svg>':FLAME;}
+function badgeIc(id){return id==='balance'?'<svg viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="19" rx="8" ry="2.6"/><ellipse cx="12" cy="14.2" rx="6.2" ry="2.2"/><ellipse cx="12" cy="10" rx="4.6" ry="1.9"/><path d="M12 2.2l1.1 2.5 2.5 1.1-2.5 1.1-1.1 2.5-1.1-2.5-2.5-1.1 2.5-1.1z"/></svg>':FLAME;}
 function vData(){
   var t=T(),M=mods();
   if(!dataTab||dataTab==='over'||!(M[dataTab]))return vHub();

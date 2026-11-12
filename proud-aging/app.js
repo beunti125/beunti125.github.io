@@ -1038,20 +1038,29 @@ function cairnSVG(P){var parts=cairnParts(P),kinds=['base'].concat(parts.map(fun
     '<filter id="cBlur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="4"/></filter><filter id="cAO" x="-30%" y="-150%" width="160%" height="400%"><feGaussianBlur stdDeviation="2.4"/></filter>'+
     '<radialGradient id="cglw"><stop offset="0" stop-color="#E8C77B" stop-opacity=".85"/><stop offset="1" stop-color="#E8C77B" stop-opacity="0"/></radialGradient></defs>'+h+'</svg>';}
 var BALSER=[];
+/* ---------- 3D-Steinturm (wird nur auf 'Meine Daten' geladen) ---------- */
+var C3D=null,C3Dp=null;
+function cairnData(p){return {score:p.s,reduced:REDUCED,parts:cairnParts(p).map(function(x){var v=p[x[0]];return {k:x[0],v:v,label:esc(x[2]),txt:v!=null?Math.round(v*100)+' %':'–'};}),
+  onTap:function(k){DC={sleep:0,mood:0,weight:0};dataTab=k==='sleep'?'sleep':'mood';render();window.scrollTo(0,0);}};}
+function mount3d(){var el=root.querySelector('#balSvg');if(!el||!BALSER.length)return;var d=cairnData(BALSER[BALSER.length-1].p);
+  if(!C3Dp)C3Dp=import('./cairn3d.js').then(function(m){if(!m.supported())throw new Error('no webgl');C3D=m;return m;});
+  el.classList.add('wait');C3Dp.then(function(m){if(el.isConnected)m.mount(el,d);el.classList.remove('wait');}).catch(function(){el.classList.remove('wait');});}
 function balSeries(){var all=Object.keys(S.filled||{}).filter(function(d){return S.filled[d];}).sort(),out=[];
   if(all.length>=7){for(var d=addDays(all[0],6);d<today();d=addDays(d,7))out.push(d);}
   out.push(today());out=out.slice(-26);return out.map(function(d){return {d:d,p:balanceParts(d)};});}
 function balLvl(sc){var t=T();return sc==null?t.balNo:sc>=.9?t.bal4:sc>=.7?t.bal3:sc>=.4?t.bal2:t.bal1;}
 function balanceCard(){if(!S.badges)checkBadges(true);var t=T();BALSER=balSeries();var n=BALSER.length,cur=BALSER[n-1].p,sc=cur.s,st=n>1?BALSER[0].p.s:null,L=badgeList(),got=L.filter(function(b){return S.badges&&S.badges[b.id];});
-  var h='<div class="card balc"><div class="bal-h"><h2>'+esc(t.balTitle2)+'</h2><strong id="balPct">'+(sc!=null?Math.round(sc*100)+'&#8202;%':'–')+'</strong></div><div id="balSvg">'+cairnSVG(cur)+'</div>';
+  var h='<div class="card balc plain"><div class="bal-h"><h2>'+esc(t.balTitle2)+'</h2><strong id="balPct">'+(sc!=null?Math.round(sc*100)+'&#8202;%':'–')+'</strong></div><div class="balbar"><i id="balFill" style="width:'+(sc!=null?Math.round(sc*100):0)+'%"></i></div>';
   h+='<p class="bal-l"><span id="balLvl">'+esc(balLvl(sc))+'</span>'+(sc!=null&&st!=null&&sc-st>=.05?' <span class="up" id="balUp">+'+Math.round((sc-st)*100)+' '+esc(t.balSince)+'</span>':'')+'</p>';
   if(n>2)h+='<div class="bal-time"><input type="range" id="balRange" min="0" max="'+(n-1)+'" step="1" value="'+(n-1)+'" aria-label="'+esc(t.balTime)+'"><div class="bt-l"><span>'+esc(t.balStart)+'</span><b id="balWhen">'+esc(t.today)+'</b><span>'+esc(t.today)+'</span></div></div>';
+  var parts=cairnParts(cur).filter(function(p){return cur[p[0]]!=null;});
+  if(parts.length)h+='<div class="bparts">'+parts.map(function(p){var v=Math.round(cur[p[0]]*100);return '<button class="bpart" data-act="dtab" data-t="'+p[1]+'"><span>'+esc(p[2])+'</span><i><b id="bp-'+p[0]+'" style="width:'+v+'%"></b></i><em id="bpv-'+p[0]+'">'+v+'&#8202;%</em></button>';}).join('')+'</div>';
   h+='<button class="bal-et" data-act="badges"><span class="be-s">'+got.slice(0,4).map(function(b){return '<i>'+badgeIc(b.id)+'</i>';}).join('')+'</span><span>'+esc(t.etappen)+' <b>'+got.length+' / '+L.length+'</b></span><em>→</em></button></div>';
   return h;}
-function balShow(i){var it=BALSER[i];if(!it)return;var p=it.p,sc=p.s,t=T(),svg=root.querySelector('#balSvg .cairn');if(!svg)return;
+function balShow(i){var it=BALSER[i];if(!it)return;var p=it.p,sc=p.s,t=T(),svg=root.querySelector('#balSvg .cairn');if(C3D&&root.querySelector('#balSvg.has3d'))C3D.update(cairnData(p));if(svg){
   svg.classList.add('live');svg.classList.toggle('calm',sc!=null&&sc>=.9);var Dd=dapple(sc);svg.classList.toggle('warm',Dd.warm);svg.style.setProperty('--wob',Dd.wob);[].forEach.call(svg.querySelectorAll('.fsh'),function(f){f.setAttribute('tableValues',Dd.shade);});[].forEach.call(svg.querySelectorAll('.fsp'),function(f){f.setAttribute('tableValues',Dd.spot);});
   [].forEach.call(svg.querySelectorAll('.st[data-k]'),function(g){var k=g.dataset.k,v=p[k];g.style.transform=stoneTf(+g.dataset.i,v,+g.dataset.rx,+g.dataset.hl);var tv=root.querySelector('#cv-'+k);if(tv)tv.textContent=v!=null?Math.round(v*100)+' %':'–';});
-  root.querySelector('#balPct').innerHTML=sc!=null?Math.round(sc*100)+'&#8202;%':'–';root.querySelector('#balLvl').textContent=balLvl(sc);
+  }var bf=root.querySelector('#balFill');if(bf)bf.style.width=(sc!=null?Math.round(sc*100):0)+'%';['sleep','mood','hot'].forEach(function(k){var b=root.querySelector('#bp-'+k),e=root.querySelector('#bpv-'+k);if(b){var v=p[k]!=null?Math.round(p[k]*100):0;b.style.width=v+'%';e.innerHTML=p[k]!=null?v+'&#8202;%':'–';}});root.querySelector('#balPct').innerHTML=sc!=null?Math.round(sc*100)+'&#8202;%':'–';root.querySelector('#balLvl').textContent=balLvl(sc);
   var up=root.querySelector('#balUp');if(up)up.style.visibility=i===BALSER.length-1?'visible':'hidden';
   root.querySelector('#balWhen').textContent=i===BALSER.length-1?t.today:t.balWeek.replace('{d}',fd(it.d,{day:'numeric',month:'short'}));}
 function sheetBadges(){var t=T(),L=badgeList();

@@ -210,6 +210,30 @@ nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stro
 .dtip{display:flex;flex-direction:column;gap:1px;border-left:3px solid var(--accent);padding:2px 0 2px 10px}
 .dtip b{font-size:13px}.dtip span{font-size:13px;color:var(--muted)}
 .dline{font-size:13px;font-weight:600;margin:6px 0 0}
+.shopbtn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;border:0;border-radius:16px;padding:14px 16px;margin:0 0 12px;background:var(--accent);color:var(--accent-ink);font:inherit;cursor:pointer;box-shadow:var(--shadow)}
+.shopbtn span:first-child{display:flex;flex-direction:column;gap:2px}.shopbtn b{font-size:16px}.shopbtn small{font-size:12.5px;opacity:.85}
+.shopbtn .ck{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex:none}
+.shopok{margin-bottom:12px;border-color:rgba(61,220,132,.5)}
+.shopok .label{display:flex;align-items:center;gap:6px;color:#3ddc84}
+.sok{margin:4px 0 2px;font-size:15px}
+.miss{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--tile);border-radius:12px;padding:8px 10px}
+.mrow span{display:flex;flex-direction:column;gap:1px}.mrow small{font-size:12px;color:var(--muted)}
+.money{margin-bottom:12px}.money .rkstats{grid-template-columns:repeat(3,1fr);margin:6px 0}
+.paidrow{display:flex;align-items:center;gap:8px;margin:6px 0}
+.paidrow input{flex:1;min-width:0;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:11px 12px;font:inherit;font-size:20px;font-weight:700}
+.paidrow span{font-size:20px;font-weight:700}
+.misslist{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.mchip{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 11px;font:inherit;font-size:13px;cursor:pointer}
+.mchip.u{border-style:dashed}
+.mchip[aria-pressed="true"]{background:rgba(255,107,107,.18);border-color:#ff6b6b;color:#ff8a8a;text-decoration:line-through}
+.hint.ok{border-color:rgba(61,220,132,.5)}.hint.ok strong{color:#3ddc84}
+.hint.warn{border-color:rgba(255,107,107,.55)}.hint.warn strong{color:#ff8a8a}
+.hintbtns{display:flex;gap:6px;align-items:center;flex:none}
+.hintbtns button{border:0;font:inherit;cursor:pointer;background:none;color:inherit}
+.hintbtns .hintgo{padding:6px 4px}
+.shopok .dhd{flex-wrap:nowrap;display:flex;justify-content:space-between;align-items:center}.shopok .dhd .label{width:auto;margin:0;display:flex}.shopok .dhd .link{width:auto;flex:none;margin:0}
+.hintbtns .hintdone,.hintdone{background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:6px 10px;font-weight:800;font-size:13px}
 /* Kein Doppeltipp-Zoom (Pinch-Zoom bleibt möglich), kein Auto-Zoom beim Tippen in Felder */
 html,body,*{touch-action:manipulation}
 input,select,textarea{font-size:max(16px,1em)}
@@ -1583,6 +1607,50 @@ function dishDay(keys){
   var pts=0, n=0; Object.keys(comb).forEach(function(t){ pts+=DISH_W[t]*comb[t]; n+=comb[t]; });
     return {pts:pts,naive:naive,n:n,min:Math.max(2,Math.round(pts*1.5)),nmin:Math.round(naive*1.5),comb:comb,keys:keys};
 }
+/* ---------- Einkauf erledigt: Status, Kassenbon, fehlende Sachen ----------
+   "shopdone:<abs>" = {at:ISO, paid:€|null, missing:[Index in der Liste]} */
+function shopItems(r,abs){ return (r>0&&wpShop(r,abs))||BASE.concat(WEEK_ITEMS[r]); }
+function weekAbsOf(d){ return planRot(d)===0?-1:absWeek(d); }
+function shopDayOf(d){ var ws=weekStartOf(d); for(var i=0;i<7;i++){ var x=addDays(ws,i); if(planNoBock(x).shop) return x; } return null; }
+function shopDone(abs){ return load("shopdone:"+abs,null); }
+var MEAT_RX=/hähnchen|hack|rind|schnitzel|drumstick|steak|speck|chicken|pute|lachs|gyros|bacon|würst/i;
+function missingImpact(r,abs,miss){
+  var items=shopItems(r,abs), out=[];
+  if(!miss||!miss.length) return out;
+  var ws=null; for(var i=0;i<120&&!ws;i++){ var x=addDays(weekStartOf(today()),(i-60)*7); if(weekAbsOf(x)===abs) ws=x; }
+  if(!ws) ws=weekStartOf(today());
+  miss.forEach(function(ix){ var it=items[ix]; if(!it) return; var w=it[0].toLowerCase().replace(/[^a-zäöüß ]/g," ").split(" ").filter(function(z){return z.length>3;})[0]||it[0].toLowerCase(), hits=[];
+    for(var j=0;j<7;j++){ var d=addDays(ws,j); if(d<today()) continue; var pp=planFor(d); ["l","d"].forEach(function(sl){ var m=slotMeal(pp,sl); if(m&&m[1]&&R[m[1]]&&R[m[1]].ing.join(" ").toLowerCase().indexOf(w)>=0&&!hits.some(function(h){return h[1]===m[1];})) hits.push([DOW[d.getDay()],m[1],m[0]]); }); }
+    out.push({it:it,ix:ix,hits:hits}); });
+  return out;
+}
+function openShopDone(abs,r){
+  var items=shopItems(r,abs), sd=shopDone(abs)||{}, chk=load("chk:"+abs,{}), est=items.reduce(function(a,b){return a+b[2];},0);
+  var miss={}; (sd.missing||[]).forEach(function(i){ miss[i]=1; });
+  var unchecked=items.map(function(it,i){return i;}).filter(function(i){ return !chk[i]; });
+  var meat=items.filter(function(it){ return MEAT_RX.test(it[0]); }).map(function(it){ return it[0]; });
+  var b=document.getElementById("sheet-body");
+  b.innerHTML='<button class="back" id="close">Zurück</button><h1 id="r-title">Einkauf erledigt?</h1>'+
+    '<div class="card"><label class="label" for="paidin">Was hast du bezahlt? (Kassenbon)</label><div class="paidrow"><input id="paidin" type="text" inputmode="decimal" placeholder="z. B. '+eur(est).replace(" €","")+'" value="'+(sd.paid!=null?String(sd.paid).replace(".",","):"")+'" aria-describedby="paidnote"><span>€</span></div><span class="note" id="paidnote">Geschätzt waren '+eur(est)+'. Optional – damit rechnet die App aus, was dich eine Mahlzeit wirklich kostet.</span></div>'+
+    '<div class="card"><span class="label">Was hast du nicht bekommen?</span><span class="note">Antippen, was fehlt. Alles andere zählt als gekauft.</span><div class="misslist">'+
+    items.map(function(it,i){ return {it:it,i:i,u:unchecked.indexOf(i)>=0}; }).sort(function(a,c){ return (c.u-a.u)||(a.i-c.i); }).map(function(x){ return '<button class="mchip'+(x.u?' u':'')+'" data-miss="'+x.i+'" aria-pressed="'+(!!miss[x.i])+'">'+esc(x.it[0].replace(/ \(.*\)/,""))+'</button>'; }).join("")+'</div>'+(unchecked.length?'<span class="note">Oben stehen die '+unchecked.length+' Sachen, die du in der Liste nicht abgehakt hast.</span>':'')+'</div>'+
+    (meat.length?'<div class="card"><span class="label">Gleich beim Einräumen</span><div class="dtips"><div class="dtip"><b>Fleisch einfrieren</b><span>'+esc(meat.slice(0,4).join(", "))+(meat.length>4?' …':'')+': alles, was du nicht in den nächsten 2 Tagen brauchst, sofort einfrieren – flach im Beutel, dann taut es schnell auf. Roh hält es im Kühlschrank nur 1–2 Tage.</span></div><div class="dtip"><b>Am Vorabend</b><span>Fleisch für den Kochtag am Abend vorher in den Kühlschrank legen – die App erinnert dich.</span></div></div></div>':'')+
+    '<button class="btn" data-shopsave="'+abs+'|'+r+'" style="width:100%;margin-top:4px">Speichern – Einkauf erledigt</button>'+
+    (shopDone(abs)?'<button class="btn ghost small" data-shopundo="'+abs+'" style="margin-top:10px">Doch nicht eingekauft (zurücksetzen)</button>':'');
+  var sh=document.getElementById("sheet"); sh.classList.add("open"); sh.scrollTop=0;
+}
+function parseEur(v){ v=String(v||"").replace(/[^\d,.\-]/g,"").replace(",","."); var n=parseFloat(v); return isFinite(n)&&n>0?Math.round(n*100)/100:null; }
+function saveShopDone(abs,r,paid,missing){
+  var items=shopItems(r,abs), c={}; items.forEach(function(it,i){ if(missing.indexOf(i)<0) c[i]=true; });
+  save("chk:"+abs,c); save("shopdone:"+abs,{at:fmtISO(today()),paid:paid,missing:missing,est:Math.round(items.reduce(function(a,b,i){return a+(missing.indexOf(i)<0?b[2]:0);},0)*100)/100});
+}
+function moneyStats(){
+  var list=[]; for(var a=-1;a<200;a++){ var sd=shopDone(a); if(sd&&sd.paid!=null) list.push(sd); }
+  var t=today(), last=list.filter(function(x){ return daysBetween(parseD(x.at),t)<=30; });
+  if(!last.length) return null;
+  var paid=last.reduce(function(a,b){return a+b.paid;},0), est=last.reduce(function(a,b){return a+(b.est||b.paid);},0), meals=last.length*21;
+  return {n:last.length,paid:paid,est:est,perMeal:paid/meals};
+}
 /* ---------- Lecker-Score: Bewertungen pro Gericht ----------
    Speicher: "rate:<Datum>|<l/d>" = {k:Rezept, s:1–5}. Score 0–100 mit Ausgleich
    (eine einzelne 5 zählt weniger als fünf 5er), damit das Ranking fair bleibt. */
@@ -1693,6 +1761,17 @@ function renderHeute(){
   if(p.shop) note=ISY?['<strong>'+(p.shopFoot?'Einkauf zu Fuß':'Großeinkauf mit dem Auto')+'</strong> · '+(p.shopFoot?'Aldi oder Lidl um die Ecke':'nach der Uni'),'Liste öffnen']:['<strong>Wocheneinkauf</strong> · Liste ist fertig','Liste öffnen'];
   else if(!ISY && pre) note=['<strong>Dein Plan startet '+DOW_LONG[s.getDay()]+'</strong> · Woche 1 einkaufen','Einkaufsliste'];
   else if(pre && t<preStart) note=['<strong>Morgen geht\'s los</strong> · Startwoche Mi–So','Einkaufsliste'];
+  var wAbs=weekAbsOf(d), wR=planRot(d), sdD=shopDayOf(d), sdDone=shopDone(wAbs);
+  if(sdD && sdDone){
+    var impH=missingImpact(wR,wAbs,sdDone.missing);
+    if(p.shop) note=null;
+    if(p.shop) html += '<button class="hint ok" data-go="einkauf"><span><strong>✓ Eingekauft</strong>'+(sdDone.paid!=null?' · '+eur(sdDone.paid):'')+'</span><span class="hintgo">Liste ›</span></button>';
+    if(impH.length) html += '<button class="hint warn" data-go="einkauf"><span><strong>Fehlt noch:</strong> '+impH.map(function(m){return esc(m.it[0].replace(/ \(.*\)/,""))+(m.hits.length?' (für '+m.hits[0][0]+')':'');}).join(", ")+'</span><span class="hintgo">Besorgt? ›</span></button>';
+  } else if(sdD && !sdDone && daysBetween(sdD,d)>=0 && wR>=0){
+    if(p.shop) note=null;
+    var late=daysBetween(sdD,d)>0;
+    html += '<div class="hint'+(late?' warn':'')+'"><span>'+(late?'<strong>Einkauf von '+DOW_LONG[sdD.getDay()]+' noch offen</strong> · ohne ihn fehlen die Zutaten fürs Kochen':(note?note[0]:'<strong>Heute einkaufen</strong>'))+'</span><span class="hintbtns"><button class="hintgo" data-go="einkauf">Liste ›</button><button class="hintdone" data-shopopen="'+wAbs+'|'+wR+'">Erledigt ✓</button></span></div>';
+  }
   if(note) html += '<button class="hint" data-go="einkauf"><span>'+note[0]+'</span><span class="hintgo">'+note[1]+' ›</span></button>';
   // Mahlzeiten in einer Karte
   var tot={eur:0,kcal:0,p:0}; [p.breakfast[1],p.lunch[1],"_snack",p.dinner[1]].forEach(function(k){ var n=NUT[k]; if(n){ tot.eur+=n.eur; tot.kcal+=n.kcal; tot.p+=n.p; } });
@@ -1711,6 +1790,8 @@ function renderHeute(){
   html += '</section>';
   // To-do als abhakbare Liste
   var tk="todo:"+fmtISO(d), done=load(tk,{});
+  if(sdDone){ var tm=addDays(d,1), ptm=planFor(tm), mk=cookKeysFor(ptm).filter(function(k){ return MEAT_RX.test(R[k].ing.join(" ")); });
+    if(mk.length && weekAbsOf(tm)===wAbs && !ptm.shop) p.tasks=["Heute Abend: Fleisch für morgen ("+mk.map(function(k){return R[k].name;}).join(" + ")+") aus dem Gefrierfach in den Kühlschrank legen."].concat(p.tasks||[]); }
   var dd0=dishDay(cookKeysFor(p));
   if(dd0) html += '<section class="card dishday"><div class="dhd"><span class="label">'+DISH_ICO+' Abwasch '+(diff===0?'heute':'an dem Tag')+'</span><span class="dpill '+(dd0.pts<=4?'d-low':(dd0.pts<=8?'d-mid':'d-high'))+'">'+dd0.n+' Teile · ca. '+dd0.min+' Min.</span></div>'+
     (dd0.keys.length>1?'<p class="note">Beides nacheinander mit denselben Sachen kochen – nur am Ende einmal spülen'+(dd0.naive>dd0.pts?' (ca. '+dd0.min+' statt '+dd0.nmin+' Min.)':'')+'. Reihenfolge: erst das Gericht ohne rohes Fleisch auf dem Brett, Pfanne zwischendurch nur mit Küchenpapier auswischen.</p>':'<p class="note">'+esc(dishTools(dd0.keys[0]).tips[0][0])+': '+esc(dishTools(dd0.keys[0]).tips[0][1])+'</p>')+
@@ -1751,6 +1832,16 @@ function renderEinkauf(){
   for(var w=1;w<=NW;w++) html+='<button data-wk="'+w+'" aria-pressed="'+(w===r)+'">Woche '+w+'</button>';
   html+='</div>';
   if(r>0) html+='<button class="bockbtn" data-wpgo="'+abs+'"><span>'+(wpGet(abs)?'Deine Woche ist selbst geplant – ändern':'Woche planen: Gerichte selbst aussuchen')+'</span><span aria-hidden="true">›</span></button>';
+  var sdn=shopDone(abs);
+  if(sdn){ var imp=missingImpact(r,abs,sdn.missing), diffP=sdn.paid!=null?sdn.paid-(sdn.est||total):null;
+    html+='<section class="card shopok"><div class="dhd"><span class="label">'+MINI.cart+' Eingekauft</span><button class="link" data-shopopen="'+abs+'|'+r+'">Ändern</button></div><p class="sok">'+DOW_LONG[parseD(sdn.at).getDay()]+', '+fmtShort(parseD(sdn.at))+(sdn.paid!=null?' · <b>'+eur(sdn.paid)+'</b> bezahlt':'')+'</p>'+
+      (diffP!=null?'<p class="note">'+(Math.abs(diffP)<1?'Genau wie geschätzt.':diffP<0?eur(-diffP)+' unter der Schätzung – stark.':eur(diffP)+' über der Schätzung. Meist sind es Extras an der Kasse – nächstes Mal nur nach Liste.')+'</p>':'')+
+      (imp.length?'<div class="miss"><span class="label">Fehlt noch</span>'+imp.map(function(m){ return '<div class="mrow"><span><b>'+esc(m.it[0].replace(/ \(.*\)/,""))+'</b>'+(m.hits.length?'<small>für '+m.hits.map(function(h){return h[0]+' '+h[2];}).join(", ")+'</small>':'')+'</span><button class="btn ghost small" data-missgot="'+abs+'|'+m.ix+'">Besorgt</button></div>'; }).join("")+'</div>':'')+'</section>';
+  } else {
+    html+='<button class="shopbtn" data-shopopen="'+abs+'|'+r+'"><span><b>Einkauf erledigt?</b><small>Abschließen, Kassenbon eintragen, Fehlendes angeben</small></span><span class="ck" aria-hidden="true">✓</span></button>';
+  }
+  var ms=moneyStats();
+  if(ms) html+='<div class="card money"><span class="label">Geld · letzte 30 Tage</span><div class="rkstats"><span><b>'+eur(ms.paid)+'</b>Einkauf</span><span><b>'+eur2(ms.perMeal)+'</b>pro Mahlzeit</span><span class="sv"><b>~'+eur(BOCK_ORDER)+'</b>bestellt</span></div><span class="note">Gerechnet mit 3 Mahlzeiten am Tag aus '+ms.n+' Einkauf'+(ms.n>1?'en':'')+'.</span></div>';
   html+='<div class="sum"><div class="card"><span class="label">Noch offen</span><span class="big">'+eur(open)+'</span></div><div class="card"><span class="label">Gesamt ca.</span><span class="big">'+eur(total)+'</span></div></div>';
   html+='<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+items.length+'" aria-valuenow="'+doneN+'" aria-label="Eingekauft"><i style="width:'+(doneN/items.length*100)+'%"></i></div>';
   SECTIONS.forEach(function(sec){
@@ -1964,6 +2055,13 @@ document.addEventListener("click", function(e){
   if(t.dataset.tnext){ setTechStep(t.dataset.tnext,(techState[t.dataset.tnext]||0)+1); return; }
   if(t.dataset.tprev){ setTechStep(t.dataset.tprev,(techState[t.dataset.tprev]||0)-1); return; }
   if(t.dataset.tplay){ var u=t.dataset.tplay; techPaused[u]=!techPaused[u]; t.textContent=techPaused[u]?"▶":"❚❚"; setTechStep(u, techState[u]||0); return; }
+  if(t.dataset.shopopen){ var so=t.dataset.shopopen.split("|"); openShopDone(+so[0],+so[1]); return; }
+  if(t.dataset.miss!==undefined){ t.setAttribute("aria-pressed", String(t.getAttribute("aria-pressed")!=="true")); return; }
+  if(t.dataset.shopsave){ var ss=t.dataset.shopsave.split("|"), ms2=[].map.call(document.querySelectorAll('[data-miss][aria-pressed="true"]'),function(x){return +x.dataset.miss;});
+    saveShopDone(+ss[0],+ss[1],parseEur((document.getElementById("paidin")||{}).value),ms2); closeRecipe(); location.hash="einkauf"; renderEinkauf(); renderHeute();
+    toastMsg(ms2.length?"Gespeichert – "+ms2.length+" Sache"+(ms2.length>1?"n fehlen":" fehlt")+" noch.":"Einkauf erledigt ✓"); return; }
+  if(t.dataset.shopundo){ save("shopdone:"+t.dataset.shopundo,null); closeRecipe(); renderEinkauf(); renderHeute(); return; }
+  if(t.dataset.missgot){ var mg=t.dataset.missgot.split("|"), sdx=shopDone(+mg[0]); if(sdx){ sdx.missing=(sdx.missing||[]).filter(function(i){return i!==+mg[1];}); save("shopdone:"+mg[0],sdx); var cc=load("chk:"+mg[0],{}); cc[mg[1]]=true; save("chk:"+mg[0],cc); } renderEinkauf(); renderHeute(); return; }
   if(t.dataset.rate){ var rt=t.dataset.rate.split("|"), got=setRate(rt[0],rt[1],rt[2],+rt[3]); renderHeute();
     if(got){ var sc=scoreMap()[rt[2]]; toastMsg((got>=4?"Notiert – ":"Notiert. ")+R[rt[2]].name+" hat jetzt "+sc+" Punkte."); } return; }
   if(t.dataset.bockopen){ var bo=t.dataset.bockopen.split("|"); if(typeof fs!=="undefined"&&fs.open) fsClose(); openBock(bo[0],bo[1],bo[2]?{key:bo[2]}:null); return; }
@@ -2050,6 +2148,11 @@ function fsAnswer(raw){
   if(fsHas(t,[" wer bist du "," wie heißt du "," was kannst du "," hilfe "])) return {text:"Ich bin Friedrich Scherz – halb Koch, halb Comedian. Ich kenne deinen Plan, deine Einkaufsliste und dein Gefrierfach, führe dich Schritt für Schritt durch Rezepte und stelle Timer.", quick:["Was koche ich heute?",(ISY||recOk("bratkartoffeln")?"Bratkartoffeln kochen":"Zeig mir die Woche"),"Timer 10 Minuten"]};
   if(fsHas(t,[" danke "," dankeschön "," merci "])) return {text:"Immer gern. Jedes selbst gekochte Essen ist ein Lieferando-Euro weniger.", quick:["Was gibt's morgen?"]};
   if(fsHas(t,[" witz "," scherz "," lustig "])) return {text:FS_JOKES[Math.floor(Math.random()*FS_JOKES.length)], quick:["Noch einen Witz","Was koche ich heute?"]};
+  if(fsHas(t,[" eingekauft "," einkauf erledigt "," einkauf fertig "," war einkaufen "," einkaufen war "])){
+    var ed=today(), eAbs=weekAbsOf(ed), eR=planRot(ed), m2=t.match(/(\d+[.,]?\d*)\s*(€|euro)/), pd=m2?parseEur(m2[1]):null;
+    saveShopDone(eAbs,eR,pd,(shopDone(eAbs)||{}).missing||[]); if(typeof renderHeute==="function"){ renderHeute(); renderEinkauf(); }
+    return {text:"Abgehakt ✓"+(pd!=null?" – "+eur(pd)+" bezahlt.":". Wenn du mir den Betrag sagst („für 54 €“), rechne ich aus, was dich eine Mahlzeit kostet.")+" Fleisch, das du nicht in den nächsten 2 Tagen brauchst, jetzt einfrieren. Hat etwas gefehlt? Dann trag es in der Einkaufsliste ein.", quick:["Was koche ich heute?","Einkaufsliste"]};
+  }
   if(fsHas(t,[" ranking "," bestenliste "," lieblingsgericht"," lieblingsessen"," top gerichte "," score "," was fand ich lecker"])){ var stx=dishStats(); if(!stx.length) return {text:"Noch nichts bewertet. Sag mir nach dem Essen einfach „War lecker“ – dann baue ich dein Ranking."}; return {text:"Deine Top-Gerichte:", card:{type:"rank"}, quick:["Was koche ich heute?"]}; }
   if(fsHas(t,[" lecker "," schmeckt "," geschmeckt "," eklig "," nie wieder "," war geil "," war gut "," war okay "," war naja "," hat gut "]) && !fsHas(t,[" was ist lecker "," was war lecker "])){
     var rd=fsDayFrom(t), rsl=fsHas(t,[" mittag"])?"l":(fsHas(t,[" abend"])?"d":(daysBetween(today(),rd)<0||new Date().getHours()>=16?"d":"l")), rp=planFor(rd), rm=slotMeal(rp,rsl);

@@ -640,6 +640,13 @@ body.ob-open{overflow:hidden}
 .card.urg{border-color:rgba(255,120,90,.45);background:linear-gradient(135deg,rgba(90,30,15,.5),rgba(20,12,10,.4))}
 .urgrow{display:flex;align-items:center;gap:8px;padding:6px 0}.urgrow span{flex:1}
 .urgrow button{border:1px solid var(--line);background:var(--tile);color:var(--ink);border-radius:10px;padding:6px 9px;font-size:12px;font-weight:700}
+.eatrow{display:flex;align-items:center;gap:6px;padding:4px 0 8px 46px}
+.eatrow .eq{flex:1;font-size:12.5px;color:var(--muted);font-weight:600}.eatrow .eq small{font-weight:500;opacity:.8}
+.eb{border:1.5px solid var(--line);background:var(--tile);color:var(--ink);border-radius:10px;padding:6px 10px;font-size:12.5px;font-weight:700;min-height:34px}
+.eb.on{border-color:#34d399;background:rgba(52,211,153,.15);color:#6ee7b7}.eb.on.red{border-color:#ff8a8a;background:rgba(255,90,90,.12);color:#ff8a8a}
+.cookbox{margin-top:6px;padding-top:8px;border-top:1px solid var(--line)}.cookbox .eatrow{padding-left:0}.cookbox .eq{color:var(--ink);font-size:13.5px}
+.card.pend{border-color:rgba(255,200,90,.4)}.card.pend .eatrow{padding-left:0}.card.pend .eq{color:var(--ink);font-size:13.5px}
+.okn{color:#6ee7b7}
 </style>
 </head>
 <body>
@@ -1796,19 +1803,26 @@ function renderHeute(){
   if(note) html += '<button class="hint" data-go="einkauf"><span>'+note[0]+'</span><span class="hintgo">'+note[1]+' ›</span></button>';
   // Mahlzeiten in einer Karte
   var tot={eur:0,kcal:0,p:0}; [p.breakfast[1],p.lunch[1],"_snack",p.dinner[1]].forEach(function(k){ var n=NUT[k]; if(n){ tot.eur+=n.eur; tot.kcal+=n.kcal; tot.p+=n.p; } });
+  if(diff===0){ var yd=addDays(t,-1), op=planRot(yd)>=0?openItems(yd):[];
+    if(op.length) html += '<section class="card pend"><div class="invhead"><span class="label">Gestern noch offen</span><button class="eb on" data-allyes="'+fmtISO(yd)+'">Alles wie geplant ✓</button></div>'+op.map(function(o){ return '<div class="eatrow"><span class="eq">'+esc(o.txt)+'</span>'+(o.t==="c"?'<button class="eb" data-mcook="'+fmtISO(yd)+'|'+o.k+'|done">✓ Ja</button><button class="eb" data-mcook="'+fmtISO(yd)+'|'+o.k+'|skip">✗ Nein</button>':'<button class="eb" data-ate="'+fmtISO(yd)+'|'+o.sl+'|y">✓ Ja</button><button class="eb" data-ate="'+fmtISO(yd)+'|'+o.sl+'|n">✗ Nein</button>')+'</div>'; }).join("")+'</section>'; }
   html += '<section class="card meals">';
+  var canAte = diff<=0 && diff>=-6;
   html += mealRow("Frühstück", p.breakfast);
+  if(canAte) html += eatRow(d,"b",p.breakfast);
   var canRate = diff<=0;
   html += mealRow(p.lunchLabel, p.lunch, p.bockl?' <span class="tag wish">'+(p.bockl==="swap"?'Getauscht':'Dein Wunsch')+'</span>':'');
-  if(canRate && !p.awayL) html += rateRow(d,"l",p.lunch);
+  if(canAte) html += eatRow(d,"l",p.lunch);
+  if(canRate && !p.awayL && ateGet(d).l!=="n") html += rateRow(d,"l",p.lunch);
   html += mealRow("Abends", p.dinner, p.catchup?' <span class="tag wish">Nachholen</span>':p.bockd?' <span class="tag wish">'+(p.bockd==="swap"?'Getauscht':'Dein Wunsch')+'</span>':p.cook?' <span class="tag">Kochtag</span>':(p.fake?' <span class="tag">Fakeaway</span>':(p.away?' <span class="tag away">Woanders</span>':'')));
-  if(canRate && !p.away) html += rateRow(d,"d",p.dinner);
+  if(canAte) html += eatRow(d,"d",p.dinner);
+  if(canRate && !p.away && ateGet(d).d!=="n") html += rateRow(d,"d",p.dinner);
+  if(canAte) html += cookRows(d,p);
   html += '<div class="awayline">'+(p.away?'<button class="link" data-away="'+fmtISO(d)+'|d|">Doch zu Hause essen</button>':'<span>Abends nicht zu Hause?</span><button class="awaybtn" data-away="'+fmtISO(d)+'|d|papa">'+MINI.star.replace('class="mi"','class="mi"')+' '+(ISY?'Bei Papa':'Familie/Freunde')+'</button><button class="awaybtn" data-away="'+fmtISO(d)+'|d|out">Woanders</button>')+'</div>';
   html += '<button class="wpgo" data-wpgo="cur">Woche planen ›</button>';
   if(!p.away && daysBetween(t,d)>=0) html += '<div class="bockline">'+((p.bockd||p.bockl)?'<button class="link" data-bockundo="'+fmtISO(d)+'">Wieder wie geplant</button>':'')+'<button class="bockbtn" data-bockopen="'+fmtISO(d)+'|d"><span>'+MINI.spark+' Worauf hast du '+(diff===0?'heute':'da')+' Bock?</span><span class="hintgo">Plan anpassen ›</span></button></div>';
   html += '<div class="snackline">+ Snack: '+esc(p.snack)+'</div>';
   html += '<div class="totals"><span><b>'+tot.kcal+'</b> kcal</span><span><b>'+tot.p+' g</b> Eiweiß</span><span><b>'+eur2(tot.eur)+'</b></span></div>';
-  if(diff<=0&&diff>=-6) html += '<div class="mactline"><button data-mact="'+fmtISO(d)+'|l">Mittag lief anders?</button><button data-mact="'+fmtISO(d)+'|d">'+(p.catchup||p.catchup2?'Nachgeholt? Abhaken':'Abend lief anders?')+'</button></div>';
+  if(diff<=0&&diff>=-6) html += '<div class="mactline"><button data-mact="'+fmtISO(d)+'|l">Mittags was anderes gegessen?</button><button data-mact="'+fmtISO(d)+'|d">Abends was anderes?</button></div>';
   html += '</section>';
   if(diff===0){ var urg=invUrgent(); if(urg.length){ var idU=invIdeas(1)[0];
     html += '<section class="card urg"><span class="label">Muss weg</span>'+urg.map(function(u){ return '<div class="urgrow"><span><b>'+esc(invName(u.k,u.it))+'</b> · '+esc(invAmt(u.k,u.it))+' · '+(u.left<=0?'heute':'bis morgen')+'</span><button data-invurg="'+esc(u.k)+'|fz">Eingefroren</button><button data-invurg="'+esc(u.k)+'|x">Weg</button></div>'; }).join("")+
@@ -2569,13 +2583,48 @@ document.addEventListener("click",function(e){
     document.getElementById("sheet").classList.remove("open"); invRefresh(); return; }
   if(ds.invfill){ var f=ds.invfill.split("|"), n=invFillWeek(+f[0],+f[1],(shopDone(+f[0])||{}).missing); invRefresh(); return; }
   if(ds.mact){ var m=ds.mact.split("|"); openMealAct(m[0],m[1]); return; }
-  if(ds.mcook){ var c=ds.mcook.split("|"), d=parseD(c[0]), cur=cookStat(d)[c[1]]; cookSet(d,c[1],(cur===c[2]||(c[2]==="done"&&cur==="auto"))?null:c[2]); openMealAct(MA_CUR[0],MA_CUR[1]); invRefresh(); return; }
+  if(ds.mcook){ var c=ds.mcook.split("|"), d=parseD(c[0]), cur=cookStat(d)[c[1]]; cookSet(d,c[1],(cur===c[2])?null:c[2]); if(MA_CUR&&document.getElementById("sheet").classList.contains("open")) openMealAct(MA_CUR[0],MA_CUR[1]); invRefresh(); return; }
   if(ds.malt){ var a=ds.malt.split("|"), dd=parseD(a[0]), prev=(awayGet(dd)||{})[a[1]];
-    awaySet(dd,a[1],a[2]||null); var u=ALT_USE[a[2]]; if(u&&daysBetween(dd,today())===0) for(var kk in u) invUse(kk,u[kk]);
+    awaySet(dd,a[1],a[2]||null); ateSet(dd,a[1],a[2]?(a[2]==="none"?"n":"y"):null); var u=ALT_USE[a[2]]; if(u&&daysBetween(dd,today())===0) for(var kk in u) invUse(kk,u[kk]);
     openMealAct(MA_CUR[0],MA_CUR[1]); invRefresh(); return; }
   if(ds.mrest){ invAdd("rest:"+ds.mrest,1); var o3=invGet(); var it3=o3["rest:"+ds.mrest]; if(it3&&it3.g==null) it3.g=1; invPut(o3); b.querySelector("span").textContent="✓ Eingetragen – steht unter Vorrat"; invRefresh(); return; }
 },true);
 
+/* ---------- Gegessen? / Gekocht? – direkt bestätigen ---------- */
+function ateGet(d){ return load("ate:"+fmtISO(d),{}); }
+function ateSet(d,sl,v){ var o=ateGet(d), prev=o[sl]; if(v) o[sl]=v; else delete o[sl]; save("ate:"+fmtISO(d),Object.keys(o).length?o:null); return prev; }
+function eatRow(d,sl,meal){
+  if(!meal||!meal[1]||meal[1]==="_none") return "";
+  var v=ateGet(d)[sl], iso=fmtISO(d);
+  return '<div class="eatrow"><span class="eq">'+(v==="y"?'Gegessen':v==="n"?'Nicht gegessen':'Gegessen?')+'</span><button class="eb'+(v==="y"?' on':'')+'" data-ate="'+iso+'|'+sl+'|y" aria-pressed="'+(v==="y")+'">✓ Ja</button><button class="eb'+(v==="n"?' on red':'')+'" data-ate="'+iso+'|'+sl+'|n" aria-pressed="'+(v==="n")+'">✗ Nein</button></div>';
+}
+function cookRows(d,p){
+  var keys=cookKeysFor(planNoBock(d)); [p.catchup,p.catchup2].forEach(function(k){ if(k&&keys.indexOf(k)<0) keys.push(k); });
+  if(!keys.length) return ""; var st=cookStat(d), iso=fmtISO(d);
+  return '<div class="cookbox"><span class="label">Gekocht?</span>'+keys.map(function(k){ var v=st[k], ok=v==="done", no=v==="skip";
+    return '<div class="eatrow ck"><span class="eq">'+esc(R[k].name)+(v==="auto"?' <small>(angenommen)</small>':'')+'</span><button class="eb'+(ok?' on':'')+'" data-mcook="'+iso+'|'+k+'|done" aria-pressed="'+ok+'">✓ Gemacht</button><button class="eb'+(no?' on red':'')+'" data-mcook="'+iso+'|'+k+'|skip" aria-pressed="'+no+'">✗ Nicht</button></div>'; }).join("")+'</div>';
+}
+function openItems(d){ // was ist an einem Tag noch unbestätigt?
+  var p=planFor(d), a=ateGet(d), st=cookStat(d), out=[];
+  cookKeysFor(planNoBock(d)).forEach(function(k){ if(!st[k]||st[k]==="auto") out.push({t:"c",k:k,txt:"Gekocht: "+R[k].name+"?"}); });
+  [["b",p.breakfast,"Frühstück"],["l",p.lunch,"Mittags"],["d",p.dinner,"Abends"]].forEach(function(x){ if(x[1]&&x[1][1]&&x[1][1]!=="_none"&&!a[x[0]]) out.push({t:"e",sl:x[0],txt:x[2]+": "+x[1][0]+" gegessen?"}); });
+  return out;
+}
+document.addEventListener("click",function(e){
+  var y=e.target.closest&&e.target.closest("[data-allyes]"); if(!y) return; e.stopPropagation();
+  var d=parseD(y.dataset.allyes); openItems(d).forEach(function(o){ if(o.t==="c") cookSet(d,o.k,"done"); else ateSet(d,o.sl,"y"); }); invRefresh();
+},true);
+document.addEventListener("click",function(e){
+  var b=e.target.closest&&e.target.closest("[data-ate]"); if(!b) return; e.stopPropagation();
+  var a=b.dataset.ate.split("|"), d=parseD(a[0]), sl=a[1], cur=ateGet(d)[sl], v=cur===a[2]?null:a[2];
+  var p=planFor(d), meal=sl==="b"?p.breakfast:(sl==="l"?p.lunch:p.dinner), id=meal&&meal[1];
+  ateSet(d,sl,v);
+  // nicht gegessen → Portion bleibt übrig (wenn es ein vorgekochtes Gericht war)
+  var isRec=id&&R[id]&&REC_SHOP[id]&&!(sl==="b");
+  if(isRec&&v==="n") invAdd("rest:"+id,1); if(isRec&&cur==="n"&&v!=="n") invUse("rest:"+id,1);
+  if(v==="n"){ openMealAct(a[0],sl==="b"?"l":sl); var nb=document.querySelector("#sheet-body .note"); if(nb&&isRec) nb.insertAdjacentHTML("afterend",'<p class="note okn">Deine Portion liegt jetzt als Rest im Kühlschrank.</p>'); }
+  invRefresh();
+},true);
 try{ invProcess(); }catch(e){}
 setTimeout(invRefresh,0);
 /* ---------- Fragebogen beim ersten Start (Friedrich fragt) ---------- */

@@ -792,3 +792,14 @@ p,small{text-wrap:pretty}
 
 .cairn .cao{fill:#0d1726;opacity:.45}
 .cairn .base .cao{opacity:.3}
+
+/* Steinturm mit gerenderten Steinen */
+.cairn .st{transition:transform 1s cubic-bezier(.3,1.25,.45,1)}
+.cairn .stone{animation:none}
+.cairn>.stone.base,.cairn>.st{animation:stoneDrop .7s cubic-bezier(.3,1.4,.5,1) backwards}
+.cairn .st .st{animation:none}
+.cairn .stone[data-act]{cursor:pointer}
+.cairn .cao{fill:#0d1726;opacity:.5}
+.cairn .ground{fill:#1C2E4A;opacity:.16}
+.cairn image{image-rendering:auto}
+@media (prefers-reduced-motion:reduce){.cairn .st{transition:none}.cairn>.st,.cairn>.stone.base{animation:none}}

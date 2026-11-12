@@ -804,22 +804,17 @@ p,small{text-wrap:pretty}
 .cairn image{image-rendering:auto}
 @media (prefers-reduced-motion:reduce){.cairn .st{transition:none}.cairn>.st,.cairn>.stone.base{animation:none}}
 
-/* ===== Buehne mit Lichtkegel ===== */
-#balSvg{margin:6px -6px 4px;border-radius:20px;overflow:hidden;background:radial-gradient(120% 90% at 30% 0%,#22385a 0%,#14223a 45%,#0c1628 100%)}
-.cairn{max-width:none}
-.cairn .bm0{stop-color:#cfe0ff;stop-opacity:.55}.cairn .bm1{stop-color:#cfe0ff;stop-opacity:.14}.cairn .bm2{stop-color:#cfe0ff;stop-opacity:0}
-.cairn.warm .bm0{stop-color:#FFE3B0}.cairn.warm .bm1{stop-color:#FFE3B0}.cairn.warm .bm2{stop-color:#FFE3B0}
-.cairn .pl0{stop-color:#cfe0ff;stop-opacity:.55}.cairn .pl1{stop-color:#cfe0ff;stop-opacity:0}
-.cairn.warm .pl0{stop-color:#FFE0A8}.cairn.warm .pl1{stop-color:#FFE0A8}
-.cairn .beam{opacity:var(--beam);mix-blend-mode:screen;transition:opacity 1s ease}
-.cairn .pool{opacity:var(--pool);mix-blend-mode:screen;transition:opacity 1s ease}
-.cairn .ground{fill:#000;opacity:.5}
-.cairn .vig{mix-blend-mode:multiply}
-.cairn .cn{fill:#C9D4E3}.cairn .cv{fill:#fff}
-.cairn .cd{stroke:none}
-.cairn .cstar{fill:#55647c}
-.cairn.calm .cstar{fill:#F2C766}
+
+/* ===== Blaetterlicht ===== */
+#balSvg{margin:4px -6px 0}
+.cairn{max-width:none;overflow:visible}
+.cairn .ground{fill:#2a2118;opacity:.55}
+.cairn .cao{fill:#1b140d;opacity:.55}
+.cairn .cn{fill:#4b5363}.cairn .cv{fill:#1C2E4A}
+.cairn .cd{stroke:#fff;stroke-width:1.5}
+.cairn .cstar{fill:#C9D0DA}
+.cairn.calm .cstar{fill:#E2B65C}
+.cairn .starwrap{pointer-events:none}
 .cairn .wob{animation:wob 3.2s ease-in-out infinite}
 @keyframes wob{0%,100%{transform:rotate(calc(var(--wob) * -1))}50%{transform:rotate(var(--wob))}}
-.bal-l{margin-top:10px}
-@media (prefers-reduced-motion:reduce){.cairn .wob{animation:none}.cairn .beam,.cairn .pool{transition:none}}
+@media (prefers-reduced-motion:reduce){.cairn .wob{animation:none}}

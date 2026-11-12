@@ -784,8 +784,11 @@ p,small{text-wrap:pretty}
 /* Steine mit Textur */
 .cairn .cshadow{fill:#1C2E4A;opacity:.28}
 .cairn .ground{opacity:.12}
-.cairn .shine{fill:#fff;opacity:.28}
+.cairn .shine{fill:#fff;opacity:.2}
 .cairn .rim{fill:none;stroke:#000;stroke-opacity:.09;stroke-width:3.5}
 .cairn .spk{fill:#2b2b2b;opacity:.22}
 .cairn .spk.lt{fill:#fff;opacity:.45}
 .cairn .cd-sleep{fill:#7F9DBE}.cairn .cd-mood{fill:#8DB898}.cairn .cd-hot{fill:#D59E7B}
+
+.cairn .cao{fill:#0d1726;opacity:.45}
+.cairn .base .cao{opacity:.3}

@@ -183,6 +183,27 @@ function radio(f,n){var r=f.querySelector('input[name="'+n+'"]:checked');return 
 function showErr(f,msg){var e=f.querySelector('.err');if(!e){e=document.createElement('p');e.className='err';f.querySelector('.actions').before(e);}e.textContent=msg;}
 
 /* ---------- Schlaf ---------- */
+
+/* ---------- Monatskalender fuer Tagesdaten ---------- */
+var DC={sleep:0,mood:0,weight:0};
+function dcInfo(kind,d){
+  if(kind==='mood'){var m=moodFor(d);return m&&m.mood!=null?{c:'mv'+m.mood,dot:hotOn()&&m.hot>0}:null;}
+  if(kind==='sleep'){var s=sleepFor(d);return s?{c:s.h>=7?'sv3':s.h>=6?'sv2':'sv1',dot:hotOn()&&!!s.hot,x:!s.through}:null;}
+  var w=null;S.weight.forEach(function(x){if(x.d===d)w=x;});return w?{c:'wv',lbl:num(w.kg)}:null;}
+function dayCal(kind){var t=T(),base=parse(today()),off=DC[kind]||0,first=new Date(base.getFullYear(),base.getMonth()+off,1),yy=first.getFullYear(),mm=first.getMonth(),dim=new Date(yy,mm+1,0).getDate(),lead=(first.getDay()+6)%7,td=today();
+  var src=kind==='mood'?S.mood:kind==='sleep'?S.sleep:S.weight,oldest=src.reduce(function(a,x){return !a||x.d<a?x.d:a;},null);
+  var canPrev=oldest&&oldest<yy+'-'+String(mm+1).padStart(2,'0')+'-01';
+  var act=kind==='mood'?'editMood':kind==='sleep'?'editSleep':'editWeight';
+  var h='<div class="card dcal"><div class="dc-h"><button class="cal-n" data-act="dcNav" data-k="'+kind+'" data-dir="-1" aria-label="'+esc(t.dcPrev)+'"'+(canPrev?'':' disabled')+'>‹</button><strong>'+esc(first.toLocaleDateString(t.locale,{month:'long',year:'numeric'}))+'</strong><button class="cal-n" data-act="dcNav" data-k="'+kind+'" data-dir="1" aria-label="'+esc(t.dcNext)+'"'+(off>=0?' disabled':'')+'>›</button></div><div class="dc-g">';
+  for(var i=0;i<7;i++)h+='<span class="cal-wd">'+esc(fd(addDays(weekDays()[0],i),{weekday:'short'}).replace('.','').slice(0,2))+'</span>';
+  for(i=0;i<lead;i++)h+='<span></span>';
+  for(var dd=1;dd<=dim;dd++){var d=yy+'-'+String(mm+1).padStart(2,'0')+'-'+String(dd).padStart(2,'0'),f=d>td,inf=f?null:dcInfo(kind,d);
+    h+='<button class="dc-d'+(inf?' '+inf.c:'')+(d===td?' today':'')+'"'+(f?' disabled':' data-act="'+act+'" data-d="'+d+'"')+' aria-label="'+esc(fdl(d))+'"><b>'+dd+'</b>'+(inf&&inf.lbl?'<small>'+esc(inf.lbl)+'</small>':'')+(inf&&inf.dot?'<i class="hd"></i>':'')+(inf&&inf.x?'<i class="nx"></i>':'')+'</button>';}
+  h+='</div><p class="dc-hint">'+esc(t.dcHint)+'</p>'+dcLegend(kind)+'</div>';return h;}
+function dcLegend(kind){var t=T(),L=t.dcLeg;
+  if(kind==='mood')return '<div class="dc-leg"><span><i class="lg mv1"></i>'+esc(t.scale[0])+'</span><span><i class="lg mv3"></i>'+esc(t.scale[2])+'</span><span><i class="lg mv5"></i>'+esc(t.scale[4])+'</span>'+(hotOn()?'<span><i class="lg hdl"></i>'+esc(L.hot)+'</span>':'')+'</div>';
+  if(kind==='sleep')return '<div class="dc-leg"><span><i class="lg sv1"></i>'+esc(L.s1)+'</span><span><i class="lg sv2"></i>'+esc(L.s2)+'</span><span><i class="lg sv3"></i>'+esc(L.s3)+'</span><span><i class="lg nxl"></i>'+esc(L.nx)+'</span>'+(hotOn()?'<span><i class="lg hdl"></i>'+esc(L.hot)+'</span>':'')+'</div>';
+  return '';}
 function sleepFor(d){for(var i=0;i<S.sleep.length;i++)if(S.sleep[i].d===d)return S.sleep[i];return null;}
 function genDue(){return !S.gen||today()>=addMonths(S.gen.at,3);}
 function sheetSleep(d){
@@ -208,8 +229,8 @@ function vSleep(){
   h+='<div class="kpis"><div class="kpi"><span>'+esc(t.avgSleep)+'</span><strong>'+(avg==null?'–':num(avg)+' '+t.h)+'</strong></div><div class="kpi"><span>'+esc(t.through)+'</span><strong>'+th+' / '+got.length+'</strong></div><div class="kpi"><span>'+esc(t.hotNights)+'</span><strong>'+hot+' / '+got.length+'</strong></div></div>';
   h+='<div class="card">'+(RANGE>14?sleepWeekChart(days):sleepChart(days,es))+'<div class="legend"><span><i class="ok"></i>'+esc(t.legendThrough)+'</span><span><i></i>'+esc(t.legendNot)+'</span></div></div>';
   if(S.gen&&!genDue())h+='<div class="card"><div class="row"><div><h2>'+esc(t.genTitle)+'</h2><p class="sub" style="margin:2px 0 0">'+esc(t.genLast)+': '+esc(fdl(S.gen.at))+' · '+esc(t.genNext)+': '+esc(fdl(addMonths(S.gen.at,3)))+'</p></div></div><p class="small" style="margin:10px 0 0">'+esc(t.genEin)+' <strong>'+(S.gen.ein?t.yes:t.no)+'</strong><br>'+esc(t.genDurch)+' <strong>'+(S.gen.durch?t.yes:t.no)+'</strong></p><button class="btn ghost" data-act="gen">'+esc(t.genChange)+'</button></div>';
-  var all=S.sleep.slice().sort(byDate);
-  h+='<div class="card"><h2>'+esc(S.lang==='en'?'All nights':S.lang==='tr'?'Tüm geceler':'Alle Nächte')+'</h2>'+(all.length?'<ul class="list">'+all.map(function(x){
+  var all=S.sleep.slice().sort(byDate).slice(0,7);
+  h+=dayCal('sleep')+'<div class="card"><h2>'+esc(T().dcLast7)+'</h2>'+(all.length?'<ul class="list">'+all.map(function(x){
     return '<li><div><div class="t">'+esc(fdw(x.d))+' · '+num(x.h)+' '+t.h+'</div><div class="m">'+(x.through?'<span class="tag ok">'+esc(t.legendThrough)+'</span>':'<span class="tag no">'+esc(t.legendNot)+'</span>')+(x.hot?'<span class="tag hot">'+esc(t.hotDayShort)+'</span>':'')+(x.note?' '+esc(x.note):'')+'</div></div><button class="edit" data-act="editSleep" data-d="'+x.d+'" aria-label="'+esc(t.edit)+'">'+ic('pen')+'</button></li>';}).join('')+'</ul>':'<p class="empty">'+esc(t.none)+'</p>')+'</div>';
   return h;
 }
@@ -271,13 +292,13 @@ function vWeight(){
   if(S.glp1){var g14=last14().map(giFor).filter(Boolean);h+='<div class="card"><div class="row"><h2>'+esc(t.giDays)+'</h2><span class="big">'+g14.filter(function(x){return x.v;}).length+' / '+g14.length+'</span></div><p class="sub" style="margin:2px 0 0">'+esc(t.moodSub)+'</p></div>';}
   h+='<div class="card"><h2>'+esc(t.weightChart)+'</h2>'+lineChart(w.map(function(x){return {d:x.d,v:x.kg};}),S.goal,t.kg,function(p){var dz=null;(S.doseLog||[]).forEach(function(z){if(z.d<=p.d)dz=z;});return fdl(p.d)+': '+num(p.v)+' '+t.kg+(dz?' · '+dz.name+' '+dz.dose:'');},(S.doseLog||[]).filter(function(z){return z.d>=from;}))+(w.length>1?'<p class="rngdelta">'+esc(t.rngDelta.replace('{r}',t.rngDat[RANGE>91?2:RANGE>14?1:0]))+': <strong>'+(w[w.length-1].kg-w[0].kg>0?'+':'−')+num(Math.abs(w[w.length-1].kg-w[0].kg))+' '+t.kg+'</strong></p>':'')+'</div>';
   h+='<button class="btn light full" data-act="goal" style="margin-bottom:12px">'+esc(t.setGoal)+'</button>';
-  var all=S.weight.slice().sort(byDate);
-  h+='<div class="card">'+(all.length?'<ul class="list">'+all.map(function(x){return '<li><div><div class="t">'+num(x.kg)+' '+t.kg+(x.src==='praxis'?' <span class="pbadge">'+esc(t.fromPraxis)+'</span>':'')+'</div><div class="m">'+esc(fdl(x.d))+'</div></div><button class="edit" data-act="editWeight" data-d="'+x.d+'" aria-label="'+esc(t.edit)+'">'+ic('pen')+'</button></li>';}).join('')+'</ul>':'<p class="empty">'+esc(t.none)+'</p>')+'</div>';
+  var all=S.weight.slice().sort(byDate).slice(0,6);
+  h+=dayCal('weight')+'<div class="card"><h2>'+esc(T().dcLastW)+'</h2>'+(all.length?'<ul class="list">'+all.map(function(x){return '<li><div><div class="t">'+num(x.kg)+' '+t.kg+(x.src==='praxis'?' <span class="pbadge">'+esc(t.fromPraxis)+'</span>':'')+'</div><div class="m">'+esc(fdl(x.d))+'</div></div><button class="edit" data-act="editWeight" data-d="'+x.d+'" aria-label="'+esc(t.edit)+'">'+ic('pen')+'</button></li>';}).join('')+'</ul>':'<p class="empty">'+esc(t.none)+'</p>')+'</div>';
   return h;
 }
 function sheetWeight(d){
   var t=T(),ex=null;S.weight.forEach(function(x){if(x.d===d)ex=x;});
-  var last=S.weight.slice().sort(byDate)[0],e=ex||{d:today(),kg:last?last.kg:70};
+  var last=S.weight.slice().sort(byDate)[0],e=ex||{d:d||today(),kg:last?last.kg:70};
   openSheet('<h2>'+esc(t.enterWeight)+'</h2>'+fDate(e.d)+'<label class="field"><span>'+esc(t.weightKg)+'</span><input class="input" type="text" inputmode="decimal" name="kg" value="'+num(e.kg)+'" required></label>'+fActions(!!ex),
   function(f){var kg=pnum(f.kg.value);if(!(kg>=25&&kg<=300)){showErr(f,'25–300 '+t.kg);return false;}var d=f.d.value||today();
     S.weight=S.weight.filter(function(x){return x.d!==d&&x.d!==e.d;});S.weight.push(PM?{d:d,kg:Math.round(kg*10)/10,src:'praxis'}:{d:d,kg:Math.round(kg*10)/10});save();render();toast(t.saved);},
@@ -397,8 +418,8 @@ function vMood(){
   var mx=Math.max.apply(null,[4].concat(got.map(function(x){return x.hot;})));
   var info=days.map(function(d,i){var e=es[i];return e?fdw(d)+': '+e.hot+' '+t.hotDayShort+' · '+t.moodQ+' '+e.mood+'/5 · '+t.energyQ+' '+e.energy+'/5':fdw(d)+': –';});
   h+=(hotOn()?'<div class="card"><h2>'+esc(t.hotDayShort)+' '+esc(t.perDay)+'</h2>'+(RANGE>14?hotWeekChart(days):'<div class="chart" data-info="'+esc(JSON.stringify(info))+'"><svg viewBox="0 0 340 150" role="img" aria-label="'+esc(t.hotDayShort)+'">'+barChart(days,es.map(function(e){return e?e.hot:null;}),mx)+'</svg><div class="chartinfo muted">'+esc(t.tapBar)+'</div></div>')+'</div>':'')+(RANGE>14?moodTrendChart(days):'');
-  var all=S.mood.filter(function(x){return x.mood!=null;}).sort(byDate);
-  h+='<div class="card">'+(all.length?'<ul class="list">'+all.map(function(x){return '<li><div class="mrow"><span class="fc fc'+x.mood+' sm">'+face(x.mood)+'</span><div><div class="t">'+esc(fdw(x.d))+'</div><div class="m">'+x.hot+' '+esc(t.hotDayShort)+' · '+esc(t.moodQ)+' '+x.mood+'/5 · '+esc(t.energyQ)+' '+x.energy+'/5'+(x.note?' · '+esc(x.note):'')+'</div></div></div><button class="edit" data-act="editMood" data-d="'+x.d+'" aria-label="'+esc(t.edit)+'">'+ic('pen')+'</button></li>';}).join('')+'</ul>':'<p class="empty">'+esc(t.none)+'</p>')+'</div>';
+  var all=S.mood.filter(function(x){return x.mood!=null;}).sort(byDate).slice(0,7);
+  h+=dayCal('mood')+'<div class="card"><h2>'+esc(T().dcLast7)+'</h2>'+(all.length?'<ul class="list">'+all.map(function(x){return '<li><div class="mrow"><span class="fc fc'+x.mood+' sm">'+face(x.mood)+'</span><div><div class="t">'+esc(fdw(x.d))+'</div><div class="m">'+(hotOn()?x.hot+' '+esc(t.hotDayShort)+' · ':'')+esc(t.moodQ)+' '+x.mood+'/5 · '+esc(t.energyQ)+' '+x.energy+'/5'+(x.note?' · '+esc(x.note):'')+'</div></div></div><button class="edit" data-act="editMood" data-d="'+x.d+'" aria-label="'+esc(t.edit)+'">'+ic('pen')+'</button></li>';}).join('')+'</ul>':'<p class="empty">'+esc(t.none)+'</p>')+'</div>';
   return h;
 }
 function sheetMood(d){
@@ -975,7 +996,7 @@ root.addEventListener('click',function(e){
   else if(a==='book'){window.open(PRAXIS.book,'_blank','noopener');}
   else if(a==='startForm')startForm(b.dataset.d||today());
   else if(a==='otherDay')sheetDay();
-  else if(a==='dtab'){dataTab=b.dataset.t||null;render();window.scrollTo(0,0);}
+  else if(a==='dtab'){DC={sleep:0,mood:0,weight:0};dataTab=b.dataset.t||null;render();window.scrollTo(0,0);}
   else if(a==='fNext')formNext();
   else if(a==='fPrev')formPrev();
   else if(a==='fSkip')formSkip();
@@ -985,6 +1006,7 @@ root.addEventListener('click',function(e){
   else if(a==='fSave')formSave();
   else if(a==='fCancel'){F=null;setView('fill');}
   else if(a==='fStep'){var inp=root.querySelector('input[name="'+b.dataset.for+'"]'),v=Math.min(+b.dataset.max,Math.max(+b.dataset.min,Math.round((+inp.value+(+b.dataset.step))*10)/10));inp.value=v;F.a[b.dataset.for]=v;root.querySelector('output[name="'+b.dataset.for+'"]').textContent=num(v,b.dataset.dec==='0'?0:1)+(b.dataset.u||'');}
+  else if(a==='dcNav'){var kk=b.dataset.k;DC[kk]=Math.min(0,(DC[kk]||0)+(+b.dataset.dir));render();}
   else if(a==='addSleep')sheetSleep();
   else if(a==='editSleep')sheetSleep(b.dataset.d);
   else if(a==='gen')sheetGen();

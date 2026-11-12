@@ -1,7 +1,7 @@
 /* Proud Aging – Handy-App. Alle Daten bleiben im Speicher dieses Geräts (localStorage). */
 (function(){
 'use strict';
-if(window.innerWidth>=700&&window.name!=='pa-inner'){
+if(window.innerWidth>=480&&window.name!=='pa-inner'){
   document.body.className='pf-body';
   document.body.innerHTML='<div class="pf-wrap"><div class="pf-phone" id="pfPhone"><div class="pf-screen"><div class="pf-status"><span id="pfTime"></span><span class="pf-island"></span><span class="pf-icons"><i></i><i></i><i></i><b></b></span></div><iframe name="pa-inner" title="Proud Aging App" src="'+location.href.split('#')[0]+'"></iframe><span class="pf-home"></span></div></div></div>';
   var tick=function(){var d=new Date(),e=document.getElementById('pfTime');if(e)e.textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');};tick();setInterval(tick,30000);
